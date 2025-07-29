@@ -1,17 +1,24 @@
 from playwright.sync_api import sync_playwright
 
-def scrape_with_js(url):
+def scrape_images(url):
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)  # Change to False to see browser window
+        browser = p.chromium.launch(headless=True)  # headless=False if you want to watch it
         page = browser.new_page()
         page.goto(url, wait_until="networkidle")
 
-        # Print a portion of the HTML to see if images are loaded
-        html = page.content()
-        print(html[:2000])
+        # Wait for the images to load
+        page.wait_for_selector('img')
+
+        # Grab all images
+        images = page.query_selector_all('img')
+        for img in images:
+            src = img.get_attribute('src')
+            if src and 'asuracomic' in src:  # Optional: filter out ad images etc
+                print(src)
 
         browser.close()
 
+# Example usage:
 if __name__ == "__main__":
-    target_url = input("Enter the chapter URL: ")
-    scrape_with_js(target_url)
+    target_url = input("Paste chapter URL: ").strip()
+    scrape_images(target_url)
