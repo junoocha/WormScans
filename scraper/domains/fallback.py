@@ -1,14 +1,17 @@
 # scraper/sites/fallback.py
 
 from scraper.playwright_utils import simulate_human_behavior
+from scraper.playwright_scraper import print_flush
 
 def scrape(page, url):
-    print("[*] Using fallback scraper (generic)")
+    print_flush("[*] Using fallback scraper (generic)")
     page.goto(url, wait_until="networkidle")
     simulate_human_behavior(page)
 
     # Wait for image tags to load (not necessarily visible)
     page.wait_for_selector("img", state="attached")
+
+    print_flush("[*] Now the worm shall consume some images... give it some time...")
 
     images = page.query_selector_all("img")
 

@@ -8,6 +8,9 @@ def scrape(page, url):
     simulate_human_behavior(page)
 
     page.wait_for_selector("img.object-cover")
+
+    print("[*] Now the worm shall consume some images... give it some time...")
+
     images = page.query_selector_all("img.object-cover")
 
     return [
