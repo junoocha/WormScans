@@ -35,11 +35,18 @@ def scrape_images(url):
 
         print_flush(f"\n[*] Scraping domain: {domain}")
         image_urls = scraper.scrape(page, url)
+        for i, src in enumerate(image_urls, 1):
+            if i == 1:
+                print_flush(f"Grabbed {i} picture: {src}")
+            else:
+                print_flush(f"Grabbed {i} pictures: {src}")
 
-        print_flush(f" Found {len(image_urls)} image(s):\n")
-        for src in image_urls:
-            print_flush(src)
+        # print_flush(f" Found {len(image_urls)} image(s):\n")
 
+        # for src in image_urls:
+        #     print_flush(src)
+
+        print_flush("Worm has wormed goodbye.")
         browser.close()
 
 if __name__ == "__main__":

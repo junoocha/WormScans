@@ -2,12 +2,21 @@ import { NextRequest } from "next/server";
 import { spawn } from "child_process";
 import path from "path";
 
+function isValidUrl(str: string) {
+  try {
+    new URL(str);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const targetUrl = searchParams.get("url");
 
-  if (!targetUrl) {
-    return new Response("Missing URL", { status: 400 });
+  if (!targetUrl || !isValidUrl(targetUrl)) {
+    return new Response("Invalid or missing URL", { status: 400 });
   }
 
   const encoder = new TextEncoder();

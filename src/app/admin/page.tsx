@@ -8,7 +8,12 @@ export default function ScrapePage() {
   const [images, setImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const handleScrape = async () => {
+  const handleScrape = () => {
+    if (!url.trim()) {
+      setLogs(["Error: Please enter a URL"]);
+      return;
+    }
+
     setLoading(true);
     setLogs([]);
     setImages([]);
@@ -19,10 +24,20 @@ export default function ScrapePage() {
 
     eventSource.onmessage = (event) => {
       const message = event.data;
+
+      if (message.startsWith("Error:")) {
+        // Show error and close stream early
+        setLogs((prev) => [...prev, message]);
+        eventSource.close();
+        setLoading(false);
+        return;
+      }
+
       setLogs((prev) => [...prev, message]);
 
-      if (message.startsWith("http")) {
-        setImages((prev) => [...prev, message]);
+      const urlMatch = message.match(/Grabbed \d+ picture[s]?: (.+)$/);
+      if (urlMatch) {
+        setImages((prev) => [...prev, urlMatch[1]]);
       }
     };
 
@@ -32,7 +47,10 @@ export default function ScrapePage() {
     });
 
     eventSource.onerror = (err) => {
-      console.error("SSE error", err);
+      setLogs((prev) => [
+        ...prev,
+        "Error: Connection lost/failed or you didn't put in a proper website",
+      ]);
       eventSource.close();
       setLoading(false);
     };
@@ -67,7 +85,12 @@ export default function ScrapePage() {
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
         {images.map((src, i) => (
-          <img key={i} src={src} alt={`img-${i}`} className="rounded shadow" />
+          <img
+            key={i}
+            src={src}
+            alt={`img-${i}`}
+            className="rounded shadow border-2 border-blue-500"
+          />
         ))}
       </div>
     </div>
