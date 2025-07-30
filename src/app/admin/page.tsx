@@ -8,7 +8,7 @@ export default function ScrapePage() {
   const [images, setImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const handleScrape = () => {
+  const handleScrape = async () => {
     setLoading(true);
     setLogs([]);
     setImages([]);
@@ -18,22 +18,24 @@ export default function ScrapePage() {
     );
 
     eventSource.onmessage = (event) => {
-      setLogs((prev) => [...prev, event.data]);
+      const message = event.data;
+      setLogs((prev) => [...prev, message]);
 
-      if (event.data.startsWith("http")) {
-        setImages((prev) => [...prev, event.data]);
+      if (message.startsWith("http")) {
+        setImages((prev) => [...prev, message]);
       }
     };
 
-    eventSource.onerror = () => {
-      eventSource.close();
-      setLoading(false);
-    };
-
-    eventSource.addEventListener("done", () => {
+    eventSource.addEventListener("end", () => {
       eventSource.close();
       setLoading(false);
     });
+
+    eventSource.onerror = (err) => {
+      console.error("SSE error", err);
+      eventSource.close();
+      setLoading(false);
+    };
   };
 
   return (
@@ -56,7 +58,7 @@ export default function ScrapePage() {
         </button>
       </div>
 
-      <div className="bg-gray-900 text-green-400 p-3 rounded text-sm mb-4 h-48 overflow-y-auto whitespace-pre-wrap">
+      <div className="bg-black text-green-400 p-3 rounded text-sm mb-4 h-48 overflow-y-auto whitespace-pre-wrap font-mono">
         {logs.length === 0 && <p className="opacity-50">Waiting for logs...</p>}
         {logs.map((log, i) => (
           <div key={i}>{log}</div>

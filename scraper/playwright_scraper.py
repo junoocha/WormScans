@@ -5,6 +5,7 @@ import random
 from urllib.parse import urlparse
 from playwright.sync_api import sync_playwright
 import os
+import sys
 
 from scraper.domains import fallback, asurascans
 
@@ -13,6 +14,10 @@ SITE_MAP = {
     "asurascans.com": asurascans,
     # Add more domains later here
 }
+
+def print_flush(*args, **kwargs):
+    print(*args, **kwargs)
+    sys.stdout.flush()
 
 def scrape_images(url):
     parsed = urlparse(url)
@@ -28,12 +33,12 @@ def scrape_images(url):
         ))
         page = context.new_page()
 
-        print(f"\n[*] Scraping domain: {domain}")
+        print_flush(f"\n[*] Scraping domain: {domain}")
         image_urls = scraper.scrape(page, url)
 
-        print(f"\nFound {len(image_urls)} image(s):\n")
+        print_flush(f" Found {len(image_urls)} image(s):\n")
         for src in image_urls:
-            print(src)
+            print_flush(src)
 
         browser.close()
 

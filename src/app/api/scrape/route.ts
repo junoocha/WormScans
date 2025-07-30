@@ -1,41 +1,46 @@
-// src/app/api/scrape/route.ts
 import { NextRequest } from "next/server";
 import { spawn } from "child_process";
 import path from "path";
 
-export const GET = async (req: NextRequest) => {
-  const url = req.nextUrl.searchParams.get("url");
-  if (!url) {
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const targetUrl = searchParams.get("url");
+
+  if (!targetUrl) {
     return new Response("Missing URL", { status: 400 });
   }
 
+  const encoder = new TextEncoder();
   const stream = new ReadableStream({
     start(controller) {
-      const pythonProcess = spawn("python", ["scraper/playwright_scraper.py"], {
+      const python = spawn("python", ["-u", "scraper/playwright_scraper.py"], {
         env: {
           ...process.env,
-          TARGET_URL: url,
-          PYTHONPATH: path.join(process.cwd()), // ✅ Fix for import error
+          TARGET_URL: targetUrl,
+          PYTHONPATH: path.join(process.cwd()),
         },
       });
 
-      pythonProcess.stdout.on("data", (data: Buffer) => {
+      python.stdout.on("data", (data) => {
         const lines = data.toString().split("\n");
         for (const line of lines) {
-          if (line.trim() === "") continue;
-
-          // SSE format
-          controller.enqueue(`data: ${line}\n\n`);
+          if (line.trim()) {
+            controller.enqueue(encoder.encode(`data: ${line}\n\n`));
+          }
         }
       });
 
-      pythonProcess.stderr.on("data", (data: Buffer) => {
-        const line = data.toString().trim();
-        controller.enqueue(`data: [stderr] ${line}\n\n`);
+      python.stderr.on("data", (data) => {
+        const lines = data.toString().split("\n");
+        for (const line of lines) {
+          if (line.trim()) {
+            controller.enqueue(encoder.encode(`data: [stderr] ${line}\n\n`));
+          }
+        }
       });
 
-      pythonProcess.on("close", () => {
-        controller.enqueue("event: done\ndata: complete\n\n");
+      python.on("close", () => {
+        controller.enqueue(encoder.encode("event: end\ndata: done\n\n"));
         controller.close();
       });
     },
@@ -48,4 +53,4 @@ export const GET = async (req: NextRequest) => {
       Connection: "keep-alive",
     },
   });
-};
+}
