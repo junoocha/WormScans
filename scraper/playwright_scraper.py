@@ -4,6 +4,7 @@ import time
 import random
 from urllib.parse import urlparse
 from playwright.sync_api import sync_playwright
+import os
 
 from scraper.domains import fallback, asurascans
 
@@ -30,12 +31,12 @@ def scrape_images(url):
         print(f"\n[*] Scraping domain: {domain}")
         image_urls = scraper.scrape(page, url)
 
-        print(f"\n✅ Found {len(image_urls)} image(s):\n")
+        print(f"\nFound {len(image_urls)} image(s):\n")
         for src in image_urls:
             print(src)
 
         browser.close()
 
 if __name__ == "__main__":
-    target_url = input("Paste chapter URL: ").strip()
+    target_url = os.getenv("TARGET_URL") or input("Paste chapter URL: ").strip()
     scrape_images(target_url)
