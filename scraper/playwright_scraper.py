@@ -1,8 +1,23 @@
+# scraper/playwright_scraper.py
+
 import time
 import random
+from urllib.parse import urlparse
 from playwright.sync_api import sync_playwright
 
+from scraper.domains import fallback, asurascans
+
+SITE_MAP = {
+    "asuracomic.net": asurascans,
+    "asurascans.com": asurascans,
+    # Add more domains later here
+}
+
 def scrape_images(url):
+    parsed = urlparse(url)
+    domain = parsed.netloc.replace("www.", "")
+    scraper = SITE_MAP.get(domain, fallback)
+
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         context = browser.new_context(user_agent=(
@@ -12,34 +27,15 @@ def scrape_images(url):
         ))
         page = context.new_page()
 
-        print("[*] Visiting page...")
-        page.goto(url, wait_until="networkidle")
+        print(f"\n[*] Scraping domain: {domain}")
+        image_urls = scraper.scrape(page, url)
 
-        # Wait for a specific image class
-        print("[*] Waiting for content to load...")
-        page.wait_for_selector('img.object-cover')
-
-        # Add a small human-like delay
-        delay = random.uniform(2.0, 4.0)
-        print(f"[*] Sleeping {delay:.2f} seconds like a human...")
-        time.sleep(delay)
-
-        # Extract image sources
-        images = page.query_selector_all('img.object-cover')
-        image_urls = []
-
-        for img in images:
-            src = img.get_attribute('src')
-            if src and "/storage/media/" in src:
-                image_urls.append(src)
-
-        print(f"\n✅ Found {len(image_urls)} manga image(s):\n")
-        for url in image_urls:
-            print(url)
+        print(f"\n✅ Found {len(image_urls)} image(s):\n")
+        for src in image_urls:
+            print(src)
 
         browser.close()
 
-# Example usage:
 if __name__ == "__main__":
     target_url = input("Paste chapter URL: ").strip()
     scrape_images(target_url)
