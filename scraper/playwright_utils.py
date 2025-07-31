@@ -30,18 +30,29 @@ def simulate_human_behavior(page):
         print(f"[*] Scrolled {scroll_px}px")
         time.sleep(random.uniform(0.5, 1.5))
 
-    # 3. Optional harmless clicks (without navigation)
-    clickable_elements = [
-        el for el in safe_elements
-        if el.is_enabled()
-    ]
-    if clickable_elements:
-        click_count = random.randint(1, min(3, len(clickable_elements)))
-        for _ in range(click_count):
-            el = random.choice(clickable_elements)
-            try:
-                el.click(timeout=1000)
-                print("[*] Performed a harmless click.")
-                time.sleep(random.uniform(0.3, 1.0))
-            except Exception:
-                pass
+    # # 4. Block navigation requests to prevent redirects/popups triggered by clicks
+    # def handle_route(route, request):
+    #     if request.is_navigation_request():
+    #         print(f"[!] Blocking navigation to {request.url}")
+    #         route.abort()
+    #     else:
+    #         route.continue_()
+    # page.route("**/*", handle_route)
+
+    # 5. Close popups immediately on open
+    page.on("popup", lambda popup: popup.close())
+
+    # # 6. Optional harmless clicks (without navigation)
+    # clickable_elements = [
+    #     el for el in safe_elements
+    #     if el.is_enabled()
+    # ]
+    # if clickable_elements:
+    #     click_count = random.randint(1, min(3, len(clickable_elements)))
+    #     for el in random.sample(clickable_elements, click_count):
+    #         try:
+    #             el.click(timeout=1000)
+    #             print("[*] Performed a harmless click.")
+    #             time.sleep(random.uniform(0.3, 1.0))
+    #         except Exception:
+    #             pass
