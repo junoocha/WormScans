@@ -6,35 +6,42 @@ import random
 def simulate_human_behavior(page):
     print("[*] Simulating human-like behavior...")
 
-    # Random scrolling
-    scroll_times = random.randint(2, 4)
+    # 1. Random mouse movement and hover
+    elements = page.query_selector_all("a, button, div, span")
+    safe_elements = [el for el in elements if el.is_visible() and el.bounding_box()]
+
+    if safe_elements:
+        hover_count = random.randint(1, min(5, len(safe_elements)))
+        for _ in range(hover_count):
+            el = random.choice(safe_elements)
+            box = el.bounding_box()
+            if box:
+                x = box["x"] + box["width"] / 2
+                y = box["y"] + box["height"] / 2
+                page.mouse.move(x, y)
+                print(f"[*] Hovered over element at ({x:.0f}, {y:.0f})")
+                time.sleep(random.uniform(0.3, 1.0))
+
+    # 2. Smarter scrolling
+    scroll_times = random.randint(2, 5)
     for _ in range(scroll_times):
-        scroll_by = random.randint(300, 700)
-        page.evaluate(f"window.scrollBy(0, {scroll_by});")
-        delay = random.uniform(0.6, 1.5)
-        print(f"[*] Scrolled {scroll_by}px. Sleeping {delay:.2f}s")
-        time.sleep(delay)
+        scroll_px = random.randint(300, 700)
+        page.evaluate(f"window.scrollBy(0, {scroll_px})")
+        print(f"[*] Scrolled {scroll_px}px")
+        time.sleep(random.uniform(0.5, 1.5))
 
-    # Harmless random clicks
-    elements = page.query_selector_all("div, span, section")
-    safe_elements = [
-        el for el in elements
-        if not el.get_attribute("href")
-        and not el.get_attribute("onclick")
-        and not any(k in (el.get_attribute("class") or "") for k in ["ad", "ads", "sponsor"])
-        and not any(k in (el.get_attribute("id") or "") for k in ["ad", "ads", "sponsor"])
+    # 3. Optional harmless clicks (without navigation)
+    clickable_elements = [
+        el for el in safe_elements
+        if el.is_enabled()
     ]
-
-    random.shuffle(safe_elements)
-    clicks = random.randint(1, min(3, len(safe_elements)))
-
-    for el in safe_elements[:clicks]:
-        try:
-            el.scroll_into_view_if_needed()
-            el.click(timeout=1000)
-            print("[*] Random harmless element clicked.")
-            time.sleep(random.uniform(0.4, 1.2))
-        except Exception:
-            continue
-
-    time.sleep(random.uniform(1.5, 2.5))
+    if clickable_elements:
+        click_count = random.randint(1, min(3, len(clickable_elements)))
+        for _ in range(click_count):
+            el = random.choice(clickable_elements)
+            try:
+                el.click(timeout=1000)
+                print("[*] Performed a harmless click.")
+                time.sleep(random.uniform(0.3, 1.0))
+            except Exception:
+                pass
