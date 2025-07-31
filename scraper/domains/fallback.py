@@ -8,10 +8,12 @@ def scrape(page, url):
     page.goto(url, wait_until="networkidle")
     simulate_human_behavior(page)
 
+    print_flush("[*] Now the worm shall consume some images... give it some time...")
+    
     # Wait for image tags to load (not necessarily visible)
     page.wait_for_selector("img", state="attached")
 
-    print_flush("[*] Now the worm shall consume some images... give it some time...")
+    
 
     images = page.query_selector_all("img")
 
