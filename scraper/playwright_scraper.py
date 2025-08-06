@@ -1,12 +1,15 @@
 # scraper/playwright_scraper.py
+
 import random
 from urllib.parse import urlparse
 from playwright.sync_api import sync_playwright
 import os
 import sys
 
+# import the scaper modules. Prob more in the future
 from scraper.domains import fallback, asurascans
 
+# list of fake user agents to rotate for stealth purposes
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15",
@@ -17,6 +20,7 @@ USER_AGENTS = [
     "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:116.0) Gecko/20100101 Firefox/116.0",
 ]
 
+# mimic viewport sizes / different devices
 VIEWPORTS = [
     (1366, 768),    # common laptop
     (1920, 1080),   # full HD
@@ -24,27 +28,35 @@ VIEWPORTS = [
     (1536, 864),    # mid-range laptop
 ]
 
+# domain checker, yeah will be more later
 SITE_MAP = {
     "asuracomic.net": asurascans,
     "asurascans.com": asurascans,
-    # Add more domains here
 }
 
+# flush output to terminal so can see logs in real time.
 def print_flush(*args, **kwargs):
-    print(*args, **kwargs)
-    sys.stdout.flush()
+    print(*args, **kwargs) #args for positional arguments passed, kwargs is cor keyword agruments
+    sys.stdout.flush() # immediately write output to website terminal
 
 def scrape_images(url):
+
+    # break down url into components, get domain, then pick specific scraper
     parsed = urlparse(url)
     domain = parsed.netloc.replace("www.", "")
     scraper = SITE_MAP.get(domain, fallback)
 
+    # launch playwright
     with sync_playwright() as p:
+
+        # headless mode
         browser = p.chromium.launch(headless=True)
 
+        # randomize fingerprint
         user_agent = random.choice(USER_AGENTS)
         viewport_width, viewport_height = random.choice(VIEWPORTS)
 
+        # setup the context for browser
         context = browser.new_context(
             user_agent=user_agent,
             viewport={"width": viewport_width, "height": viewport_height}
@@ -52,15 +64,22 @@ def scrape_images(url):
         print_flush(f"[*] Using user agent: {user_agent}")
         print_flush(f"[*] Using viewport size: {viewport_width}x{viewport_height}")
 
+        # create a new tab
         page = context.new_page()
 
         print_flush(f"\n[*] Navigating to URL: {url}")
+
+        # load page, wait for DOM to finish
         page.goto(url, wait_until="domcontentloaded", timeout=15000)
-        # page.screenshot(path="manhuaus_debug.png", full_page=True)
+
+        # page.screenshot(path="manhuaus_debug.png", full_page=True)  # this provides a picture for debugging
 
         print_flush(f"[*] Scraping domain: {domain}")
+
+        # call specific logic for scraping
         image_urls = scraper.scrape(page, url)
 
+        # log each image
         for i, src in enumerate(image_urls, 1):
             if i == 1:
                 print_flush(f"Grabbed {i} picture: {src}")
@@ -70,6 +89,7 @@ def scrape_images(url):
         print_flush("Worm has wormed goodbye.")
         browser.close()
 
+# cli entry point if script is directly run
 if __name__ == "__main__":
     target_url = os.getenv("TARGET_URL") or input("Paste chapter URL: ").strip()
     scrape_images(target_url)
