@@ -30,29 +30,43 @@ def simulate_human_behavior(page):
         print(f"[*] Scrolled {scroll_px}px")
         time.sleep(random.uniform(0.5, 1.5))
 
-    # # 4. Block navigation requests to prevent redirects/popups triggered by clicks
-    # def handle_route(route, request):
-    #     if request.is_navigation_request():
-    #         print(f"[!] Blocking navigation to {request.url}")
-    #         route.abort()
-    #     else:
-    #         route.continue_()
-    # page.route("**/*", handle_route)
-
-    # 5. Close popups immediately on open
     page.on("popup", lambda popup: popup.close())
 
-    # # 6. Optional harmless clicks (without navigation)
-    # clickable_elements = [
-    #     el for el in safe_elements
-    #     if el.is_enabled()
-    # ]
-    # if clickable_elements:
-    #     click_count = random.randint(1, min(3, len(clickable_elements)))
-    #     for el in random.sample(clickable_elements, click_count):
-    #         try:
-    #             el.click(timeout=1000)
-    #             print("[*] Performed a harmless click.")
-    #             time.sleep(random.uniform(0.3, 1.0))
-    #         except Exception:
-    #             pass
+    # # 4. Slow scroll to bottom with detailed debug info
+    # print("[*] Slowly scrolling to bottom...")
+    
+    # scroll_step = 1000
+    # max_scroll_attempts = 20
+
+    # for i in range(max_scroll_attempts):
+    #     page.mouse.wheel(0, scroll_step)  # scroll down by scroll_step pixels using mouse wheel
+    #     print(f"[*] Mouse wheel scroll down {scroll_step}px (step {i+1})")
+    #     time.sleep(random.uniform(1, 2))
+
+    #     scroll_info = page.evaluate("""
+    #         () => {
+    #             return {
+    #                 innerHeight: window.innerHeight,
+    #                 scrollY: window.scrollY,
+    #                 bodyScrollHeight: document.body.scrollHeight,
+    #                 docScrollHeight: document.documentElement.scrollHeight,
+    #                 atBottom: (window.innerHeight + window.scrollY) >= Math.max(document.body.scrollHeight, document.documentElement.scrollHeight) - 2
+    #             };
+    #         }
+    #     """)
+        
+    #     print(f"[*] Step {i+1}: innerHeight={scroll_info['innerHeight']} scrollY={scroll_info['scrollY']} "
+    #         f"bodyScrollHeight={scroll_info['bodyScrollHeight']} docScrollHeight={scroll_info['docScrollHeight']} atBottom={scroll_info['atBottom']}")
+        
+    #     if scroll_info['atBottom']:
+    #         print("[*] Reached bottom of page.")
+    #         break
+        
+    #     time.sleep(random.uniform(1, 2))
+
+    # time.sleep(random.uniform(1.5, 2.5))
+    # page.screenshot(path="manhuaus_debug.png", full_page=True)
+
+    # # # 5. Block navigation requests to prevent redirects/popups triggered by clicks (DONE ELSEWHERE NOW)
+
+    # # 6. Optional harmless clicks (TERRIBLE IN THIS AD_INFESTED ENVIRONMENT)

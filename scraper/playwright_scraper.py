@@ -56,7 +56,7 @@ def scrape_images(url):
 
         print_flush(f"\n[*] Navigating to URL: {url}")
         page.goto(url, wait_until="domcontentloaded", timeout=15000)
-        page.screenshot(path="manhuaus_debug.png", full_page=True)
+        # page.screenshot(path="manhuaus_debug.png", full_page=True)
 
         print_flush(f"[*] Scraping domain: {domain}")
         image_urls = scraper.scrape(page, url)
