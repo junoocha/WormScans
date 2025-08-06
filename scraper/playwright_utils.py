@@ -28,13 +28,69 @@ def simulate_human_behavior(page):
     # 2. smarter scrolling
     scroll_times = random.randint(2, 5) # randomly scroll 2-5 times
     for _ in range(scroll_times):
-        scroll_px = random.randint(300, 700) # scroll by variable amount
+        scroll_px = random.randint(10, 20) # scroll by variable amount
         page.evaluate(f"window.scrollBy(0, {scroll_px})") # actual scroll action
         print(f"[*] Scrolled {scroll_px}px")
         time.sleep(random.uniform(0.5, 1.5)) # quick pause
 
     # 3. close any popups
     page.on("popup", lambda popup: popup.close())
+
+def slow_scroll_to_bottom_with_images(page, max_attempts=10, scroll_step=300, wait_range=(1.5, 3), bottom_tolerance=50):
+    print("[*] Slowly scrolling to bottom with live image capture...")
+
+    collected_images = set()
+    last_scroll_y = -1
+    stable_scroll_count = 0
+
+    for i in range(max_attempts):
+        scroll_info = page.evaluate("""({step, tolerance}) => {
+            window.scrollBy(0, step);
+            const scrollY = window.scrollY;
+            const innerHeight = window.innerHeight;
+            const scrollHeight = document.documentElement.scrollHeight;
+            const atBottom = (scrollY + innerHeight) >= (scrollHeight - tolerance);
+            return { scrollY, innerHeight, scrollHeight, atBottom };
+        }""", {"step": scroll_step, "tolerance": bottom_tolerance})
+
+        print(f"[*] Step {i+1}: scrollY={scroll_info['scrollY']}, atBottom={scroll_info['atBottom']}")
+
+        # If scroll position is stable (not increasing), count it
+        if scroll_info['scrollY'] == last_scroll_y:
+            stable_scroll_count += 1
+        else:
+            stable_scroll_count = 0
+
+        last_scroll_y = scroll_info['scrollY']
+
+        # Grab images after scroll
+        images = page.query_selector_all("img")
+        for img in images:
+            src = (
+                img.get_attribute("src") or
+                img.get_attribute("data-src") or
+                img.get_attribute("data-lazy-src") or
+                img.get_attribute("data-original")
+            )
+            if src and src.strip().lower().startswith("http"):
+                collected_images.add(src.strip())
+
+        time.sleep(random.uniform(*wait_range))
+
+        # Stop if either bottom reached or scroll position stable for 3 steps (means can't scroll more)
+        if scroll_info['atBottom'] or stable_scroll_count >= 3:
+            print("[*] Reached bottom or scroll position stable for 3 steps.")
+            
+            # Try a little wiggle to trigger lazy loading
+            page.evaluate("window.scrollBy(0, -200)")
+            time.sleep(random.uniform(1, 2))
+            page.evaluate("window.scrollBy(0, 200)")
+            time.sleep(random.uniform(1, 2))
+
+            break
+
+    print(f"[*] Finished scrolling. Collected {len(collected_images)} images.")
+    return list(collected_images)
 
     # # 4. Slow scroll to bottom with detailed debug info
     # print("[*] Slowly scrolling to bottom...")

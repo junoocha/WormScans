@@ -2,7 +2,7 @@
 
 import re
 import time
-from scraper.playwright_utils import simulate_human_behavior
+from scraper.playwright_utils import simulate_human_behavior, slow_scroll_to_bottom_with_images
 from scraper.playwright_scraper import print_flush
 from urllib.parse import urlparse
 
@@ -64,13 +64,18 @@ def scrape(page, url):
     # human time
     simulate_human_behavior(page)
 
-    # wait for one image to load or be found on DOM
+    # suck on this lazy loaders
+
     print_flush("[*] Looking for images...")
-    try:
-        page.wait_for_selector("img", state="attached", timeout=5000)
-    except:
-        print_flush("[!] No <img> tags found.")
+
+    # scroll slowly and grab images live
+    all_image_urls = slow_scroll_to_bottom_with_images(page)
+
+    if not all_image_urls:
+        print_flush("[!] No images collected during scrolling.")
         return []
+
+    print_flush(f"[*] Found {len(all_image_urls)} candidate image URLs. Filtering...")
 
     # get all <img> tagged elements
     images = page.query_selector_all("img")
