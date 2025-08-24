@@ -39,7 +39,7 @@ def print_flush(*args, **kwargs):
     print(*args, **kwargs) #args for positional arguments passed, kwargs is cor keyword agruments
     sys.stdout.flush() # immediately write output to website terminal
 
-def scrape_images(url):
+def scrape_images(url, use_lazy=False):
 
     # break down url into components, get domain, then pick specific scraper
     parsed = urlparse(url)
@@ -77,7 +77,10 @@ def scrape_images(url):
         print_flush(f"[*] Scraping domain: {domain}")
 
         # call specific logic for scraping
-        image_urls = scraper.scrape(page, url)
+        if scraper is fallback:
+            image_urls = scraper.scrape(page, url, use_lazy=use_lazy)
+        else:
+            image_urls = scraper.scrape(page, url)
 
         # log each image
         for i, src in enumerate(image_urls, 1):
@@ -92,4 +95,6 @@ def scrape_images(url):
 # cli entry point if script is directly run
 if __name__ == "__main__":
     target_url = os.getenv("TARGET_URL") or input("Paste chapter URL: ").strip()
-    scrape_images(target_url)
+    use_lazy = os.getenv("USE_LAZY", "false").lower() == "true" 
+    
+    scrape_images(target_url, use_lazy)

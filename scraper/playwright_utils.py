@@ -2,12 +2,13 @@
 
 import time
 import random
+from playwright.sync_api import Page
 
 # mouse and scroll behavior to mimic human interaction
 def simulate_human_behavior(page):
     print("[*] Simulating human-like behavior...")
 
-    # 1. random mouse movement and hover
+    # random mouse movement and hover
     elements = page.query_selector_all("a, button, div, span") # common interactive tags
     safe_elements = [el for el in elements if el.is_visible() and el.bounding_box()] # visible ones only, don't get caught
     # bounding box is for returning the position and size btw
@@ -25,7 +26,7 @@ def simulate_human_behavior(page):
                 print(f"[*] Hovered over element at ({x:.0f}, {y:.0f})")
                 time.sleep(random.uniform(0.3, 1.0)) # quick pause
 
-    # 2. smarter scrolling
+    # smarter scrolling
     scroll_times = random.randint(2, 5) # randomly scroll 2-5 times
     for _ in range(scroll_times):
         scroll_px = random.randint(10, 20) # scroll by variable amount
@@ -33,100 +34,60 @@ def simulate_human_behavior(page):
         print(f"[*] Scrolled {scroll_px}px")
         time.sleep(random.uniform(0.5, 1.5)) # quick pause
 
-    # 3. close any popups
+    # close any popups
     page.on("popup", lambda popup: popup.close())
 
-def slow_scroll_to_bottom_with_images(page, max_attempts=10, scroll_step=300, wait_range=(1.5, 3), bottom_tolerance=50):
+def slow_scroll_to_bottom_with_images(page: Page, scroll_amount=800, wait_ms=500, max_stable_checks=5):
     print("[*] Slowly scrolling to bottom with live image capture...")
 
-    collected_images = set()
-    last_scroll_y = -1
-    stable_scroll_count = 0
+    previous_scroll_y = -1
+    previous_height = -1
+    stable_count = 0
+    step_count = 0
+    seen_images = set()
 
-    for i in range(max_attempts):
-        scroll_info = page.evaluate("""({step, tolerance}) => {
-            window.scrollBy(0, step);
-            const scrollY = window.scrollY;
-            const innerHeight = window.innerHeight;
-            const scrollHeight = document.documentElement.scrollHeight;
-            const atBottom = (scrollY + innerHeight) >= (scrollHeight - tolerance);
-            return { scrollY, innerHeight, scrollHeight, atBottom };
-        }""", {"step": scroll_step, "tolerance": bottom_tolerance})
+    # zoom out for better scroll/lazy loading
+    page.evaluate("document.body.style.zoom = '0.25'")
 
-        print(f"[*] Step {i+1}: scrollY={scroll_info['scrollY']}, atBottom={scroll_info['atBottom']}")
+    while True:
+        scroll_y = page.evaluate("() => window.scrollY")
+        scroll_height = page.evaluate("() => document.body.scrollHeight")
 
-        # If scroll position is stable (not increasing), count it
-        if scroll_info['scrollY'] == last_scroll_y:
-            stable_scroll_count += 1
+        # check if scroll position is stable
+        if scroll_y == previous_scroll_y and scroll_height == previous_height:
+            stable_count += 1
         else:
-            stable_scroll_count = 0
+            stable_count = 0
 
-        last_scroll_y = scroll_info['scrollY']
-
-        # Grab images after scroll
-        images = page.query_selector_all("img")
-        for img in images:
-            src = (
-                img.get_attribute("src") or
-                img.get_attribute("data-src") or
-                img.get_attribute("data-lazy-src") or
-                img.get_attribute("data-original")
-            )
-            if src and src.strip().lower().startswith("http"):
-                collected_images.add(src.strip())
-
-        time.sleep(random.uniform(*wait_range))
-
-        # Stop if either bottom reached or scroll position stable for 3 steps (means can't scroll more)
-        if scroll_info['atBottom'] or stable_scroll_count >= 3:
-            print("[*] Reached bottom or scroll position stable for 3 steps.")
-            
-            # Try a little wiggle to trigger lazy loading
-            page.evaluate("window.scrollBy(0, -200)")
-            time.sleep(random.uniform(1, 2))
-            page.evaluate("window.scrollBy(0, 200)")
-            time.sleep(random.uniform(1, 2))
-
+        if stable_count >= max_stable_checks:
+            print("[*] Detected bottom of the page.")
             break
 
-    print(f"[*] Finished scrolling. Collected {len(collected_images)} images.")
-    return list(collected_images)
+        # scroll using mouse wheel for lazy-load triggers because mousewheel is detected for some reason
+        page.mouse.wheel(0, scroll_amount)
 
-    # # 4. Slow scroll to bottom with detailed debug info
-    # print("[*] Slowly scrolling to bottom...")
-    
-    # scroll_step = 1000
-    # max_scroll_attempts = 20
+        # wait a bit for images to load
+        page.wait_for_timeout(wait_ms)
 
-    # for i in range(max_scroll_attempts):
-    #     page.mouse.wheel(0, scroll_step)  # scroll down by scroll_step pixels using mouse wheel
-    #     print(f"[*] Mouse wheel scroll down {scroll_step}px (step {i+1})")
-    #     time.sleep(random.uniform(1, 2))
+        previous_scroll_y = scroll_y
+        previous_height = scroll_height
+        step_count += 1
 
-    #     scroll_info = page.evaluate("""
-    #         () => {
-    #             return {
-    #                 innerHeight: window.innerHeight,
-    #                 scrollY: window.scrollY,
-    #                 bodyScrollHeight: document.body.scrollHeight,
-    #                 docScrollHeight: document.documentElement.scrollHeight,
-    #                 atBottom: (window.innerHeight + window.scrollY) >= Math.max(document.body.scrollHeight, document.documentElement.scrollHeight) - 2
-    #             };
-    #         }
-    #     """)
-        
-    #     print(f"[*] Step {i+1}: innerHeight={scroll_info['innerHeight']} scrollY={scroll_info['scrollY']} "
-    #         f"bodyScrollHeight={scroll_info['bodyScrollHeight']} docScrollHeight={scroll_info['docScrollHeight']} atBottom={scroll_info['atBottom']}")
-        
-    #     if scroll_info['atBottom']:
-    #         print("[*] Reached bottom of page.")
-    #         break
-        
-    #     time.sleep(random.uniform(1, 2))
+        # collect images after each scroll
+        current_images = set(
+            page.evaluate("""
+                () => Array.from(document.images)
+                          .map(img => img.src)
+                          .filter(src => src && src.startsWith('http'))
+            """)
+        )
 
-    # time.sleep(random.uniform(1.5, 2.5))
-    # page.screenshot(path="manhuaus_debug.png", full_page=True)
+        # print any new images in real-time
+        new_images = current_images - seen_images
+        for img in new_images:
+            print(f"[*] New image detected: {img}")
 
-    # # # 5. Block navigation requests to prevent redirects/popups triggered by clicks (DONE ELSEWHERE NOW)
+        seen_images.update(new_images)
 
-    # # 6. Optional harmless clicks (TERRIBLE IN THIS AD_INFESTED ENVIRONMENT)
+    print(f"[*] Scroll complete after {step_count} steps. Total images collected: {len(seen_images)}")
+    return list(seen_images)

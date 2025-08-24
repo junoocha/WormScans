@@ -6,7 +6,7 @@ from scraper.playwright_utils import simulate_human_behavior, slow_scroll_to_bot
 from scraper.playwright_scraper import print_flush
 from urllib.parse import urlparse
 
-def scrape(page, url):
+def scrape(page, url, use_lazy=True):
     print_flush("[*] Using fallback scraper (generic)")
 
     # extensions we allow (only images)
@@ -68,14 +68,12 @@ def scrape(page, url):
 
     print_flush("[*] Looking for images...")
 
-    # scroll slowly and grab images live
-    all_image_urls = slow_scroll_to_bottom_with_images(page)
-
-    if not all_image_urls:
-        print_flush("[!] No images collected during scrolling.")
-        return []
-
-    print_flush(f"[*] Found {len(all_image_urls)} candidate image URLs. Filtering...")
+    # scroll slowly and grab images live if its set up, otherwise don't do, set it None so we don't get hit by the checker
+    if use_lazy:
+        print_flush("[*] Looking for images (with lazy scroll)...")
+        slow_scroll_to_bottom_with_images(page)
+    else:
+        print_flush("[*] Skipping lazy scrolling, collecting only static DOM images.")
 
     # get all <img> tagged elements
     images = page.query_selector_all("img")
