@@ -204,7 +204,7 @@ export default function ScrapePage() {
               key={i}
               src={src}
               alt={`img-${i}`}
-              className={`rounded shadow border-2 ${
+              className={`rounded shadow border-4 ${
                 isDeleted ? "border-red-500 opacity-60" : "border-blue-500"
               }`}
             />
