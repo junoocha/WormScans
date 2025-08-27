@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
         env: {
           ...process.env,
           TARGET_URL: targetUrl,
-          USE_LAZY: lazyFlag, // 👈 add lazy flag here
+          USE_LAZY: lazyFlag,
           PYTHONPATH: path.join(process.cwd()),
         },
       });
