@@ -29,16 +29,27 @@ export default function ScrapePage() {
   const [seriesName, setSeriesName] = useState("");
   const [seriesDescription, setSeriesDescription] = useState("");
   const [existingSeriesList, setExistingSeriesList] = useState<
-    { id: string; name: string }[]
+    { id: string; series_name: string }[]
   >([]);
   const [selectedSeriesId, setSelectedSeriesId] = useState("");
 
   // Fetch existing series when the page loads
   React.useEffect(() => {
     const fetchSeries = async () => {
-      const { data, error } = await supabase.from("series").select("id, name");
-      if (!error && data) setExistingSeriesList(data);
+      try {
+        const response = await fetch("/api/getSeries");
+        const result = await response.json();
+
+        if (response.ok && result.data) {
+          setExistingSeriesList(result.data);
+        } else {
+          console.error("Failed to fetch series:", result.error);
+        }
+      } catch (err) {
+        console.error("Fetch error:", err);
+      }
     };
+
     fetchSeries();
   }, []);
 
@@ -123,7 +134,6 @@ export default function ScrapePage() {
   // optional: manual apply (user can change numbers after scrape and re-apply)
   const handleApplyTrimClick = () => {
     applyTrimOnce();
-    console.log("Scraped images (url, deleted):", images);
   };
 
   // optional: reset trims to “keep all”
@@ -131,6 +141,92 @@ export default function ScrapePage() {
     setDeletedIndices(new Set());
     setRemoveFront(0);
     setRemoveBack(0);
+  };
+
+  const handleSaveToSupabase = async () => {
+    try {
+      let seriesId = selectedSeriesId;
+
+      // 1️⃣ Create new series if needed
+      if (seriesOption === "new") {
+        if (!seriesName.trim()) {
+          alert("Please provide a series name");
+          return;
+        }
+
+        const response = await fetch("/api/addNewSeries", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            series_name: seriesName,
+            series_desc: seriesDescription,
+          }),
+        });
+
+        const result = await response.json();
+
+        if (response.status !== 200) {
+          console.error("Series insert response:", result);
+          alert("Failed to create series");
+          return;
+        }
+
+        seriesId = result.data.id;
+      } else {
+        if (!seriesId) {
+          alert("Please select an existing series");
+          return;
+        }
+      }
+
+      // 2️⃣ Insert chapter
+      const chapterResponse = await fetch("/api/addNewChapter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          series_id: seriesId,
+          chapter_number: chapterNumber,
+          title: chapterTitle || null,
+        }),
+      });
+
+      const chapterResult = await chapterResponse.json();
+
+      if (chapterResponse.status !== 200) {
+        console.error("Chapter insert response:", chapterResult);
+        alert("Failed to create chapter");
+        return;
+      }
+
+      const chapterId = chapterResult.data.id;
+
+      // 3️⃣ Insert chapter images
+      const keptImages = images.filter((_, i) => !deletedIndices.has(i));
+
+      if (keptImages.length > 0) {
+        const imagesResponse = await fetch("/api/addChapterImages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chapter_id: chapterId,
+            image_urls: keptImages,
+          }),
+        });
+
+        const imagesResult = await imagesResponse.json();
+
+        if (imagesResponse.status !== 200) {
+          console.error("Chapter images insert response:", imagesResult);
+          alert("Failed to save images");
+          return;
+        }
+      }
+
+      alert("Saved successfully!");
+    } catch (err) {
+      console.error("Save error:", err);
+      alert("An unexpected error occurred");
+    }
   };
 
   return (
@@ -184,7 +280,7 @@ export default function ScrapePage() {
             <option value="">Select series...</option>
             {existingSeriesList.map((series) => (
               <option key={series.id} value={series.id}>
-                {series.name}
+                {series.series_name}
               </option>
             ))}
           </select>
@@ -276,6 +372,14 @@ export default function ScrapePage() {
           disabled={images.length === 0 && deletedIndices.size === 0}
         >
           Reset
+        </button>
+
+        <button
+          className="bg-green-600 text-white px-3 py-2 rounded"
+          onClick={handleSaveToSupabase}
+          disabled={images.length === 0}
+        >
+          Save to Supabase
         </button>
       </div>
 
