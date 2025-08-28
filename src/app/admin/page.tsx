@@ -20,7 +20,11 @@ export default function ScrapePage() {
   const [removeBack, setRemoveBack] = useState(0);
   const [deletedIndices, setDeletedIndices] = useState<Set<number>>(new Set());
 
-  // State for series selection
+  // for recording chapter number/ title
+  const [chapterNumber, setChapterNumber] = useState("");
+  const [chapterTitle, setChapterTitle] = useState("");
+
+  // state for series selection
   const [seriesOption, setSeriesOption] = useState<"new" | "existing">("new");
   const [seriesName, setSeriesName] = useState("");
   const [seriesDescription, setSeriesDescription] = useState("");
@@ -216,6 +220,22 @@ export default function ScrapePage() {
         <label htmlFor="lazyToggle" className="text-sm">
           Enable Lazy Loading Scroll
         </label>
+      </div>
+
+      {/* chapter details */}
+      <div className="flex gap-2 mb-4">
+        <input
+          className="border rounded px-3 py-2 w-50"
+          placeholder="Chapter Number"
+          value={chapterNumber}
+          onChange={(e) => setChapterNumber(e.target.value)}
+        />
+        <input
+          className="border rounded px-3 py-2 flex-1"
+          placeholder="Chapter Title (optional)"
+          value={chapterTitle}
+          onChange={(e) => setChapterTitle(e.target.value)}
+        />
       </div>
 
       {/* Trim controls */}
