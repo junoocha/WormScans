@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function ScrapePage() {
   // input, logs, streaming images
@@ -18,6 +19,24 @@ export default function ScrapePage() {
   const [removeFront, setRemoveFront] = useState(0);
   const [removeBack, setRemoveBack] = useState(0);
   const [deletedIndices, setDeletedIndices] = useState<Set<number>>(new Set());
+
+  // State for series selection
+  const [seriesOption, setSeriesOption] = useState<"new" | "existing">("new");
+  const [seriesName, setSeriesName] = useState("");
+  const [seriesDescription, setSeriesDescription] = useState("");
+  const [existingSeriesList, setExistingSeriesList] = useState<
+    { id: string; name: string }[]
+  >([]);
+  const [selectedSeriesId, setSelectedSeriesId] = useState("");
+
+  // Fetch existing series when the page loads
+  React.useEffect(() => {
+    const fetchSeries = async () => {
+      const { data, error } = await supabase.from("series").select("id, name");
+      if (!error && data) setExistingSeriesList(data);
+    };
+    fetchSeries();
+  }, []);
 
   const handleScrape = () => {
     if (!url.trim()) {
@@ -113,6 +132,60 @@ export default function ScrapePage() {
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold mb-4"> Web Scraper Admin</h1>
+
+      <div className="mb-4 flex gap-4 items-center">
+        <label>
+          <input
+            type="radio"
+            value="new"
+            checked={seriesOption === "new"}
+            onChange={() => setSeriesOption("new")}
+          />
+          New Series
+        </label>
+
+        <label>
+          <input
+            type="radio"
+            value="existing"
+            checked={seriesOption === "existing"}
+            onChange={() => setSeriesOption("existing")}
+          />
+          Existing Series
+        </label>
+      </div>
+
+      {seriesOption === "new" ? (
+        <div className="flex flex-col gap-2 mb-4">
+          <input
+            className="border rounded px-3 py-2"
+            placeholder="Series Name"
+            value={seriesName}
+            onChange={(e) => setSeriesName(e.target.value)}
+          />
+          <textarea
+            className="border rounded px-3 py-2"
+            placeholder="Series Description"
+            value={seriesDescription}
+            onChange={(e) => setSeriesDescription(e.target.value)}
+          />
+        </div>
+      ) : (
+        <div className="mb-4">
+          <select
+            className="border rounded px-3 py-2"
+            value={selectedSeriesId}
+            onChange={(e) => setSelectedSeriesId(e.target.value)}
+          >
+            <option value="">Select series...</option>
+            {existingSeriesList.map((series) => (
+              <option key={series.id} value={series.id}>
+                {series.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* url input + scrape button */}
       <div className="flex gap-2 mb-4">
