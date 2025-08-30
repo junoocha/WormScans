@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { handleSaveToSupabase } from "@/lib/saveToSupabase";
 
 export default function ScrapePage() {
   // input, logs, streaming images
@@ -18,6 +19,39 @@ export default function ScrapePage() {
   const [removeFront, setRemoveFront] = useState(0);
   const [removeBack, setRemoveBack] = useState(0);
   const [deletedIndices, setDeletedIndices] = useState<Set<number>>(new Set());
+
+  // for recording chapter number/ title
+  const [chapterNumber, setChapterNumber] = useState("");
+  const [chapterTitle, setChapterTitle] = useState("");
+
+  // state for series selection
+  const [seriesOption, setSeriesOption] = useState<"new" | "existing">("new");
+  const [seriesName, setSeriesName] = useState("");
+  const [seriesDescription, setSeriesDescription] = useState("");
+  const [existingSeriesList, setExistingSeriesList] = useState<
+    { id: string; series_name: string }[]
+  >([]);
+  const [selectedSeriesId, setSelectedSeriesId] = useState("");
+
+  // Fetch existing series when the page loads
+  React.useEffect(() => {
+    const fetchSeries = async () => {
+      try {
+        const response = await fetch("/api/getSeries");
+        const result = await response.json();
+
+        if (response.ok && result.data) {
+          setExistingSeriesList(result.data);
+        } else {
+          console.error("Failed to fetch series:", result.error);
+        }
+      } catch (err) {
+        console.error("Fetch error:", err);
+      }
+    };
+
+    fetchSeries();
+  }, []);
 
   const handleScrape = () => {
     if (!url.trim()) {
@@ -100,7 +134,6 @@ export default function ScrapePage() {
   // optional: manual apply (user can change numbers after scrape and re-apply)
   const handleApplyTrimClick = () => {
     applyTrimOnce();
-    console.log("Scraped images (url, deleted):", images);
   };
 
   // optional: reset trims to “keep all”
@@ -110,9 +143,82 @@ export default function ScrapePage() {
     setRemoveBack(0);
   };
 
+  const handleClick = async () => {
+    const result = await handleSaveToSupabase({
+      seriesOption,
+      seriesName,
+      seriesDescription,
+      selectedSeriesId,
+      chapterNumber,
+      chapterTitle,
+      images,
+      deletedIndices,
+    });
+
+    if (result.success) {
+      alert("Saved successfully!");
+    } else {
+      alert("Failed to save: " + result.error);
+    }
+  };
+
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold mb-4"> Web Scraper Admin</h1>
+
+      <div className="mb-4 flex gap-4 items-center">
+        <label>
+          <input
+            type="radio"
+            value="new"
+            checked={seriesOption === "new"}
+            onChange={() => setSeriesOption("new")}
+          />
+          New Series
+        </label>
+
+        <label>
+          <input
+            type="radio"
+            value="existing"
+            checked={seriesOption === "existing"}
+            onChange={() => setSeriesOption("existing")}
+          />
+          Existing Series
+        </label>
+      </div>
+
+      {seriesOption === "new" ? (
+        <div className="flex flex-col gap-2 mb-4">
+          <input
+            className="border rounded px-3 py-2"
+            placeholder="Series Name"
+            value={seriesName}
+            onChange={(e) => setSeriesName(e.target.value)}
+          />
+          <textarea
+            className="border rounded px-3 py-2"
+            placeholder="Series Description"
+            value={seriesDescription}
+            onChange={(e) => setSeriesDescription(e.target.value)}
+          />
+        </div>
+      ) : (
+        <div className="mb-4">
+          <select
+            className="border rounded px-3 py-2"
+            value={selectedSeriesId}
+            onChange={(e) => setSelectedSeriesId(e.target.value)}
+          >
+            <option value="">Select series...</option>
+            {existingSeriesList.map((series) => (
+              <option key={series.id} value={series.id}>
+                {series.series_name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* url input + scrape button */}
       <div className="flex gap-2 mb-4">
@@ -145,6 +251,22 @@ export default function ScrapePage() {
         </label>
       </div>
 
+      {/* chapter details */}
+      <div className="flex gap-2 mb-4">
+        <input
+          className="border rounded px-3 py-2 w-50"
+          placeholder="Chapter Number"
+          value={chapterNumber}
+          onChange={(e) => setChapterNumber(e.target.value)}
+        />
+        <input
+          className="border rounded px-3 py-2 flex-1"
+          placeholder="Chapter Title (optional)"
+          value={chapterTitle}
+          onChange={(e) => setChapterTitle(e.target.value)}
+        />
+      </div>
+
       {/* Trim controls */}
       <div className="flex items-end gap-2 mb-4">
         <div className="flex flex-col">
@@ -157,7 +279,6 @@ export default function ScrapePage() {
             onChange={(e) => setRemoveFront(Number(e.target.value || 0))}
           />
         </div>
-
         <div className="flex flex-col">
           <label className="text-xs mb-1">Delete from back</label>
           <input
@@ -168,21 +289,39 @@ export default function ScrapePage() {
             onChange={(e) => setRemoveBack(Number(e.target.value || 0))}
           />
         </div>
-
         <button
-          className="bg-red-600 text-white px-3 py-2 rounded"
+          className={`px-3 py-2 rounded ${
+            images.length === 0
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-red-600 text-white"
+          }`}
           onClick={handleApplyTrimClick}
           disabled={images.length === 0}
         >
           Apply Trim
         </button>
-
         <button
-          className="bg-gray-600 text-white px-3 py-2 rounded"
+          className={`px-3 py-2 rounded ${
+            images.length === 0 && deletedIndices.size === 0
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-gray-600 text-white"
+          }`}
           onClick={handleResetTrimClick}
           disabled={images.length === 0 && deletedIndices.size === 0}
         >
           Reset
+        </button>
+
+        <button
+          className={`px-3 py-2 rounded ${
+            images.length === 0
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-green-600 text-white"
+          }`}
+          onClick={handleClick}
+          disabled={images.length === 0}
+        >
+          Save to Supabase
         </button>
       </div>
 
