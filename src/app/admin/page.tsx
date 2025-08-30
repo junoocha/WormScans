@@ -279,7 +279,6 @@ export default function ScrapePage() {
             onChange={(e) => setRemoveFront(Number(e.target.value || 0))}
           />
         </div>
-
         <div className="flex flex-col">
           <label className="text-xs mb-1">Delete from back</label>
           <input
@@ -290,17 +289,23 @@ export default function ScrapePage() {
             onChange={(e) => setRemoveBack(Number(e.target.value || 0))}
           />
         </div>
-
         <button
-          className="bg-red-600 text-white px-3 py-2 rounded"
+          className={`px-3 py-2 rounded ${
+            images.length === 0
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-red-600 text-white"
+          }`}
           onClick={handleApplyTrimClick}
           disabled={images.length === 0}
         >
           Apply Trim
         </button>
-
         <button
-          className="bg-gray-600 text-white px-3 py-2 rounded"
+          className={`px-3 py-2 rounded ${
+            images.length === 0 && deletedIndices.size === 0
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-gray-600 text-white"
+          }`}
           onClick={handleResetTrimClick}
           disabled={images.length === 0 && deletedIndices.size === 0}
         >
@@ -308,7 +313,11 @@ export default function ScrapePage() {
         </button>
 
         <button
-          className="bg-green-600 text-white px-3 py-2 rounded"
+          className={`px-3 py-2 rounded ${
+            images.length === 0
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-green-600 text-white"
+          }`}
           onClick={handleClick}
           disabled={images.length === 0}
         >
