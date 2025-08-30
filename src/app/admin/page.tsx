@@ -158,7 +158,7 @@ export default function ScrapePage() {
     if (result.success) {
       alert("Saved successfully!");
     } else {
-      alert("Failed to save: ");
+      alert("Failed to save: " + result.error);
     }
   };
 
