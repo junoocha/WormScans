@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { handleSaveToSupabase } from "@/lib/saveToSupabase";
 
 export default function ScrapePage() {
   // input, logs, streaming images
@@ -143,89 +143,22 @@ export default function ScrapePage() {
     setRemoveBack(0);
   };
 
-  const handleSaveToSupabase = async () => {
-    try {
-      let seriesId = selectedSeriesId;
+  const handleClick = async () => {
+    const result = await handleSaveToSupabase({
+      seriesOption,
+      seriesName,
+      seriesDescription,
+      selectedSeriesId,
+      chapterNumber,
+      chapterTitle,
+      images,
+      deletedIndices,
+    });
 
-      // 1️⃣ Create new series if needed
-      if (seriesOption === "new") {
-        if (!seriesName.trim()) {
-          alert("Please provide a series name");
-          return;
-        }
-
-        const response = await fetch("/api/addNewSeries", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            series_name: seriesName,
-            series_desc: seriesDescription,
-          }),
-        });
-
-        const result = await response.json();
-
-        if (response.status !== 200) {
-          console.error("Series insert response:", result);
-          alert("Failed to create series");
-          return;
-        }
-
-        seriesId = result.data.id;
-      } else {
-        if (!seriesId) {
-          alert("Please select an existing series");
-          return;
-        }
-      }
-
-      // 2️⃣ Insert chapter
-      const chapterResponse = await fetch("/api/addNewChapter", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          series_id: seriesId,
-          chapter_number: chapterNumber,
-          title: chapterTitle || null,
-        }),
-      });
-
-      const chapterResult = await chapterResponse.json();
-
-      if (chapterResponse.status !== 200) {
-        console.error("Chapter insert response:", chapterResult);
-        alert("Failed to create chapter");
-        return;
-      }
-
-      const chapterId = chapterResult.data.id;
-
-      // 3️⃣ Insert chapter images
-      const keptImages = images.filter((_, i) => !deletedIndices.has(i));
-
-      if (keptImages.length > 0) {
-        const imagesResponse = await fetch("/api/addChapterImages", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            chapter_id: chapterId,
-            image_urls: keptImages,
-          }),
-        });
-
-        const imagesResult = await imagesResponse.json();
-
-        if (imagesResponse.status !== 200) {
-          console.error("Chapter images insert response:", imagesResult);
-          alert("Failed to save images");
-          return;
-        }
-      }
-
+    if (result.success) {
       alert("Saved successfully!");
-    } catch (err) {
-      console.error("Save error:", err);
-      alert("An unexpected error occurred");
+    } else {
+      alert("Failed to save: ");
     }
   };
 
@@ -376,7 +309,7 @@ export default function ScrapePage() {
 
         <button
           className="bg-green-600 text-white px-3 py-2 rounded"
-          onClick={handleSaveToSupabase}
+          onClick={handleClick}
           disabled={images.length === 0}
         >
           Save to Supabase
