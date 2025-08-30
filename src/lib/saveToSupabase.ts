@@ -20,7 +20,7 @@ async function insertChapterWithImagesAPI(
   deletedIndices: Set<number>
 ) {
   // 1️⃣ Insert chapter
-  const chapterRes = await fetch("/api/addNewChapter", {
+  const chapterRes = await fetch("/api/addData/addNewChapter", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -37,7 +37,7 @@ async function insertChapterWithImagesAPI(
 
   // 2️⃣ Insert images
   const keptImages = images.filter((_, i) => !deletedIndices.has(i));
-  const imagesRes = await fetch("/api/addChapterImages", {
+  const imagesRes = await fetch("/api/addData/addChapterImages", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ chapter_id: chapterId, image_urls: keptImages }),
@@ -67,7 +67,7 @@ export async function handleSaveToSupabase({
       if (!seriesName.trim()) throw new Error("Please provide a series name");
 
       // check if series already exists
-      const res = await fetch("/api/checkSeriesExists", {
+      const res = await fetch("/api/checkExistence/checkSeriesExists", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ series_name: seriesName }),
@@ -77,7 +77,7 @@ export async function handleSaveToSupabase({
         throw new Error(`Series "${seriesName}" already exists.`);
 
       // insert new series via API
-      const seriesRes = await fetch("/api/addNewSeries", {
+      const seriesRes = await fetch("/api/addData/addNewSeries", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -97,14 +97,17 @@ export async function handleSaveToSupabase({
       seriesId = selectedSeriesId;
     }
 
-    const chapterCheckRes = await fetch("/api/checkChapterExists", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        series_id: seriesId,
-        chapter_number: chapterNumber,
-      }),
-    });
+    const chapterCheckRes = await fetch(
+      "/api/checkExistence/checkChapterExists",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          series_id: seriesId,
+          chapter_number: chapterNumber,
+        }),
+      }
+    );
     const chapterCheckData = await chapterCheckRes.json();
 
     if (chapterCheckData.exists) {
