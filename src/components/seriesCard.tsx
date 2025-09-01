@@ -1,4 +1,6 @@
 // components/seriesCard.tsx
+import { formatChapterDate } from "../lib/formatDate";
+
 interface SeriesCardProps {
   seriesName: string;
   chapters: { id: string; chapter_number: string; created_at: string }[];
@@ -19,7 +21,7 @@ export default function SeriesCard({ seriesName, chapters }: SeriesCardProps) {
           <div key={ch.id} className="flex justify-between text-sm">
             <span>Chapter {ch.chapter_number}</span>
             <span className="text-gray-500">
-              {new Date(ch.created_at).toLocaleDateString()}
+              {formatChapterDate(ch.created_at)}
             </span>
           </div>
         ))}
