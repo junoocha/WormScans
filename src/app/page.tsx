@@ -11,7 +11,7 @@ export default async function HomePage() {
     return <p>Error fetching chapters</p>;
   }
 
-  const chapters = data?.map((chapter: any) => ({
+  const chapters = (data || []).map((chapter: any) => ({
     id: chapter.id.toString(),
     chapter_number: chapter.chapter_number?.toString() || "",
     title: chapter.title || "",
