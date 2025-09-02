@@ -9,12 +9,14 @@ export type ChapterRow = {
   series: {
     id: number;
     series_name: string;
+    slug: string;
   } | null;
 };
 
 export type SeriesWithChapters = {
   series_id: string;
   series_name: string;
+  slug: string;
   chapters: {
     id: string;
     chapter_number: string;
@@ -39,7 +41,7 @@ export async function fetchRecentSeries(): Promise<{
       id,
       chapter_number,
       created_at,
-      series:series_id ( id, series_name )
+      series:series_id ( id, series_name, slug )
     `
     )
     .order("created_at", { ascending: false })
@@ -59,6 +61,7 @@ export async function fetchRecentSeries(): Promise<{
       seriesMap[s.id] = {
         series_id: s.id.toString(),
         series_name: s.series_name,
+        slug: s.slug,
         chapters: [],
       };
     }
@@ -70,7 +73,7 @@ export async function fetchRecentSeries(): Promise<{
     });
   }
 
-  // ---- Sort chapters chronologically (oldest → newest) and slice last 3 ----
+  // sort chapters chronologically (oldest → newest) and slice last 3
   const groupedSeries: SeriesWithChapters[] = Object.values(seriesMap).map(
     (series) => ({
       ...series,
@@ -83,7 +86,7 @@ export async function fetchRecentSeries(): Promise<{
     })
   );
 
-  // ---- Sort series so the one with the newest chapter appears first ----
+  //  sort series so the one with the newest chapter appears first
   groupedSeries.sort((a, b) => {
     const aLatest = a.chapters[a.chapters.length - 1]?.created_at || "";
     const bLatest = b.chapters[b.chapters.length - 1]?.created_at || "";

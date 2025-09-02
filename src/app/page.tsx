@@ -25,6 +25,7 @@ export default async function HomePage() {
                 key={series.series_id}
                 seriesName={series.series_name}
                 chapters={series.chapters}
+                slug={series.slug}
               />
             ))}
           </div>
