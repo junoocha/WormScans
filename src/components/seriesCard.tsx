@@ -25,12 +25,16 @@ export default function SeriesCard({
 
         <div className="space-y-2">
           {chapters.map((ch) => (
-            <div key={ch.id} className="flex justify-between text-sm">
+            <Link
+              key={ch.id}
+              href={`/series/${slug}/chapter/${ch.chapter_number}`}
+              className="flex justify-between text-sm hover:underline"
+            >
               <span>Chapter {ch.chapter_number}</span>
               <span className="text-gray-500">
                 {formatChapterDate(ch.created_at)}
               </span>
-            </div>
+            </Link>
           ))}
         </div>
       </div>
