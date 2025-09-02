@@ -1,14 +1,16 @@
 import NavBar from "@/components/navbar";
-import { fetchSeriesById, SeriesDetail } from "@/lib/getSeriesById";
+import { fetchSeries, SeriesDetail } from "@/lib/getSeriesById";
 import { formatChapterDate } from "@/lib/formatDate";
 
 interface SeriesPageProps {
-  params: { series_id: string };
+  params: { slug: string };
 }
 
 export default async function SeriesPage({ params }: SeriesPageProps) {
-  const { series_id } = params;
-  const { data: series, error } = await fetchSeriesById(series_id);
+  const { slug } = await params;
+
+  // fetch by slug
+  const { data: series, error } = await fetchSeries({ slug });
 
   if (error || !series) {
     console.error("Error fetching series:", error);
@@ -17,9 +19,7 @@ export default async function SeriesPage({ params }: SeriesPageProps) {
 
   // Sort chapters chronologically
   const sortedChapters = series.chapters.sort(
-    (a, b) =>
-      new Date(a.chapter_number).getTime() -
-      new Date(b.chapter_number).getTime()
+    (a, b) => Number(a.chapter_number) - Number(b.chapter_number)
   );
 
   return (
