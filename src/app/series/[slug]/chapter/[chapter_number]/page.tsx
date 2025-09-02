@@ -9,7 +9,7 @@ interface ChapterPageProps {
 }
 
 export default async function ChapterPage({ params }: ChapterPageProps) {
-  const { slug, chapter_number } = params;
+  const { slug, chapter_number } = await params;
 
   const { data: imagesData, error } = await fetchChapterImages(
     slug,
