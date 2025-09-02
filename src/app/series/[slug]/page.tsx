@@ -20,7 +20,7 @@ export default async function SeriesPage({ params }: SeriesPageProps) {
 
   // Sort chapters chronologically
   const sortedChapters = series.chapters.sort(
-    (a, b) => Number(a.chapter_number) - Number(b.chapter_number)
+    (a, b) => Number(b.chapter_number) - Number(a.chapter_number)
   );
 
   return (
@@ -41,7 +41,7 @@ export default async function SeriesPage({ params }: SeriesPageProps) {
         </div>
 
         {/* Chapters List */}
-        <div className="space-y-2">
+        <div className="space-y-2 max-h-[400px] overflow-y-auto border rounded p-2">
           {sortedChapters.map((ch) => (
             <Link
               key={ch.id}
