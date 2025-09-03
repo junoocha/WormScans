@@ -9,7 +9,7 @@ const supabase = createClient(
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { series_name, series_desc } = body;
+  const { series_name, series_desc, slug } = body;
 
   if (!series_name)
     return NextResponse.json(
@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
 
   const { data, error } = await supabase
     .from("series")
-    .insert([{ series_name, series_desc }])
+    .insert([{ series_name, series_desc, slug }])
     .select()
     .single();
 

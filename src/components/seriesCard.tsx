@@ -1,6 +1,6 @@
 // components/seriesCard.tsx
-import { formatChapterDate } from "../lib/formatDate";
 import Link from "next/link";
+import { formatChapterDate } from "@/lib/formatDate";
 
 interface SeriesCardProps {
   seriesName: string;
@@ -14,17 +14,17 @@ export default function SeriesCard({
   slug,
 }: SeriesCardProps) {
   return (
-    <div className="rounded-2xl shadow p-4 bg-white hover:shadow-lg transition">
-      {/* Profile image clickable */}
+    <div className="rounded-2xl shadow p-4 transition duration-300 hover:shadow-lg bg-[var(--card-bg)]">
+      {/* Cover */}
       <Link href={`/series/${slug}`}>
-        <div className="h-40 w-full bg-gray-200 rounded mb-4 flex items-center justify-center cursor-pointer">
-          <span className="text-gray-500">[Cover Image]</span>
+        <div className="h-40 w-full rounded mb-4 flex items-center justify-center cursor-pointer bg-[var(--card-hover)]">
+          <span className="text-white/60">[Cover Image]</span>
         </div>
       </Link>
 
-      {/* Series title clickable */}
+      {/* Series Title */}
       <Link href={`/series/${slug}`}>
-        <h2 className="text-lg font-bold mb-2 uppercase cursor-pointer">
+        <h2 className="text-lg font-bold mb-2 uppercase text-white cursor-pointer">
           {seriesName}
         </h2>
       </Link>
@@ -35,12 +35,10 @@ export default function SeriesCard({
           <Link
             key={ch.id}
             href={`/series/${slug}/chapter/${ch.chapter_number}`}
-            className="flex justify-between text-sm hover:underline"
+            className="flex justify-between text-sm text-gray-400 hover:text-white transition"
           >
             <span>Chapter {ch.chapter_number}</span>
-            <span className="text-gray-500">
-              {formatChapterDate(ch.created_at)}
-            </span>
+            <span>{formatChapterDate(ch.created_at)}</span>
           </Link>
         ))}
       </div>
