@@ -21,30 +21,34 @@ export default async function ChapterPage({ params }: ChapterPageProps) {
   }
 
   return (
-    <div className="bg-[var(--background)] min-h-screen flex flex-col">
+    <div className="bg-black min-h-screen flex flex-col">
       <NavBar />
 
-      <main className="p-6 max-w-4xl mx-auto space-y-4 flex-1">
-        {/* Optional: top nav */}
-        <div className="flex justify-between mb-4">
-          <NavButton slug={slug} chapter={prev} label="← Previous" />
+      <main className="flex flex-col items-center flex-1">
+        {/* Top navigation */}
+        <div className="flex justify-between w-full max-w-4xl px-6 py-4">
+          <NavButton slug={slug} chapter={prev} label="← Prev" />
           <NavButton slug={slug} chapter={next} label="Next →" />
         </div>
 
+        {/* Chapter images */}
         {imagesData.map((chapter) =>
           chapter.image_urls.map((url, idx) => (
-            <img
+            <div
               key={`${chapter.id}-${idx}`}
-              src={url}
-              alt={`Chapter ${chapter_number} image ${idx + 1}`}
-              className="w-full rounded-lg shadow-lg transition"
-              style={{ boxShadow: `0 0 5px var(--accent)` }}
-            />
+              className="w-full flex justify-center bg-black"
+            >
+              <img
+                src={url}
+                alt={`Chapter ${chapter_number} image ${idx + 1}`}
+                className="w-full max-w-4xl object-contain p-[4px]"
+              />
+            </div>
           ))
         )}
 
-        {/* Bottom nav */}
-        <div className="flex justify-between mt-6">
+        {/* Bottom navigation */}
+        <div className="flex justify-between w-full max-w-4xl px-6 py-6">
           <NavButton slug={slug} chapter={prev} label="← Previous" />
           <NavButton slug={slug} chapter={next} label="Next →" />
         </div>
@@ -65,7 +69,7 @@ function NavButton({
   return (
     <a
       href={chapter ? `/series/${slug}/chapter/${chapter}` : "#"}
-      className={`px-4 py-2 rounded-lg font-semibold ${
+      className={`px-4 py-2 rounded-lg font-semibold transition ${
         chapter
           ? "bg-[var(--accent)] text-white hover:opacity-90"
           : "bg-gray-700 text-gray-400 cursor-not-allowed"
