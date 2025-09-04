@@ -1,6 +1,7 @@
 import { fetchChapterImages } from "@/lib/getChapterImages";
 import { fetchAdjacentChapters } from "@/lib/getNextPrevChapters";
 import NavBar from "@/components/navbar";
+import Image from "next/image";
 
 interface ChapterPageProps {
   params: { slug: string; chapter_number: string };
@@ -38,10 +39,14 @@ export default async function ChapterPage({ params }: ChapterPageProps) {
               key={`${chapter.id}-${idx}`}
               className="w-full flex justify-center bg-black"
             >
-              <img
+              <Image
                 src={url}
                 alt={`Chapter ${chapter_number} image ${idx + 1}`}
-                className="w-full max-w-4xl object-contain p-[4px]"
+                width={800} // default width, tweak later
+                height={1200} // default height, tweak later
+                sizes="100vw"
+                priority={idx === 0} // first image loads eagerly
+                className="w-full max-w-4xl object-contain"
               />
             </div>
           ))
