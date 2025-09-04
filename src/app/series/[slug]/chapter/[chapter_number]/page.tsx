@@ -22,7 +22,7 @@ export default async function ChapterPage({ params }: ChapterPageProps) {
   }
 
   return (
-    <div className="bg-black min-h-screen flex flex-col">
+    <div className="bg-[var(--background)] min-h-screen flex flex-col">
       <NavBar />
 
       <main className="flex flex-col items-center flex-1">
@@ -37,7 +37,7 @@ export default async function ChapterPage({ params }: ChapterPageProps) {
           chapter.image_urls.map((url, idx) => (
             <div
               key={`${chapter.id}-${idx}`}
-              className="w-full flex justify-center bg-black"
+              className="w-full flex justify-center bg-[var(--background)]"
             >
               <Image
                 src={url}

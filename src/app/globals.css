@@ -2,7 +2,7 @@
 
 /* --- Theme Colors --- */
 :root {
-  --background: #0a0a0a; /* dark background */
+  --background: #161616; /* dark background */
   --foreground: #ededed; /* default text */
   --accent: #57cf42; /* neon green for titles/links */
   --card-bg: #111111; /* card background */
@@ -20,7 +20,7 @@
 /* Light/dark preference fallback (optional) */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
+    --background: #161616;
     --foreground: #ededed;
   }
 }

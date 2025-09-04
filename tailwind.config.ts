@@ -4,7 +4,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        bg: "#0a0a0a", // Main background
+        bg: "#1f1f1f", // Main background
         fg: "#ededed", // Foreground text
         accent: "#39ff14", // Neon green
         card: "#111111", // Card background
