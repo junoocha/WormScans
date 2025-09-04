@@ -19,7 +19,7 @@ async function insertChapterWithImagesAPI(
   images: string[],
   deletedIndices: Set<number>
 ) {
-  // 1️⃣ Insert chapter
+  // insert chapter
   const chapterRes = await fetch("/api/addData/addNewChapter", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -35,7 +35,7 @@ async function insertChapterWithImagesAPI(
     throw new Error(chapterData.error || "Failed to insert chapter");
   const chapterId = chapterData.data.id;
 
-  // 2️⃣ Insert images
+  // insert images
   const keptImages = images.filter((_, i) => !deletedIndices.has(i));
   const imagesRes = await fetch("/api/addData/addChapterImages", {
     method: "POST",
@@ -76,6 +76,13 @@ export async function handleSaveToSupabase({
       if (result.exists)
         throw new Error(`Series "${seriesName}" already exists.`);
 
+      // generate slug
+      const slug = seriesName
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, "-") // spaces → dash
+        .replace(/[^a-z0-9\-]/g, ""); // remove invalid chars
+
       // insert new series via API
       const seriesRes = await fetch("/api/addData/addNewSeries", {
         method: "POST",
@@ -83,6 +90,7 @@ export async function handleSaveToSupabase({
         body: JSON.stringify({
           series_name: seriesName,
           series_desc: seriesDescription,
+          slug,
         }),
       });
 
