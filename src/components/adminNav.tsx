@@ -8,7 +8,7 @@ export default function AdminNav() {
 
   const navLinks = [
     { name: "Admin Home", href: "/admin" },
-    { name: "Add", href: "/admin/add" },
+    { name: "Add Series/Chapter", href: "/admin/add" },
     { name: "Update Chapter", href: "/admin/updateChapter" },
     { name: "Update Series", href: "/admin/updateSeries" },
   ];
