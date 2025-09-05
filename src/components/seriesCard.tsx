@@ -6,19 +6,29 @@ interface SeriesCardProps {
   seriesName: string;
   chapters: { id: string; chapter_number: string; created_at: string }[];
   slug: string;
+  coverUrl?: string;
 }
 
 export default function SeriesCard({
   seriesName,
   chapters,
   slug,
+  coverUrl,
 }: SeriesCardProps) {
   return (
     <div className="rounded-2xl shadow p-4 transition duration-300 hover:shadow-lg bg-[var(--card-bg)]">
       {/* Cover */}
       <Link href={`/series/${slug}`}>
-        <div className="h-40 w-full rounded mb-4 flex items-center justify-center cursor-pointer bg-[var(--card-hover)]">
-          <span className="text-white/60">[Cover Image]</span>
+        <div className="h-40 w-full rounded mb-4 overflow-hidden flex items-center justify-center cursor-pointer bg-[var(--card-hover)]">
+          {coverUrl ? (
+            <img
+              src={coverUrl}
+              alt={`${seriesName} cover`}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <span className="text-white/60">[Cover Image]</span>
+          )}
         </div>
       </Link>
 

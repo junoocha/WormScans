@@ -10,6 +10,7 @@ export type ChapterRow = {
     id: number;
     series_name: string;
     slug: string;
+    cover_url?: string;
   } | null;
 };
 
@@ -17,6 +18,7 @@ export type SeriesWithChapters = {
   series_id: string;
   series_name: string;
   slug: string;
+  cover_url?: string;
   chapters: {
     id: string;
     chapter_number: string;
@@ -41,7 +43,7 @@ export async function fetchRecentSeries(): Promise<{
       id,
       chapter_number,
       created_at,
-      series:series_id ( id, series_name, slug )
+      series:series_id ( id, series_name, slug, cover_url )
     `
     )
     .order("created_at", { ascending: false })
@@ -62,6 +64,7 @@ export async function fetchRecentSeries(): Promise<{
         series_id: s.id.toString(),
         series_name: s.series_name,
         slug: s.slug,
+        cover_url: s.cover_url || undefined,
         chapters: [],
       };
     }

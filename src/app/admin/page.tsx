@@ -33,6 +33,9 @@ export default function ScrapePage() {
   >([]);
   const [selectedSeriesId, setSelectedSeriesId] = useState("");
 
+  // for cover upload
+  const [coverFile, setCoverFile] = useState<File | undefined>();
+
   // Fetch existing series when the page loads
   React.useEffect(() => {
     const fetchSeries = async () => {
@@ -153,6 +156,7 @@ export default function ScrapePage() {
       chapterTitle,
       images,
       deletedIndices,
+      coverFile,
     });
 
     if (result.success) {
@@ -201,6 +205,15 @@ export default function ScrapePage() {
             placeholder="Series Description"
             value={seriesDescription}
             onChange={(e) => setSeriesDescription(e.target.value)}
+          />
+          <label className="text-sm">Series Cover (optional)</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) setCoverFile(file);
+            }}
           />
         </div>
       ) : (
