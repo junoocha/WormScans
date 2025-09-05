@@ -36,6 +36,21 @@ export default async function ChapterPage({ params }: ChapterPageProps) {
               key={`${chapter.id}-${idx}`}
               className="w-full flex justify-center bg-[var(--background)]"
             >
+              <img
+                src={url}
+                alt={`Chapter ${chapter_number} image ${idx + 1}`}
+                loading="lazy"
+                className="w-full max-w-4xl object-contain py-1"
+              />
+            </div>
+          ))
+        )}
+        {/* {imagesData.map((chapter) =>
+          chapter.image_urls.map((url, idx) => (
+            <div
+              key={`${chapter.id}-${idx}`}
+              className="w-full flex justify-center bg-[var(--background)]"
+            >
               <Image
                 src={url}
                 alt={`Chapter ${chapter_number} image ${idx + 1}`}
@@ -47,7 +62,7 @@ export default async function ChapterPage({ params }: ChapterPageProps) {
               />
             </div>
           ))
-        )}
+        )} */}
 
         {/* Bottom navigation */}
         <div className="flex justify-between w-full max-w-4xl px-6 py-6">
