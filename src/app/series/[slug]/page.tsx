@@ -1,4 +1,3 @@
-import NavBar from "@/components/navbar";
 import Link from "next/link";
 import { fetchSeries } from "@/lib/getSeriesById";
 import { formatChapterDate } from "@/lib/formatDate";
@@ -21,7 +20,6 @@ export default async function SeriesPage({ params }: SeriesPageProps) {
 
   return (
     <div className="bg-[var(--background)] min-h-screen">
-      <NavBar />
       <main className="p-6 max-w-4xl mx-auto text-[var(--foreground)]">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center mb-6 gap-4">

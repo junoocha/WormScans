@@ -1,4 +1,3 @@
-import NavBar from "@/components/navbar";
 import SeriesCard from "@/components/seriesCard";
 import { fetchRecentSeries, SeriesWithChapters } from "@/lib/getRecentSeries";
 
@@ -12,7 +11,6 @@ export default async function HomePage() {
 
   return (
     <div>
-      <NavBar />
       <main className="p-6 max-w-6xl mx-auto">
         <h1 className="text-2xl font-bold mb-6">Recent Updates</h1>
 
