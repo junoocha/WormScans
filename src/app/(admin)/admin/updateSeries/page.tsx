@@ -1,4 +1,3 @@
-// app/(admin)/admin/updateSeries/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -26,6 +25,8 @@ export default function UpdateSeriesPage() {
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
+
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("");
 
@@ -48,6 +49,7 @@ export default function UpdateSeriesPage() {
           setDetails(res.data);
           setTitle(res.data.series_name || "");
           setDesc(res.data.series_desc || "");
+          setCoverPreview(null); // reset preview when selecting new series
         }
         setStatus("");
       })
@@ -56,6 +58,14 @@ export default function UpdateSeriesPage() {
         setStatus("Failed to load details");
       });
   }, [selectedSeriesId]);
+
+  // update preview when a new file is selected
+  const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setCoverFile(file);
+    if (file) setCoverPreview(URL.createObjectURL(file));
+    else setCoverPreview(null);
+  };
 
   // handle save
   const handleSave = async () => {
@@ -104,6 +114,8 @@ export default function UpdateSeriesPage() {
         series_desc: desc,
         cover_url: coverUrl,
       });
+      setCoverFile(null);
+      setCoverPreview(null);
     }
 
     setLoading(false);
@@ -151,18 +163,29 @@ export default function UpdateSeriesPage() {
 
           <div>
             <label className="block mb-1">Cover Image</label>
-            {details.cover_url && (
-              <img
-                src={details.cover_url}
-                alt="Current cover"
-                className="w-40 h-56 object-cover rounded mb-2"
-              />
-            )}
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setCoverFile(e.target.files?.[0] || null)}
-            />
+            <div className="flex gap-4 mb-2">
+              {details.cover_url && !coverPreview && (
+                <div className="flex flex-col items-center">
+                  <span className="text-sm text-gray-400 mb-1">Current</span>
+                  <img
+                    src={details.cover_url}
+                    alt="Current cover"
+                    className="w-40 h-56 object-cover rounded"
+                  />
+                </div>
+              )}
+              {coverPreview && (
+                <div className="flex flex-col items-center">
+                  <span className="text-sm text-gray-400 mb-1">New</span>
+                  <img
+                    src={coverPreview}
+                    alt="New cover preview"
+                    className="w-40 h-56 object-cover rounded"
+                  />
+                </div>
+              )}
+            </div>
+            <input type="file" accept="image/*" onChange={handleCoverChange} />
           </div>
 
           <button
