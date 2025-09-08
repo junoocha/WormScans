@@ -41,16 +41,18 @@ export default function SeriesCard({
 
       {/* Chapters */}
       <div className="space-y-2">
-        {chapters.map((ch) => (
-          <Link
-            key={ch.id}
-            href={`/series/${slug}/chapter/${ch.chapter_number}`}
-            className="flex justify-between text-sm text-gray-400 hover:text-white transition"
-          >
-            <span>Chapter {ch.chapter_number}</span>
-            <span>{formatChapterDate(ch.created_at)}</span>
-          </Link>
-        ))}
+        {[...chapters]
+          .sort((a, b) => Number(b.chapter_number) - Number(a.chapter_number))
+          .map((ch) => (
+            <Link
+              key={ch.id}
+              href={`/series/${slug}/chapter/${ch.chapter_number}`}
+              className="flex justify-between text-sm text-gray-400 hover:text-white transition"
+            >
+              <span>Chapter {ch.chapter_number}</span>
+              <span>{formatChapterDate(ch.created_at)}</span>
+            </Link>
+          ))}
       </div>
     </div>
   );
