@@ -33,6 +33,9 @@ export default function ScrapePage() {
   >([]);
   const [selectedSeriesId, setSelectedSeriesId] = useState("");
 
+  // for cover upload
+  const [coverFile, setCoverFile] = useState<File | undefined>();
+
   // Fetch existing series when the page loads
   React.useEffect(() => {
     const fetchSeries = async () => {
@@ -153,6 +156,7 @@ export default function ScrapePage() {
       chapterTitle,
       images,
       deletedIndices,
+      coverFile,
     });
 
     if (result.success) {
@@ -202,6 +206,46 @@ export default function ScrapePage() {
             value={seriesDescription}
             onChange={(e) => setSeriesDescription(e.target.value)}
           />
+          {/* Cover upload */}
+          <label className="text-sm mb-1">Series Cover (optional)</label>
+
+          {/* hidden input */}
+          <input
+            type="file"
+            id="cover-upload"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) setCoverFile(file);
+            }}
+          />
+
+          {/* styled button */}
+          <label
+            htmlFor="cover-upload"
+            className="inline-block px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded cursor-pointer w-fit"
+          >
+            Upload Cover
+          </label>
+
+          {/* preview if chosen */}
+          {coverFile && (
+            <div className="mt-2">
+              <p className="text-xs text-gray-400 mb-1">Selected:</p>
+              <img
+                src={(() => {
+                  const url = URL.createObjectURL(coverFile);
+                  // cleanup when component unmounts
+                  const revoke = () => URL.revokeObjectURL(url);
+                  setTimeout(revoke, 0); // defer to next tick
+                  return url;
+                })()}
+                alt="Cover preview"
+                className="w-32 h-44 object-cover rounded shadow"
+              />
+            </div>
+          )}
         </div>
       ) : (
         <div className="mb-4">

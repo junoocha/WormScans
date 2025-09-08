@@ -9,17 +9,25 @@ const supabase = createClient(
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { series_name, series_desc, slug } = body;
+  const { series_name, series_desc, slug, cover_url } = body;
 
-  if (!series_name)
+  if (!series_name) {
     return NextResponse.json(
       { error: "Series name is required" },
       { status: 400 }
     );
+  }
 
   const { data, error } = await supabase
     .from("series")
-    .insert([{ series_name, series_desc, slug }])
+    .insert([
+      {
+        series_name,
+        series_desc,
+        slug,
+        cover_url: cover_url || null, // <-- added cover_url support
+      },
+    ])
     .select()
     .single();
 

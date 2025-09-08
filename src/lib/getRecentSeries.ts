@@ -10,6 +10,7 @@ export type ChapterRow = {
     id: number;
     series_name: string;
     slug: string;
+    cover_url?: string;
   } | null;
 };
 
@@ -17,6 +18,7 @@ export type SeriesWithChapters = {
   series_id: string;
   series_name: string;
   slug: string;
+  cover_url?: string;
   chapters: {
     id: string;
     chapter_number: string;
@@ -41,7 +43,7 @@ export async function fetchRecentSeries(): Promise<{
       id,
       chapter_number,
       created_at,
-      series:series_id ( id, series_name, slug )
+      series:series_id ( id, series_name, slug, cover_url )
     `
     )
     .order("created_at", { ascending: false })
@@ -62,6 +64,7 @@ export async function fetchRecentSeries(): Promise<{
         series_id: s.id.toString(),
         series_name: s.series_name,
         slug: s.slug,
+        cover_url: s.cover_url || undefined,
         chapters: [],
       };
     }
@@ -75,21 +78,22 @@ export async function fetchRecentSeries(): Promise<{
 
   // sort chapters chronologically (oldest → newest) and slice last 3
   const groupedSeries: SeriesWithChapters[] = Object.values(seriesMap).map(
-    (series) => ({
-      ...series,
-      chapters: series.chapters
-        .sort(
-          (a, b) =>
-            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-        )
-        .slice(-3),
-    })
+    (series) => {
+      const sortedByNumber = [...series.chapters].sort(
+        (a, b) => Number(b.chapter_number) - Number(a.chapter_number)
+      );
+
+      return {
+        ...series,
+        chapters: sortedByNumber.slice(0, 3),
+      };
+    }
   );
 
   //  sort series so the one with the newest chapter appears first
   groupedSeries.sort((a, b) => {
-    const aLatest = a.chapters[a.chapters.length - 1]?.created_at || "";
-    const bLatest = b.chapters[b.chapters.length - 1]?.created_at || "";
+    const aLatest = a.chapters[0]?.created_at || "";
+    const bLatest = b.chapters[0]?.created_at || "";
     return new Date(bLatest).getTime() - new Date(aLatest).getTime();
   });
 

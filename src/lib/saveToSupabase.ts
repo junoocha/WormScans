@@ -9,6 +9,7 @@ interface SaveOptions {
   chapterTitle?: string;
   images: string[];
   deletedIndices: Set<number>;
+  coverFile?: File;
 }
 
 // helper: insert chapter + images via API routes
@@ -59,9 +60,11 @@ export async function handleSaveToSupabase({
   chapterTitle,
   images,
   deletedIndices,
+  coverFile,
 }: SaveOptions) {
   try {
     let seriesId: string;
+    let coverUrl: string | null = null;
 
     if (seriesOption === "new") {
       if (!seriesName.trim()) throw new Error("Please provide a series name");
@@ -83,6 +86,25 @@ export async function handleSaveToSupabase({
         .replace(/\s+/g, "-") // spaces → dash
         .replace(/[^a-z0-9\-]/g, ""); // remove invalid chars
 
+      // upload cover file for new series
+      if (coverFile) {
+        const formData = new FormData();
+        formData.append("file", coverFile);
+        formData.append("slug", slug);
+
+        const uploadRes = await fetch("/api/addData/uploadCover", {
+          method: "POST",
+          body: formData,
+        });
+        const uploadData = await uploadRes.json();
+
+        if (!uploadRes.ok || !uploadData.coverUrl) {
+          throw new Error(uploadData.error || "Failed to upload cover");
+        }
+
+        coverUrl = uploadData.coverUrl;
+      }
+
       // insert new series via API
       const seriesRes = await fetch("/api/addData/addNewSeries", {
         method: "POST",
@@ -91,6 +113,7 @@ export async function handleSaveToSupabase({
           series_name: seriesName,
           series_desc: seriesDescription,
           slug,
+          cover_url: coverUrl,
         }),
       });
 

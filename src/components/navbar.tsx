@@ -21,7 +21,7 @@ export default function NavBar() {
           <Link href="/" className="flex h-12 w-12">
             <img src="/images/logo.webp" alt="Logo" className="object-cover" />
           </Link>
-          <ul className="hidden md:flex flex-row">
+          <ul className="hidden md:flex flex-row gap-1">
             {navLinks.map((link) => (
               <li key={link.name}>
                 <Link
