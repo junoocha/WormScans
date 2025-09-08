@@ -148,6 +148,52 @@ export default function UpdateChapterPage() {
     setLoading(false);
   };
 
+  const handleDeleteChapter = async () => {
+    if (!details) return;
+
+    const confirmDelete = confirm(
+      `Are you sure you want to delete Chapter ${details.chapter_number}? This cannot be undone.`
+    );
+    if (!confirmDelete) return;
+
+    setLoading(true);
+    setStatus("Deleting chapter...");
+
+    try {
+      const res = await fetch(`/api/admin/deleteChapter/${details.id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setStatus("Error deleting chapter: " + (data.error || "Unknown error"));
+      } else {
+        setStatus("Chapter deleted successfully!");
+
+        // Remove deleted chapter from chapterList
+        setChapterList((prev) => prev.filter((ch) => ch.id !== details.id));
+
+        // Clear selected chapter and details
+        setSelectedChapterId("");
+        setDetails(null);
+        setChapterNumber("");
+        setTitle("");
+        setImages([]);
+        setDeletedIndices(new Set());
+
+        // Optionally, show if series now has no chapters
+        if (!data.seriesHasChapters) {
+          console.log("This series has no chapters left.");
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      setStatus("Error deleting chapter: " + err);
+    }
+
+    setLoading(false);
+  };
+
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">Update Chapter</h1>
@@ -238,6 +284,13 @@ export default function UpdateChapterPage() {
             className="px-4 py-2 bg-green-500 hover:bg-green-400 text-black font-semibold rounded"
           >
             {loading ? "Saving..." : "Save Changes"}
+          </button>
+
+          <button
+            onClick={handleDeleteChapter}
+            className="mt-3 ml-3 px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded"
+          >
+            Delete Chapter
           </button>
         </div>
       )}
