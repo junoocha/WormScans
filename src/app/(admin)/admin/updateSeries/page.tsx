@@ -70,6 +70,28 @@ export default function UpdateSeriesPage() {
   // handle save
   const handleSave = async () => {
     if (!details) return;
+
+    // Basic validation
+    if (!title.trim()) {
+      setStatus("Series title cannot be empty");
+      return;
+    }
+    if (!desc.trim()) {
+      setStatus("Series description cannot be empty");
+      return;
+    }
+
+    // Check for duplicate series name (case insensitive)
+    const duplicate = seriesList.find(
+      (s) =>
+        s.series_name.toLowerCase().trim() === title.toLowerCase().trim() &&
+        s.id !== details.id // allow current series name
+    );
+    if (duplicate) {
+      setStatus("Another series with this title already exists");
+      return;
+    }
+
     setLoading(true);
     setStatus("Saving...");
 
@@ -97,8 +119,8 @@ export default function UpdateSeriesPage() {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        series_name: title,
-        series_desc: desc,
+        series_name: title.trim(),
+        series_desc: desc.trim(),
         cover_url: coverUrl,
       }),
     });
@@ -110,8 +132,8 @@ export default function UpdateSeriesPage() {
       setStatus("Series updated successfully!");
       setDetails({
         ...details,
-        series_name: title,
-        series_desc: desc,
+        series_name: title.trim(),
+        series_desc: desc.trim(),
         cover_url: coverUrl,
       });
       setCoverFile(null);
