@@ -52,11 +52,16 @@ export default function UpdateChapterPage() {
       .then((res) => {
         if (res.data?.chapters) {
           setChapterList(
-            res.data.chapters.map((ch: any) => ({
-              id: ch.id,
-              chapter_number: ch.chapter_number,
-              title: ch.title,
-            }))
+            res.data.chapters
+              .map((ch: any) => ({
+                id: ch.id,
+                chapter_number: ch.chapter_number,
+                title: ch.title,
+              }))
+              .sort(
+                (a: ChapterOption, b: ChapterOption) =>
+                  b.chapter_number - a.chapter_number
+              )
           );
         }
       })
