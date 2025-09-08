@@ -207,7 +207,23 @@ export default function UpdateSeriesPage() {
                 </div>
               )}
             </div>
-            <input type="file" accept="image/*" onChange={handleCoverChange} />
+
+            {/* Hidden input */}
+            <input
+              type="file"
+              id="cover-upload"
+              accept="image/*"
+              onChange={handleCoverChange}
+              className="hidden"
+            />
+
+            {/* Styled button that triggers input */}
+            <label
+              htmlFor="cover-upload"
+              className="inline-block px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded cursor-pointer"
+            >
+              Change Cover
+            </label>
           </div>
 
           <button
