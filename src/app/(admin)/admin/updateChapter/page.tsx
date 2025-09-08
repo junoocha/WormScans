@@ -105,40 +105,51 @@ export default function UpdateChapterPage() {
 
   const handleSave = async () => {
     if (!details) return;
-    setLoading(true);
-    setStatus("Saving...");
 
     // Ensure chapter number is numeric
     if (!/^\d+$/.test(chapterNumber)) {
       setStatus("Chapter number must be numeric");
-      setLoading(false);
       return;
     }
 
+    // Ensure no duplicate chapter numbers in the same series
+    const duplicate = chapterList.find(
+      (ch) =>
+        ch.chapter_number.toString() === chapterNumber.trim() &&
+        ch.id !== details.id // allow current chapter
+    );
+    if (duplicate) {
+      setStatus(`Chapter ${chapterNumber} already exists in this series`);
+      return;
+    }
+
+    // Title is optional, but if filled, trim it
+    const safeTitle = title.trim();
+
+    setLoading(true);
+    setStatus("Saving...");
+
     const keptImages = images.filter((_, i) => !deletedIndices.has(i));
-    console.log(details);
-    console.log(details.id);
 
     const res = await fetch(`/api/admin/updateChapter/${details.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        chapter_number: chapterNumber,
-        title,
+        chapter_number: parseInt(chapterNumber, 10),
+        title: safeTitle || null,
         image_urls: keptImages,
       }),
     });
 
     const data = await res.json();
-    console.log(data);
     if (!res.ok) {
       setStatus("Error saving: " + (data.error || "Unknown error"));
     } else {
       setStatus("Chapter updated successfully!");
       setDetails({
         ...details,
-        chapter_number: parseInt(chapterNumber),
-        title,
+        chapter_number: parseInt(chapterNumber, 10),
+        title: safeTitle || null,
         image_urls: keptImages,
       });
       setImages(keptImages);
