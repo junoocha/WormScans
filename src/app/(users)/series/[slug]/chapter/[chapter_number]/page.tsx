@@ -1,6 +1,5 @@
 import { fetchChapterImages } from "@/lib/getChapterImages";
 import { fetchAdjacentChapters } from "@/lib/getNextPrevChapters";
-import Image from "next/image";
 
 interface ChapterPageProps {
   params: { slug: string; chapter_number: string };
@@ -20,6 +19,18 @@ export default async function ChapterPage({ params }: ChapterPageProps) {
     return <p className="p-6 text-red-500">Error loading chapter images.</p>;
   }
 
+  if (
+    !imagesData ||
+    imagesData.length === 0 ||
+    imagesData[0].image_urls.length === 0
+  ) {
+    return (
+      <p className="p-6 text-gray-400">No images found for this chapter.</p>
+    );
+  }
+
+  const chapterImages = imagesData[0].image_urls;
+
   return (
     <div className="bg-[var(--background)] min-h-screen flex flex-col">
       <main className="flex flex-col items-center flex-1">
@@ -30,21 +41,19 @@ export default async function ChapterPage({ params }: ChapterPageProps) {
         </div>
 
         {/* Chapter images */}
-        {imagesData.map((chapter) =>
-          chapter.image_urls.map((url, idx) => (
-            <div
-              key={`${chapter.id}-${idx}`}
-              className="w-full flex justify-center bg-[var(--background)]"
-            >
-              <img
-                src={url}
-                alt={`Chapter ${chapter_number} image ${idx + 1}`}
-                loading="lazy"
-                className="w-full max-w-4xl object-contain py-1"
-              />
-            </div>
-          ))
-        )}
+        {chapterImages.map((url, idx) => (
+          <div
+            key={idx}
+            className="w-full flex justify-center bg-[var(--background)]"
+          >
+            <img
+              src={url}
+              alt={`Chapter ${chapter_number} image ${idx + 1}`}
+              loading="lazy"
+              className="w-full max-w-4xl object-contain py-1"
+            />
+          </div>
+        ))}
         {/* {imagesData.map((chapter) =>
           chapter.image_urls.map((url, idx) => (
             <div
@@ -85,7 +94,9 @@ function NavButton({
 }) {
   return (
     <a
-      href={chapter ? `/series/${slug}/chapter/${chapter}` : "#"}
+      href={
+        chapter ? `/series/${slug}/chapter/${chapter?.toString() ?? ""}` : "#"
+      }
       className={`px-4 py-2 rounded-lg font-semibold transition ${
         chapter
           ? "bg-[var(--accent)] text-white hover:opacity-90"
