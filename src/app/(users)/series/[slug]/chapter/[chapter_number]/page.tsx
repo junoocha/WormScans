@@ -3,6 +3,7 @@ import { fetchAdjacentChapters } from "@/lib/getNextPrevChapters";
 import KeyboardNavigation from "@/components/keyboardNavigation";
 import ChapterDropdown from "@/components/chapterDropdown";
 import { fetchChaptersForSeries } from "@/lib/getChaptersForSeries";
+import { fetchSeries } from "@/lib/getSeriesById";
 
 interface ChapterPageProps {
   params: { slug: string; chapter_number: string };
@@ -16,6 +17,14 @@ export default async function ChapterPage({ params }: ChapterPageProps) {
     slug,
     chapter_number
   );
+  const { data: seriesData, error: seriesError } = await fetchSeries({ slug });
+
+  if (!seriesData || seriesError) {
+    return <p className="p-6 text-red-500">Error loading series info.</p>;
+  }
+
+  const seriesTitle = seriesData.series_name;
+
   const { prev, next } = await fetchAdjacentChapters(slug, current);
   const chapters = await fetchChaptersForSeries(slug);
 
@@ -41,6 +50,19 @@ export default async function ChapterPage({ params }: ChapterPageProps) {
       <KeyboardNavigation slug={slug} prev={prev} next={next} />
 
       <main className="flex flex-col items-center flex-1">
+        {/* title + link back to series */}
+        <div className="w-full max-w-4xl px-6 pt-6 text-center">
+          <h1 className="text-2xl font-bold text-white">
+            {seriesTitle} Chapter {chapter_number}
+          </h1>
+          <a
+            href={`/series/${seriesData.slug}`}
+            className="text-sm text-[var(--accent)] hover:underline"
+          >
+            {seriesTitle}
+          </a>
+        </div>
+
         {/* Top bar: dropdown + nav */}
         <div className="flex justify-between items-center w-full max-w-4xl px-6 py-4">
           <ChapterDropdown slug={slug} chapters={chapters} current={current} />
