@@ -16,43 +16,53 @@ export default function SeriesCard({
   coverUrl,
 }: SeriesCardProps) {
   return (
-    <div className="rounded-2xl shadow p-4 transition duration-300 hover:shadow-lg bg-[var(--card-bg)]">
-      {/* Cover */}
-      <Link href={`/series/${slug}`}>
-        <div className="h-40 w-full rounded mb-4 overflow-hidden flex items-center justify-center cursor-pointer bg-[var(--card-hover)]">
+    <div className="flex bg-[var(--card-bg)] rounded-xl shadow-md overflow-hidden hover:shadow-lg transition p-4">
+      {/* Left: Cover */}
+      <Link href={`/series/${slug}`} className="flex-shrink-0">
+        <div className="w-32 h-44 rounded overflow-hidden bg-[var(--card-hover)] cursor-pointer">
           {coverUrl ? (
             <img
               src={coverUrl}
               alt={`${seriesName} cover`}
-              className="h-full w-full object-cover"
+              className="w-full h-full object-cover"
             />
           ) : (
-            <span className="text-white/60">[Cover Image]</span>
+            <span className="flex items-center justify-center text-white/60 h-full">
+              [Cover]
+            </span>
           )}
         </div>
       </Link>
 
-      {/* Series Title */}
-      <Link href={`/series/${slug}`}>
-        <h2 className="text-lg font-bold mb-2 uppercase text-white cursor-pointer">
-          {seriesName}
-        </h2>
-      </Link>
+      {/* Right: Title + Chapters */}
+      <div className="flex-1 flex flex-col ml-4 min-w-0">
+        {/* Title (always at top) */}
+        <Link href={`/series/${slug}`}>
+          <h2
+            className="text-xl font-bold text-white cursor-pointer truncate"
+            title={seriesName}
+          >
+            {seriesName}
+          </h2>
+        </Link>
 
-      {/* Chapters */}
-      <div className="space-y-2">
-        {[...chapters]
-          .sort((a, b) => Number(b.chapter_number) - Number(a.chapter_number))
-          .map((ch) => (
-            <Link
-              key={ch.id}
-              href={`/series/${slug}/chapter/${ch.chapter_number}`}
-              className="flex justify-between text-sm text-gray-400 hover:text-white transition"
-            >
-              <span>Chapter {ch.chapter_number}</span>
-              <span>{formatChapterDate(ch.created_at)}</span>
-            </Link>
-          ))}
+        {/* Chapters (slightly more margin from title, more spacing between rows) */}
+        <div className="mt-5 flex flex-col gap-3">
+          {[...chapters]
+            .sort((a, b) => Number(b.chapter_number) - Number(a.chapter_number))
+            .map((ch) => (
+              <Link
+                key={ch.id}
+                href={`/series/${slug}/chapter/${ch.chapter_number}`}
+                className="flex justify-between items-center text-base text-gray-500 hover:text-white transition truncate"
+              >
+                <span className="truncate">Chapter {ch.chapter_number}</span>
+                <span className="flex-shrink-0 text-sm text-gray-400">
+                  {formatChapterDate(ch.created_at)}
+                </span>
+              </Link>
+            ))}
+        </div>
       </div>
     </div>
   );
