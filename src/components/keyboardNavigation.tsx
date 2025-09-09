@@ -1,92 +1,76 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-interface KeyboardNavigationProps {
-  slug: string;
-  prev: number | null;
-  next: number | null;
-}
-
-export default function KeyboardNavigationClient({
+export default function KeyboardNavigation({
   slug,
   prev,
   next,
-}: KeyboardNavigationProps) {
+}: {
+  slug: string;
+  prev: number | null;
+  next: number | null;
+}) {
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
+  let scrolling = false;
+  let rafId: number | null = null;
+  let delayPassed = false;
 
-  // Ensure router is ready
+  // Continuous scroll function
+  const scrollStep = (direction: "up" | "down") => {
+    const distance = 10; // px per frame
+    window.scrollBy(0, direction === "up" ? -distance : distance);
+    rafId = requestAnimationFrame(() => scrollStep(direction));
+  };
+
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
-
     const handleKeyDown = (e: KeyboardEvent) => {
-      switch (e.key) {
-        case "ArrowLeft":
-          if (prev) router.push(`/series/${slug}/chapter/${prev}`);
-          break;
-        case "ArrowRight":
-          if (next) router.push(`/series/${slug}/chapter/${next}`);
-          break;
-        case "ArrowDown":
-          window.scrollBy({ top: 100, behavior: "smooth" });
-          break;
-        case "ArrowUp":
-          window.scrollBy({ top: -100, behavior: "smooth" });
-          break;
+      if (e.key === "ArrowLeft" && prev !== null) {
+        router.push(`/series/${slug}/chapter/${prev}`);
+      } else if (e.key === "ArrowRight" && next !== null) {
+        router.push(`/series/${slug}/chapter/${next}`);
+      } else if ((e.key === "ArrowUp" || e.key === "ArrowDown") && !scrolling) {
+        scrolling = true;
+
+        // Add a delay before scroll to ignore early repeat events
+        delayPassed = false;
+        setTimeout(() => {
+          delayPassed = true;
+        }, 2500); // 2.5 seconds delay
+
+        const direction = e.key === "ArrowUp" ? "up" : "down";
+
+        const step = () => {
+          if (scrolling && delayPassed) {
+            window.scrollBy(0, direction === "up" ? -10 : 10);
+          }
+          if (scrolling) {
+            rafId = requestAnimationFrame(step);
+          }
+        };
+
+        rafId = requestAnimationFrame(step);
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+        scrolling = false;
+        delayPassed = false;
+        if (rafId) cancelAnimationFrame(rafId);
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [mounted, slug, prev, next, router]);
+    window.addEventListener("keyup", handleKeyUp);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, [prev, next, router, slug]);
 
   return null;
 }
-
-// uses window.location.href. simpler and doesn't depend on router dependency, e.g. client vs server. but its rougher and requires full reload.
-
-// "use client";
-
-// import { useEffect } from "react";
-
-// interface KeyboardNavigationProps {
-//   slug: string;
-//   prev: number | null;
-//   next: number | null;
-// }
-
-// export default function KeyboardNavigation({
-//   slug,
-//   prev,
-//   next,
-// }: KeyboardNavigationProps) {
-//   useEffect(() => {
-//     const handleKeyDown = (e: KeyboardEvent) => {
-//       switch (e.key) {
-//         case "ArrowLeft":
-//           if (prev) window.location.href = `/series/${slug}/chapter/${prev}`;
-//           break;
-//         case "ArrowRight":
-//           if (next) window.location.href = `/series/${slug}/chapter/${next}`;
-//           break;
-//         case "ArrowDown":
-//           window.scrollBy({ top: 100, behavior: "smooth" });
-//           break;
-//         case "ArrowUp":
-//           window.scrollBy({ top: -100, behavior: "smooth" });
-//           break;
-//       }
-//     };
-
-//     window.addEventListener("keydown", handleKeyDown);
-//     return () => window.removeEventListener("keydown", handleKeyDown);
-//   }, [slug, prev, next]);
-
-//   return null; // No visual output
-// }
