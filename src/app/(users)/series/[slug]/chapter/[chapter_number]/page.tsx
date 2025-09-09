@@ -1,5 +1,6 @@
 import { fetchChapterImages } from "@/lib/getChapterImages";
 import { fetchAdjacentChapters } from "@/lib/getNextPrevChapters";
+import KeyboardNavigation from "@/components/keyboardNavigation";
 
 interface ChapterPageProps {
   params: { slug: string; chapter_number: string };
@@ -33,6 +34,9 @@ export default async function ChapterPage({ params }: ChapterPageProps) {
 
   return (
     <div className="bg-[var(--background)] min-h-screen flex flex-col">
+      {/* Keyboard navigation hook */}
+      <KeyboardNavigation slug={slug} prev={prev} next={next} />
+
       <main className="flex flex-col items-center flex-1">
         {/* Top navigation */}
         <div className="flex justify-between w-full max-w-4xl px-6 py-4">
