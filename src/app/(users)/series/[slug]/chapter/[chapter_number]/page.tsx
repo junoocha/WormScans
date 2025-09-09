@@ -1,6 +1,8 @@
 import { fetchChapterImages } from "@/lib/getChapterImages";
 import { fetchAdjacentChapters } from "@/lib/getNextPrevChapters";
 import KeyboardNavigation from "@/components/keyboardNavigation";
+import ChapterDropdown from "@/components/chapterDropdown";
+import { fetchChaptersForSeries } from "@/lib/getChaptersForSeries";
 
 interface ChapterPageProps {
   params: { slug: string; chapter_number: string };
@@ -15,6 +17,7 @@ export default async function ChapterPage({ params }: ChapterPageProps) {
     chapter_number
   );
   const { prev, next } = await fetchAdjacentChapters(slug, current);
+  const chapters = await fetchChaptersForSeries(slug);
 
   if (error || !imagesData) {
     return <p className="p-6 text-red-500">Error loading chapter images.</p>;
@@ -38,10 +41,14 @@ export default async function ChapterPage({ params }: ChapterPageProps) {
       <KeyboardNavigation slug={slug} prev={prev} next={next} />
 
       <main className="flex flex-col items-center flex-1">
-        {/* Top navigation */}
-        <div className="flex justify-between w-full max-w-4xl px-6 py-4">
-          <NavButton slug={slug} chapter={prev} label="← Prev" />
-          <NavButton slug={slug} chapter={next} label="Next →" />
+        {/* Top bar: dropdown + nav */}
+        <div className="flex justify-between items-center w-full max-w-4xl px-6 py-4">
+          <ChapterDropdown slug={slug} chapters={chapters} current={current} />
+
+          <div className="flex gap-2">
+            <NavButton slug={slug} chapter={prev} label="← Prev" />
+            <NavButton slug={slug} chapter={next} label="Next →" />
+          </div>
         </div>
 
         {/* Chapter images */}
@@ -77,10 +84,14 @@ export default async function ChapterPage({ params }: ChapterPageProps) {
           ))
         )} */}
 
-        {/* Bottom navigation */}
-        <div className="flex justify-between w-full max-w-4xl px-6 py-6">
-          <NavButton slug={slug} chapter={prev} label="← Previous" />
-          <NavButton slug={slug} chapter={next} label="Next →" />
+        {/* bottom nav */}
+        <div className="flex justify-between items-center w-full max-w-4xl px-6 py-4">
+          <ChapterDropdown slug={slug} chapters={chapters} current={current} />
+
+          <div className="flex gap-2">
+            <NavButton slug={slug} chapter={prev} label="← Prev" />
+            <NavButton slug={slug} chapter={next} label="Next →" />
+          </div>
         </div>
       </main>
     </div>
