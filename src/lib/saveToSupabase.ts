@@ -63,6 +63,18 @@ export async function handleSaveToSupabase({
   coverFile,
 }: SaveOptions) {
   try {
+    //  make sure chapter number and images are valid
+    if (!chapterNumber.trim()) {
+      throw new Error("Chapter number cannot be empty.");
+    }
+    if (!/^\d+$/.test(chapterNumber.trim())) {
+      throw new Error("Chapter number must be numeric.");
+    }
+    const keptImages = images.filter((_, i) => !deletedIndices.has(i));
+    if (keptImages.length === 0) {
+      throw new Error("Cannot save chapter without images.");
+    }
+
     let seriesId: string;
     let coverUrl: string | null = null;
 
@@ -126,18 +138,6 @@ export async function handleSaveToSupabase({
       if (!selectedSeriesId)
         throw new Error("Please select an existing series");
       seriesId = selectedSeriesId;
-    }
-
-    //  make sure chapter number and images are valid
-    if (!chapterNumber.trim()) {
-      throw new Error("Chapter number cannot be empty.");
-    }
-    if (!/^\d+$/.test(chapterNumber.trim())) {
-      throw new Error("Chapter number must be numeric.");
-    }
-    const keptImages = images.filter((_, i) => !deletedIndices.has(i));
-    if (keptImages.length === 0) {
-      throw new Error("Cannot save chapter without images.");
     }
 
     const chapterCheckRes = await fetch(
