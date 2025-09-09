@@ -4,6 +4,7 @@ import KeyboardNavigation from "@/components/keyboardNavigation";
 import ChapterDropdown from "@/components/chapterDropdown";
 import { fetchChaptersForSeries } from "@/lib/getChaptersForSeries";
 import { fetchSeries } from "@/lib/getSeriesById";
+import BackToTopButton from "@/components/backToTop";
 
 interface ChapterPageProps {
   params: { slug: string; chapter_number: string };
@@ -48,6 +49,7 @@ export default async function ChapterPage({ params }: ChapterPageProps) {
     <div className="bg-[var(--background)] min-h-screen flex flex-col">
       {/* Keyboard navigation hook */}
       <KeyboardNavigation slug={slug} prev={prev} next={next} />
+      <BackToTopButton />
 
       <main className="flex flex-col items-center flex-1">
         {/* title + link back to series */}
