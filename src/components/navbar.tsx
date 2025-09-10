@@ -17,26 +17,26 @@ export default function NavBar() {
   return (
     <header className="bg-[var(--accent)] text-white">
       <div className="max-w-6xl mx-auto px-6 flex items-center justify-between gap-6 h-20">
-        {/* Left side - Logo + Nav links */}
+        {/* Left side */}
         <div className="flex items-center gap-6">
-          <div className="flex items-center gap-6">
-            <Logo />
-          </div>
+          <Logo />
           <ul className="hidden md:flex flex-row gap-2">
-            {navLinks.map((link) => (
-              <li key={link.name}>
-                <Link
-                  href={link.href}
-                  className={`block px-4 py-3 text-base font-medium tracking-wider rounded-md transition ${
-                    pathname === link.href
-                      ? "bg-black/40 text-white"
-                      : "hover:bg-black/30"
-                  }`}
-                >
-                  {link.name}
-                </Link>
-              </li>
-            ))}
+            {navLinks.map((link) => {
+              const isActive =
+                pathname === link.href || pathname.startsWith(link.href + "/");
+              return (
+                <li key={link.name}>
+                  <Link
+                    href={link.href}
+                    className={`block px-4 py-3 text-base font-medium tracking-wider rounded-md transition ${
+                      isActive ? "bg-black/40 text-white" : "hover:bg-black/30"
+                    }`}
+                  >
+                    {link.name}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </div>
 
