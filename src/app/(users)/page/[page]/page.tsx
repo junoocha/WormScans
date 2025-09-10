@@ -4,11 +4,12 @@ import { fetchRecentSeries, SeriesWithChapters } from "@/lib/getRecentSeries";
 import Link from "next/link";
 
 interface PageProps {
-  params: { page: string };
+  params: Promise<{ page: string }>;
 }
 
 export default async function PaginatedPage({ params }: PageProps) {
-  const pageNumber = parseInt(params.page) || 1;
+  const { page } = await params;
+  const pageNumber = parseInt(page) || 1;
 
   const { data: seriesList, error } = await fetchRecentSeries({
     page: pageNumber,
