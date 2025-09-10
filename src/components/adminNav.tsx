@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Logo from "./logo";
 
 export default function AdminNav() {
   const pathname = usePathname();
@@ -17,9 +18,9 @@ export default function AdminNav() {
     <header className="bg-[var(--accent)] text-white">
       <div className="max-w-6xl mx-auto px-4 flex items-center gap-5">
         {/* Logo - Home button */}
-        <Link href="/" className="flex h-12 w-12">
-          <img src="/images/logo.webp" alt="Logo" className="object-cover" />
-        </Link>
+        <div className="flex items-center gap-6">
+          <Logo />
+        </div>
 
         {/* Nav links */}
         <ul className="flex flex-row gap-2">

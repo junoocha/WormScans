@@ -1,4 +1,4 @@
-// app/page.tsx
+// app/(users)/page.tsx
 import SeriesCard from "@/components/seriesCard";
 import { fetchRecentSeries, SeriesWithChapters } from "@/lib/getRecentSeries";
 

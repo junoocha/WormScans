@@ -1,6 +1,7 @@
 // app/page/[page]/page.tsx
 import SeriesCard from "@/components/seriesCard";
 import { fetchRecentSeries, SeriesWithChapters } from "@/lib/getRecentSeries";
+import Link from "next/link";
 
 interface PageProps {
   params: { page: string };
@@ -44,35 +45,31 @@ export default async function PaginatedPage({ params }: PageProps) {
 
             {/* Pagination buttons */}
             <div className="flex justify-center gap-4 mt-8">
-              <a
-                href={
-                  pageNumber === 2
-                    ? `/`
-                    : pageNumber > 2
-                    ? `/page/${pageNumber - 1}`
-                    : "#"
-                }
-                className={`px-4 py-2 rounded font-semibold transition ${
-                  pageNumber > 1
-                    ? "bg-[var(--accent)] text-white hover:opacity-70"
-                    : "bg-gray-700 text-gray-400 cursor-not-allowed"
-                }`}
-              >
-                ← Prev
-              </a>
+              {pageNumber > 1 ? (
+                <Link
+                  href={pageNumber === 2 ? "/" : `/page/${pageNumber - 1}`}
+                  className="px-4 py-2 rounded font-semibold bg-[var(--accent)] text-white hover:opacity-70 transition"
+                >
+                  ← Prev
+                </Link>
+              ) : (
+                <span className="px-4 py-2 rounded font-semibold bg-gray-700 text-gray-400 cursor-not-allowed">
+                  ← Prev
+                </span>
+              )}
 
-              <a
-                href={
-                  seriesList.length === 10 ? `/page/${pageNumber + 1}` : "#"
-                }
-                className={`px-4 py-2 rounded font-semibold transition ${
-                  seriesList.length === 10
-                    ? "bg-[var(--accent)] text-white hover:opacity-70"
-                    : "bg-gray-700 text-gray-400 cursor-not-allowed"
-                }`}
-              >
-                Next →
-              </a>
+              {seriesList.length === 10 ? (
+                <Link
+                  href={`/page/${pageNumber + 1}`}
+                  className="px-4 py-2 rounded font-semibold bg-[var(--accent)] text-white hover:opacity-70 transition"
+                >
+                  Next →
+                </Link>
+              ) : (
+                <span className="px-4 py-2 rounded font-semibold bg-gray-700 text-gray-400 cursor-not-allowed">
+                  Next →
+                </span>
+              )}
             </div>
           </>
         )}
