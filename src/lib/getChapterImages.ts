@@ -30,7 +30,7 @@ export async function fetchChapterImages(
     .from("chapters")
     .select("id")
     .eq("chapter_number", chapterNumber)
-    .eq("series_id", seriesData.id) // ✅ ensures uniqueness
+    .eq("series_id", seriesData.id) //  ensures uniqueness
     .single();
 
   if (chapterError || !chapterData) {
