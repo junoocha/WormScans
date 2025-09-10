@@ -58,12 +58,8 @@ export default async function PaginatedPage({ params }: PageProps) {
                     : "bg-gray-700 text-gray-400 cursor-not-allowed"
                 }`}
               >
-                Previous
+                ← Prev
               </a>
-
-              <span className="px-2 py-2 text-white font-semibold">
-                Page {pageNumber}
-              </span>
 
               <a
                 href={
@@ -75,7 +71,7 @@ export default async function PaginatedPage({ params }: PageProps) {
                     : "bg-gray-700 text-gray-400 cursor-not-allowed"
                 }`}
               >
-                Next
+                Next →
               </a>
             </div>
           </>

@@ -22,26 +22,38 @@ export default async function SeriesPage({ params }: SeriesPageProps) {
     <div className="bg-[var(--background)] min-h-screen">
       <main className="p-6 max-w-4xl mx-auto text-[var(--foreground)]">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-start mb-6 gap-4">
-          <div className="w-200 h-64 bg-[var(--card-bg)] rounded overflow-hidden flex items-center justify-center">
-            <img
-              src={series.cover_url}
-              alt={`${series.series_name} cover`}
-              className="max-w-full max-h-full object-contain"
-            />
+        <div className="flex bg-[var(--card-bg)] rounded-xl shadow-md overflow-hidden p-4 mb-6">
+          {/* Left: Cover */}
+          <div className="flex-shrink-0">
+            <div className="w-40 h-56 rounded overflow-hidden bg-[var(--card-hover)]">
+              {series.cover_url ? (
+                <img
+                  src={series.cover_url}
+                  alt={`${series.series_name} cover`}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="flex items-center justify-center text-white/60 h-full">
+                  [Cover]
+                </span>
+              )}
+            </div>
           </div>
 
-          {/* Right-hand content */}
-          <div className="flex flex-col justify-start h-70">
+          {/* Right: Title + Description */}
+          <div className="flex-1 flex flex-col ml-6 min-w-0">
             <h1
               style={{ color: "var(--accent)" }}
-              className="text-3xl font-bold"
+              className="text-3xl font-bold truncate"
             >
               {series.series_name}
             </h1>
 
             {series.series_desc && (
-              <p style={{ color: "var(--foreground)" }} className="mt-2">
+              <p
+                style={{ color: "var(--foreground)" }}
+                className="mt-3 text-base leading-relaxed"
+              >
                 {series.series_desc}
               </p>
             )}
