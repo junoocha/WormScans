@@ -11,7 +11,7 @@ export default function NavBar() {
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "Bookmarks", href: "/bookmarks" },
-    { name: "Comics", href: "/series?page=1" },
+    { name: "Comics", href: "/series" },
   ];
 
   return (
