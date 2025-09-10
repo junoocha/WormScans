@@ -15,8 +15,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "WormScans",
+  title: "WormScans - Admin",
   description: "Read manga and manage your library",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function AdminLayout({
