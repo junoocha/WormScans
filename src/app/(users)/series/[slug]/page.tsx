@@ -22,17 +22,24 @@ export default async function SeriesPage({ params }: SeriesPageProps) {
     <div className="bg-[var(--background)] min-h-screen">
       <main className="p-6 max-w-4xl mx-auto text-[var(--foreground)]">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center mb-6 gap-4">
-          <div className="w-32 h-32 bg-[var(--card-bg)] rounded flex items-center justify-center">
-            <span style={{ color: "var(--foreground)" }}>[Cover]</span>
+        <div className="flex flex-col sm:flex-row items-start sm:items-start mb-6 gap-4">
+          <div className="w-200 h-64 bg-[var(--card-bg)] rounded overflow-hidden flex items-center justify-center">
+            <img
+              src={series.cover_url}
+              alt={`${series.series_name} cover`}
+              className="max-w-full max-h-full object-contain"
+            />
           </div>
-          <div>
+
+          {/* Right-hand content */}
+          <div className="flex flex-col justify-start h-70">
             <h1
               style={{ color: "var(--accent)" }}
               className="text-3xl font-bold"
             >
               {series.series_name}
             </h1>
+
             {series.series_desc && (
               <p style={{ color: "var(--foreground)" }} className="mt-2">
                 {series.series_desc}
