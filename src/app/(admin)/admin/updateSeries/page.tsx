@@ -39,7 +39,12 @@ export default function UpdateSeriesPage() {
   useEffect(() => {
     fetch("/api/getSeries")
       .then((res) => res.json())
-      .then((res) => setSeriesList(res.data || []))
+      .then((res) => {
+        const list: SeriesOption[] = res.data || [];
+        // sort alphabetically by series_name
+        list.sort((a, b) => a.series_name.localeCompare(b.series_name));
+        setSeriesList(list);
+      })
       .catch((err) => console.error("Error fetching series:", err));
   }, []);
 

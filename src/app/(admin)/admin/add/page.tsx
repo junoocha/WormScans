@@ -48,7 +48,10 @@ export default function ScrapePage() {
         const result = await response.json();
 
         if (response.ok && result.data) {
-          setExistingSeriesList(result.data);
+          const sorted = [...result.data].sort((a: any, b: any) =>
+            a.series_name.localeCompare(b.series_name)
+          );
+          setExistingSeriesList(sorted);
         } else {
           console.error("Failed to fetch series:", result.error);
         }
