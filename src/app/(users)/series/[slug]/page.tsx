@@ -61,12 +61,16 @@ export default async function SeriesPage({ params }: SeriesPageProps) {
         </div>
 
         {/* Chapters */}
-        <div className="space-y-2 max-h-[400px] overflow-y-auto border border-gray-700 rounded p-2">
+        <div
+          className={`space-y-2 border border-gray-700 rounded p-2 ${
+            sortedChapters.length > 10 ? "max-h-[400px] overflow-y-auto" : ""
+          }`}
+        >
           {sortedChapters.map((ch) => (
             <Link
               key={ch.id}
               href={`/series/${slug}/chapter/${ch.chapter_number}`}
-              className="flex justify-between items-center border-b border-gray-700 py-2 transition hover:text-[var(--accent)]"
+              className="flex justify-between items-center border-b border-gray-700 py-2 transition-colors duration-200 hover:bg-[var(--card-hover)] hover:text-[var(--accent)] rounded-md px-2"
               style={{ color: "var(--foreground)" }}
             >
               <span>
