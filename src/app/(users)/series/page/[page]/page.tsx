@@ -96,7 +96,7 @@ export default async function SeriesPaginatedPage({
 
         <button
           type="submit"
-          className="px-4 py-2 bg-[var(--accent)] text-white rounded font-semibold"
+          className="px-4 py-2 bg-[var(--accent)] text-white rounded hover:opacity-70 font-semibold"
         >
           Apply
         </button>
