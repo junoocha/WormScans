@@ -26,12 +26,12 @@ export default async function SeriesPaginatedPage({
     typeof rawStatus === "string" && rawStatus.trim() !== ""
       ? rawStatus.toLowerCase()
       : undefined;
-  console.log(statusFilter);
+  // console.log(statusFilter);
 
   const countryUI = searchParams?.country || undefined;
   const countryFilter = countryUI ? originMap[countryUI] : undefined;
 
-  console.log("Server Filters:", { statusFilter, countryFilter });
+  // console.log("Server Filters:", { statusFilter, countryFilter });
 
   const { data: seriesList, error } = await fetchAllSeries({
     page: pageNumber,

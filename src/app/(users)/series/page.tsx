@@ -1,6 +1,6 @@
 // app/(users)/series/page.tsx
-import SeriesPaginatedPage from "./page/[page]/page";
+import { redirect } from "next/navigation";
 
-export default function SeriesPage() {
-  return <SeriesPaginatedPage params={{ page: "1" }} />;
+export default function SeriesRootPage() {
+  redirect("/series/page/1");
 }
