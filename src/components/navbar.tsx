@@ -1,12 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Search, User } from "lucide-react";
 import Logo from "./logo";
+import { useState, useEffect, useRef } from "react";
+
+type SeriesResult = {
+  id: string;
+  series_name: string;
+  slug: string;
+  cover_url?: string;
+};
 
 export default function NavBar() {
   const pathname = usePathname() || "/";
+  const router = useRouter();
 
   const navLinks = [
     { name: "Home", href: "/" },
@@ -14,8 +23,46 @@ export default function NavBar() {
     { name: "Comics", href: "/series" },
   ];
 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [results, setResults] = useState<SeriesResult[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch search results
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setResults([]);
+      return;
+    }
+
+    const handler = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(
+          `/api/searchSeries?q=${encodeURIComponent(searchQuery)}`
+        );
+        const json = await res.json();
+        setResults(json.data || []);
+      } catch (err) {
+        console.error("Search error:", err);
+        setResults([]);
+      }
+      setLoading(false);
+    }, 300); // debounce 300ms
+
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
+
+  // Handle navigation when clicking a result
+  const handleSelect = (slug: string) => {
+    router.push(`/series/${slug}`);
+    setSearchQuery("");
+    setResults([]);
+  };
+
   return (
-    <header className="bg-[var(--accent)] text-white">
+    <header className="bg-[var(--accent)] text-white relative z-50">
       <div className="max-w-6xl mx-auto px-6 flex items-center justify-between gap-6 h-20">
         {/* Left side */}
         <div className="flex items-center gap-6">
@@ -40,17 +87,49 @@ export default function NavBar() {
           </ul>
         </div>
 
-        {/* Right side - search placeholder + login */}
-        <div className="flex items-center gap-6">
-          {/* Search bar */}
-          <div className="hidden md:flex items-center">
+        {/* Right side */}
+        <div className="flex items-center gap-6 relative">
+          {/* Search */}
+          {/* Search */}
+          <div className="hidden md:flex flex-col relative">
             <input
+              ref={inputRef}
               type="text"
-              placeholder="Search"
-              className="w-72 px-4 py-2 rounded-lg border border-black bg-[#16151D] text-white text-base outline-none"
-              disabled
+              placeholder="Search series..."
+              className="w-96 px-5 py-3 rounded-xl border border-black bg-[#16151D] text-white text-lg outline-none"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setTimeout(() => setIsFocused(false), 150)}
             />
-            <Search className="h-6 w-6 -ml-8 text-gray-400 cursor-not-allowed" />
+            <Search className="h-7 w-7 -ml-10 text-gray-400 cursor-text absolute top-1/2 transform -translate-y-1/2 right-3" />
+
+            {/* Dropdown */}
+            {isFocused && results.length > 0 && (
+              <ul className="absolute top-full mt-2 w-96 bg-[#16151D] border border-black rounded-xl shadow-lg max-h-80 overflow-y-auto z-50">
+                {results.map((series) => (
+                  <li
+                    key={series.id}
+                    className="px-5 py-3 hover:bg-gray-800 cursor-pointer flex items-center gap-4 text-lg"
+                    onMouseDown={() => handleSelect(series.slug)}
+                  >
+                    {series.cover_url && (
+                      <img
+                        src={series.cover_url}
+                        alt={series.series_name}
+                        className="w-12 h-16 object-cover rounded"
+                      />
+                    )}
+                    <span>{series.series_name}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {isFocused && searchQuery && results.length === 0 && !loading && (
+              <div className="absolute top-full mt-2 w-96 bg-[#16151D] border border-black rounded-xl shadow-lg px-5 py-3 text-gray-400 text-lg">
+                No results found.
+              </div>
+            )}
           </div>
 
           {/* Login button */}
