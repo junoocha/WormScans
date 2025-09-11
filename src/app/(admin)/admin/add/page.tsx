@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { handleSaveToSupabase } from "@/lib/saveToSupabase";
+import SeriesDropdown from "@/components/adminSeriesDropdown";
 
 export default function ScrapePage() {
   // input, logs, streaming images
@@ -283,18 +284,12 @@ export default function ScrapePage() {
         </div>
       ) : (
         <div className="mb-4">
-          <select
-            className="border rounded bg-[var(--card-bg)] px-3 py-2"
-            value={selectedSeriesId}
-            onChange={(e) => setSelectedSeriesId(e.target.value)}
-          >
-            <option value="">Select series...</option>
-            {existingSeriesList.map((series) => (
-              <option key={series.id} value={series.id}>
-                {series.series_name}
-              </option>
-            ))}
-          </select>
+          <SeriesDropdown
+            seriesList={existingSeriesList}
+            selectedSeriesId={selectedSeriesId}
+            setSelectedSeriesId={setSelectedSeriesId}
+            placeholder="Select a series..."
+          />
         </div>
       )}
 

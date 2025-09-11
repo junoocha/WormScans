@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import SeriesDropdown from "@/components/adminSeriesDropdown";
 
 type SeriesOption = { id: string; series_name: string };
 type SeriesDetails = {
@@ -162,18 +163,12 @@ export default function UpdateSeriesPage() {
       <h1 className="text-2xl font-bold mb-6">Update Series</h1>
 
       {/* Dropdown */}
-      <select
-        value={selectedSeriesId}
-        onChange={(e) => setSelectedSeriesId(e.target.value)}
-        className="w-full mb-6 p-2 bg-[var(--card-bg)] rounded"
-      >
-        <option value="">Select a series</option>
-        {seriesList.map((s) => (
-          <option key={s.id} value={s.id}>
-            {s.series_name}
-          </option>
-        ))}
-      </select>
+      <SeriesDropdown
+        seriesList={seriesList}
+        selectedSeriesId={selectedSeriesId}
+        setSelectedSeriesId={setSelectedSeriesId}
+        placeholder="Select a series"
+      />
 
       {/* Details form */}
       {details && (
