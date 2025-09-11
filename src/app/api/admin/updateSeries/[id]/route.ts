@@ -13,7 +13,8 @@ export async function PUT(
 ) {
   const { id } = await params;
   const body = await req.json();
-  const { series_name, series_desc, cover_url, status, country_origin } = body;
+  const { series_name, series_desc, cover_url, series_status, country_origin } =
+    body;
 
   if (!id) {
     return NextResponse.json({ error: "Series ID required" }, { status: 400 });
@@ -25,7 +26,7 @@ export async function PUT(
       series_name,
       series_desc,
       cover_url: cover_url || null,
-      status,
+      series_status,
       country_origin,
     })
     .eq("id", id)
