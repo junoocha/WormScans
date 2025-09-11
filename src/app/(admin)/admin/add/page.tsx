@@ -36,6 +36,10 @@ export default function ScrapePage() {
   // for cover upload
   const [coverFile, setCoverFile] = useState<File | undefined>();
 
+  // status for ongoing and type
+  const [status, setStatus] = useState("ongoing");
+  const [countryOrigin, setCountryOrigin] = useState("japan");
+
   // Fetch existing series when the page loads
   React.useEffect(() => {
     const fetchSeries = async () => {
@@ -157,6 +161,8 @@ export default function ScrapePage() {
       images,
       deletedIndices,
       coverFile,
+      status,
+      countryOrigin,
     });
 
     if (result.success) {
@@ -206,6 +212,31 @@ export default function ScrapePage() {
             value={seriesDescription}
             onChange={(e) => setSeriesDescription(e.target.value)}
           />
+
+          {/* Status dropdown */}
+          <label className="text-sm font-medium">Status</label>
+          <select
+            className="border rounded px-3 py-2 bg-[var(--card-bg)] text-white"
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+          >
+            <option value="ongoing">Ongoing</option>
+            <option value="completed">Completed</option>
+            <option value="dropped">Dropped</option>
+          </select>
+
+          {/* Country of Origin dropdown */}
+          <label className="text-sm font-medium">Country of Origin</label>
+          <select
+            className="border rounded px-3 py-2 bg-[var(--card-bg)] text-white"
+            value={countryOrigin}
+            onChange={(e) => setCountryOrigin(e.target.value)}
+          >
+            <option value="japan">Japan</option>
+            <option value="korea">Korea</option>
+            <option value="china">China</option>
+          </select>
+
           {/* Cover upload */}
           <label className="text-sm mb-1">Series Cover (optional)</label>
 
@@ -250,7 +281,7 @@ export default function ScrapePage() {
       ) : (
         <div className="mb-4">
           <select
-            className="border rounded px-3 py-2"
+            className="border rounded bg-[var(--card-bg)] px-3 py-2"
             value={selectedSeriesId}
             onChange={(e) => setSelectedSeriesId(e.target.value)}
           >

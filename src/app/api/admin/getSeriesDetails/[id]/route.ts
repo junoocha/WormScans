@@ -17,7 +17,7 @@ export async function GET(
   const { data, error } = await supabase
     .from("series")
     .select(
-      "id, series_name, series_desc, slug, cover_url, chapters(id, chapter_number, title, created_at)"
+      "id, series_name, series_desc, slug, cover_url, status, country_origin, chapters(id, chapter_number, title, created_at)"
     )
     .eq("id", id)
     .single();

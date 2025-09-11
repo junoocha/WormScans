@@ -10,6 +10,8 @@ interface SaveOptions {
   images: string[];
   deletedIndices: Set<number>;
   coverFile?: File;
+  status?: string; // NEW
+  countryOrigin?: string;
 }
 
 // helper: insert chapter + images via API routes
@@ -61,6 +63,8 @@ export async function handleSaveToSupabase({
   images,
   deletedIndices,
   coverFile,
+  status = "ongoing",
+  countryOrigin = "japan",
 }: SaveOptions) {
   try {
     //  make sure chapter number and images are valid
@@ -126,6 +130,8 @@ export async function handleSaveToSupabase({
           series_desc: seriesDescription,
           slug,
           cover_url: coverUrl,
+          status,
+          country_origin: countryOrigin,
         }),
       });
 

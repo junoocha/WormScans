@@ -9,7 +9,8 @@ const supabase = createClient(
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { series_name, series_desc, slug, cover_url } = body;
+  const { series_name, series_desc, slug, cover_url, status, country_origin } =
+    body;
 
   if (!series_name) {
     return NextResponse.json(
@@ -26,6 +27,8 @@ export async function POST(req: NextRequest) {
         series_desc,
         slug,
         cover_url: cover_url || null, // <-- added cover_url support
+        status,
+        country_origin,
       },
     ])
     .select()
