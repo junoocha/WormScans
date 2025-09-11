@@ -6,7 +6,7 @@ import Link from "next/link";
 
 export default function Logo() {
   return (
-    <Link href="/">
+    <Link href="/" className="flex items-center gap-2">
       <Image
         src="/images/logo.png"
         alt="Logo"

@@ -54,11 +54,12 @@ export default function NavBar() {
           </div>
 
           {/* Login button */}
-          <Link href="/login">
-            <button className="flex items-center gap-2 px-5 py-3 rounded-md text-base font-semibold bg-[#4dbb3a] text-white transition hover:bg-[#3fae2f]">
-              <User className="w-5 h-5" />
-              <span>Login</span>
-            </button>
+          <Link
+            href="/login"
+            className="flex items-center gap-2 px-5 py-3 rounded-md text-base font-semibold bg-[#4dbb3a] text-white transition hover:bg-[#3fae2f]"
+          >
+            <User className="w-5 h-5" />
+            <span>Login</span>
           </Link>
         </div>
       </div>
