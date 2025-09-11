@@ -6,14 +6,20 @@ export type Series = {
   series_name: string;
   slug: string;
   cover_url?: string;
+  series_status: string;
+  country_origin: string;
 };
 
 export async function fetchAllSeries({
   page = 1,
   limit = 18,
+  series_status, // optional filter
+  countryOrigin, // optional filter
 }: {
   page?: number;
   limit?: number;
+  series_status?: string;
+  countryOrigin?: string;
 }) {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -23,11 +29,16 @@ export async function fetchAllSeries({
   const from = (page - 1) * limit;
   const to = from + limit - 1;
 
-  const { data, error } = await supabase
+  let query = supabase
     .from("series")
-    .select("id, series_name, slug, cover_url")
+    .select("id, series_name, slug, cover_url, series_status, country_origin")
     .order("series_name", { ascending: true })
     .range(from, to);
+
+  if (series_status) query = query.eq("series_status", series_status);
+  if (countryOrigin) query = query.eq("country_origin", countryOrigin);
+
+  const { data, error } = await query;
 
   if (error) {
     console.error("Supabase fetchAllSeries error:", error);
