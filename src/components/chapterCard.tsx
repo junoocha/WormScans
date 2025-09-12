@@ -45,7 +45,7 @@ export default function ChapterCard({
         )}
       </div>
 
-      {/* Right: Info */}
+      {/* Right: Info  */}
       <div className="flex-1 flex flex-col ml-4 min-w-0 justify-center">
         <span className="font-bold text-white truncate">
           Chapter {chapterNumber}
