@@ -7,6 +7,15 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+// helper: generate slug from series name
+function slugify(text: string) {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-") // spaces → dash
+    .replace(/[^a-z0-9\-]/g, ""); // strip invalid chars
+}
+
 export async function PUT(
   req: NextRequest,
   { params }: { params: { id: string } }
@@ -20,11 +29,21 @@ export async function PUT(
     return NextResponse.json({ error: "Series ID required" }, { status: 400 });
   }
 
+  if (!series_name?.trim()) {
+    return NextResponse.json(
+      { error: "Series name is required" },
+      { status: 400 }
+    );
+  }
+
+  const slug = slugify(series_name);
+
   const { data, error } = await supabase
     .from("series")
     .update({
       series_name,
       series_desc,
+      slug,
       cover_url: cover_url || null,
       series_status,
       country_origin,
