@@ -407,21 +407,22 @@ export default function ScrapePage() {
       </div>
 
       {/* images wooo */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-        {images.map((src, i) => {
-          // check if its marked for deletion in the set
-          const isDeleted = deletedIndices.has(i);
-          return (
-            <img
-              key={i}
-              src={src}
-              alt={`img-${i}`}
-              className={`rounded shadow border-4 ${
-                isDeleted ? "border-red-500 opacity-60" : "border-blue-500"
-              }`}
-            />
-          );
-        })}
+      <div className="max-h-[400px] overflow-y-auto pr-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          {images.map((src, i) => {
+            const isDeleted = deletedIndices.has(i);
+            return (
+              <img
+                key={i}
+                src={src}
+                alt={`img-${i}`}
+                className={`rounded shadow border-4 ${
+                  isDeleted ? "border-red-500 opacity-60" : "border-blue-500"
+                }`}
+              />
+            );
+          })}
+        </div>
       </div>
     </div>
   );

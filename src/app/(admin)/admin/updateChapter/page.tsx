@@ -272,35 +272,37 @@ export default function UpdateChapterPage() {
           {/* Images Grid */}
           <div>
             <label className="block mb-1">Images</label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {images.map((src, i) => {
-                const isDeleted = deletedIndices.has(i);
-                const isCover = chapterCoverIndex === i;
+            <div className="max-h-[600px] overflow-y-auto pr-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {images.map((src, i) => {
+                  const isDeleted = deletedIndices.has(i);
+                  const isCover = chapterCoverIndex === i;
 
-                return (
-                  <div key={i} className="relative">
-                    <img
-                      src={src}
-                      alt={`Page ${i + 1}`}
-                      className={`rounded shadow border-4 w-full object-cover cursor-pointer ${
-                        isDeleted
-                          ? "border-red-500 opacity-60"
-                          : isCover
-                          ? "border-green-500"
-                          : "border-blue-500"
-                      }`}
-                      onClick={() => setChapterCoverIndex(i)}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => toggleDeleteImage(i)}
-                      className="absolute top-2 right-2 bg-green-500 hover:bg-green-600 text-white rounded-full w-7 h-7 flex items-center justify-center shadow-lg"
-                    >
-                      ×
-                    </button>
-                  </div>
-                );
-              })}
+                  return (
+                    <div key={i} className="relative">
+                      <img
+                        src={src}
+                        alt={`Page ${i + 1}`}
+                        className={`rounded shadow border-4 w-full object-cover cursor-pointer ${
+                          isDeleted
+                            ? "border-red-500 opacity-60"
+                            : isCover
+                            ? "border-green-500"
+                            : "border-blue-500"
+                        }`}
+                        onClick={() => setChapterCoverIndex(i)}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => toggleDeleteImage(i)}
+                        className="absolute top-2 right-2 bg-green-500 hover:bg-green-600 text-white rounded-full w-7 h-7 flex items-center justify-center shadow-lg"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
