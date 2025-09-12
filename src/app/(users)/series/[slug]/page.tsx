@@ -1,13 +1,13 @@
-import Link from "next/link";
+// app/series/[slug]/page.tsx
 import { fetchSeries } from "@/lib/getSeriesById";
-import { formatChapterDate } from "@/lib/formatDate";
+import ChaptersList from "@/components/chapterList";
 
 interface SeriesPageProps {
   params: { slug: string };
 }
 
 export default async function SeriesPage({ params }: SeriesPageProps) {
-  const { slug } = await params;
+  const { slug } = params;
   const { data: series, error } = await fetchSeries({ slug });
 
   if (error || !series) {
@@ -60,29 +60,8 @@ export default async function SeriesPage({ params }: SeriesPageProps) {
           </div>
         </div>
 
-        {/* Chapters */}
-        <div
-          className={`space-y-2 border border-gray-700 rounded p-2 ${
-            sortedChapters.length > 10 ? "max-h-[400px] overflow-y-auto" : ""
-          }`}
-        >
-          {sortedChapters.map((ch) => (
-            <Link
-              key={ch.id}
-              href={`/series/${slug}/chapter/${ch.chapter_number}`}
-              className="flex justify-between items-center border-b border-gray-700 py-2 transition-colors duration-200 hover:bg-[var(--card-hover)] hover:text-[var(--accent)] rounded-md px-2"
-              style={{ color: "var(--foreground)" }}
-            >
-              <span>
-                Chapter {ch.chapter_number}
-                {ch.title ? `: ${ch.title}` : ""}
-              </span>
-              <span style={{ color: "var(--foreground)" }} className="text-sm">
-                {formatChapterDate(ch.created_at)}
-              </span>
-            </Link>
-          ))}
-        </div>
+        {/* Chapters Client Component */}
+        <ChaptersList seriesSlug={slug} chapters={sortedChapters} />
       </main>
     </div>
   );

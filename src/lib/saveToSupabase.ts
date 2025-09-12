@@ -22,6 +22,11 @@ async function insertChapterWithImagesAPI(
   images: string[],
   deletedIndices: Set<number>
 ) {
+  // set image constants
+  const keptImages = images.filter((_, i) => !deletedIndices.has(i));
+  const chapterCover =
+    keptImages[Math.floor(Math.random() * keptImages.length)];
+
   // insert chapter
   const chapterRes = await fetch("/api/addData/addNewChapter", {
     method: "POST",
@@ -30,6 +35,7 @@ async function insertChapterWithImagesAPI(
       series_id: seriesId,
       chapter_number: chapterNumber,
       title: chapterTitle || null,
+      chapter_cover_url: chapterCover,
     }),
   });
 
@@ -39,7 +45,6 @@ async function insertChapterWithImagesAPI(
   const chapterId = chapterData.data.id;
 
   // insert images
-  const keptImages = images.filter((_, i) => !deletedIndices.has(i));
   const imagesRes = await fetch("/api/addData/addChapterImages", {
     method: "POST",
     headers: { "Content-Type": "application/json" },

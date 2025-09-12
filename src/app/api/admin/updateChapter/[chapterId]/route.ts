@@ -13,7 +13,7 @@ export async function PUT(
 ) {
   const { chapterId } = await params;
   const body = await req.json();
-  const { chapter_number, title, image_urls } = body;
+  const { chapter_number, title, image_urls, chapter_cover_url } = body;
 
   if (!chapterId) {
     return NextResponse.json({ error: "Chapter ID required" }, { status: 400 });
@@ -25,6 +25,7 @@ export async function PUT(
     .update({
       chapter_number,
       title,
+      chapter_cover_url,
     })
     .eq("id", chapterId)
     .select()

@@ -7,6 +7,7 @@ export type Chapter = {
   chapter_number: string;
   title: string;
   created_at: string;
+  chapter_cover_url: string | null;
 };
 
 export type SeriesDetail = {
@@ -38,7 +39,8 @@ export async function fetchSeries(seriesIdentifier: {
         id,
         chapter_number,
         title,
-        created_at
+        created_at,
+        chapter_cover_url
       )
     `
   );

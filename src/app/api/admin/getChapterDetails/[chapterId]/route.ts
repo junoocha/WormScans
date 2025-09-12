@@ -16,7 +16,7 @@ export async function GET(
   const { data, error } = await supabase
     .from("chapters")
     .select(
-      "id, chapter_number, title, series_id, chapter_images(id, image_urls)"
+      "id, chapter_number, title, series_id, chapter_cover_url, chapter_images(id, image_urls)"
     )
     .eq("id", chapterId)
     .single();
