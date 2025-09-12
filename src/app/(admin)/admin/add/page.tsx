@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { handleSaveToSupabase } from "@/lib/saveToSupabase";
+import SeriesDropdown from "@/components/adminSeriesDropdown";
 
 export default function ScrapePage() {
   // input, logs, streaming images
@@ -36,6 +37,10 @@ export default function ScrapePage() {
   // for cover upload
   const [coverFile, setCoverFile] = useState<File | undefined>();
 
+  // status for ongoing and type
+  const [status, setStatus] = useState("ongoing");
+  const [countryOrigin, setCountryOrigin] = useState("japan");
+
   // Fetch existing series when the page loads
   React.useEffect(() => {
     const fetchSeries = async () => {
@@ -44,7 +49,10 @@ export default function ScrapePage() {
         const result = await response.json();
 
         if (response.ok && result.data) {
-          setExistingSeriesList(result.data);
+          const sorted = [...result.data].sort((a: any, b: any) =>
+            a.series_name.localeCompare(b.series_name)
+          );
+          setExistingSeriesList(sorted);
         } else {
           console.error("Failed to fetch series:", result.error);
         }
@@ -157,6 +165,8 @@ export default function ScrapePage() {
       images,
       deletedIndices,
       coverFile,
+      status,
+      countryOrigin,
     });
 
     if (result.success) {
@@ -206,6 +216,31 @@ export default function ScrapePage() {
             value={seriesDescription}
             onChange={(e) => setSeriesDescription(e.target.value)}
           />
+
+          {/* Status dropdown */}
+          <label className="text-sm font-medium">Status</label>
+          <select
+            className="border rounded px-3 py-2 bg-[var(--card-bg)] text-white"
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+          >
+            <option value="ongoing">Ongoing</option>
+            <option value="completed">Completed</option>
+            <option value="dropped">Dropped</option>
+          </select>
+
+          {/* Country of Origin dropdown */}
+          <label className="text-sm font-medium">Country of Origin</label>
+          <select
+            className="border rounded px-3 py-2 bg-[var(--card-bg)] text-white"
+            value={countryOrigin}
+            onChange={(e) => setCountryOrigin(e.target.value)}
+          >
+            <option value="japan">Japan</option>
+            <option value="korea">Korea</option>
+            <option value="china">China</option>
+          </select>
+
           {/* Cover upload */}
           <label className="text-sm mb-1">Series Cover (optional)</label>
 
@@ -249,18 +284,12 @@ export default function ScrapePage() {
         </div>
       ) : (
         <div className="mb-4">
-          <select
-            className="border rounded px-3 py-2"
-            value={selectedSeriesId}
-            onChange={(e) => setSelectedSeriesId(e.target.value)}
-          >
-            <option value="">Select series...</option>
-            {existingSeriesList.map((series) => (
-              <option key={series.id} value={series.id}>
-                {series.series_name}
-              </option>
-            ))}
-          </select>
+          <SeriesDropdown
+            seriesList={existingSeriesList}
+            selectedSeriesId={selectedSeriesId}
+            setSelectedSeriesId={setSelectedSeriesId}
+            placeholder="Select a series..."
+          />
         </div>
       )}
 
@@ -378,21 +407,22 @@ export default function ScrapePage() {
       </div>
 
       {/* images wooo */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-        {images.map((src, i) => {
-          // check if its marked for deletion in the set
-          const isDeleted = deletedIndices.has(i);
-          return (
-            <img
-              key={i}
-              src={src}
-              alt={`img-${i}`}
-              className={`rounded shadow border-4 ${
-                isDeleted ? "border-red-500 opacity-60" : "border-blue-500"
-              }`}
-            />
-          );
-        })}
+      <div className="max-h-[400px] overflow-y-auto pr-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          {images.map((src, i) => {
+            const isDeleted = deletedIndices.has(i);
+            return (
+              <img
+                key={i}
+                src={src}
+                alt={`img-${i}`}
+                className={`rounded shadow border-4 ${
+                  isDeleted ? "border-red-500 opacity-60" : "border-blue-500"
+                }`}
+              />
+            );
+          })}
+        </div>
       </div>
     </div>
   );

@@ -1,13 +1,13 @@
-import Link from "next/link";
+// app/series/[slug]/page.tsx
 import { fetchSeries } from "@/lib/getSeriesById";
-import { formatChapterDate } from "@/lib/formatDate";
+import ChaptersList from "@/components/chapterList";
 
 interface SeriesPageProps {
   params: { slug: string };
 }
 
 export default async function SeriesPage({ params }: SeriesPageProps) {
-  const { slug } = await params;
+  const { slug } = params;
   const { data: series, error } = await fetchSeries({ slug });
 
   if (error || !series) {
@@ -22,44 +22,46 @@ export default async function SeriesPage({ params }: SeriesPageProps) {
     <div className="bg-[var(--background)] min-h-screen">
       <main className="p-6 max-w-4xl mx-auto text-[var(--foreground)]">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center mb-6 gap-4">
-          <div className="w-32 h-32 bg-[var(--card-bg)] rounded flex items-center justify-center">
-            <span style={{ color: "var(--foreground)" }}>[Cover]</span>
+        <div className="flex bg-[var(--card-bg)] rounded-xl shadow-md overflow-hidden p-4 mb-6">
+          {/* Left: Cover */}
+          <div className="flex-shrink-0">
+            <div className="w-40 h-56 rounded overflow-hidden bg-[var(--card-hover)]">
+              {series.cover_url ? (
+                <img
+                  src={series.cover_url}
+                  alt={`${series.series_name} cover`}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="flex items-center justify-center text-white/60 h-full">
+                  [Cover]
+                </span>
+              )}
+            </div>
           </div>
-          <div>
+
+          {/* Right: Title + Description */}
+          <div className="flex-1 flex flex-col ml-6 min-w-0">
             <h1
               style={{ color: "var(--accent)" }}
-              className="text-3xl font-bold"
+              className="text-3xl font-bold truncate"
             >
               {series.series_name}
             </h1>
+
             {series.series_desc && (
-              <p style={{ color: "var(--foreground)" }} className="mt-2">
+              <p
+                style={{ color: "var(--foreground)" }}
+                className="mt-3 text-base leading-relaxed"
+              >
                 {series.series_desc}
               </p>
             )}
           </div>
         </div>
 
-        {/* Chapters */}
-        <div className="space-y-2 max-h-[400px] overflow-y-auto border border-gray-700 rounded p-2">
-          {sortedChapters.map((ch) => (
-            <Link
-              key={ch.id}
-              href={`/series/${slug}/chapter/${ch.chapter_number}`}
-              className="flex justify-between items-center border-b border-gray-700 py-2 transition hover:text-[var(--accent)]"
-              style={{ color: "var(--foreground)" }}
-            >
-              <span>
-                Chapter {ch.chapter_number}
-                {ch.title ? `: ${ch.title}` : ""}
-              </span>
-              <span style={{ color: "var(--foreground)" }} className="text-sm">
-                {formatChapterDate(ch.created_at)}
-              </span>
-            </Link>
-          ))}
-        </div>
+        {/* Chapters Client Component */}
+        <ChaptersList seriesSlug={slug} chapters={sortedChapters} />
       </main>
     </div>
   );

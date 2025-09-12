@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import SeriesDropdown from "@/components/adminSeriesDropdown";
+import ChapterCard from "@/components/chapterCard";
 
 type SeriesOption = { id: string; series_name: string };
 type ChapterOption = {
@@ -29,12 +31,20 @@ export default function UpdateChapterPage() {
   const [status, setStatus] = useState("");
 
   const [deletedIndices, setDeletedIndices] = useState<Set<number>>(new Set());
+  const [chapterCoverIndex, setChapterCoverIndex] = useState<number | null>(
+    null
+  );
+  const [chapterCoverUrl, setChapterCoverUrl] = useState<string | null>(null);
 
   // Fetch series dropdown
   useEffect(() => {
     fetch("/api/getSeries")
       .then((res) => res.json())
-      .then((res) => setSeriesList(res.data || []))
+      .then((res) => {
+        const list: SeriesOption[] = res.data || [];
+        list.sort((a, b) => a.series_name.localeCompare(b.series_name));
+        setSeriesList(list);
+      })
       .catch((err) => console.error("Error fetching series:", err));
   }, []);
 
@@ -72,38 +82,38 @@ export default function UpdateChapterPage() {
   useEffect(() => {
     if (!selectedChapterId) return;
 
-    const chapter = chapterList.find(
-      (ch) => ch.id.toString() === selectedChapterId
-    );
-    if (!chapter) return;
-
     fetch(`/api/admin/getChapterDetails/${selectedChapterId}`)
       .then((res) => res.json())
       .then((res) => {
         if (res.data) {
+          const imgs = res.data.chapter_images?.[0]?.image_urls || [];
           setDetails({
             id: res.data.id,
             chapter_number: res.data.chapter_number,
             title: res.data.title,
-            image_urls: res.data.chapter_images?.[0]?.image_urls || [],
+            image_urls: imgs,
           });
           setChapterNumber(res.data.chapter_number.toString());
           setTitle(res.data.title || "");
-          setImages(res.data.chapter_images?.[0]?.image_urls || []);
+          setImages(imgs);
+
+          // Reset cover selection
+          setChapterCoverIndex(null);
+
+          // Normalize DB cover
+          const dbCover = res.data.chapter_cover_url;
+          setChapterCoverUrl(dbCover && dbCover.trim() !== "" ? dbCover : null);
         }
       })
       .catch((err) => console.error("Error fetching chapter details:", err));
   }, [selectedChapterId]);
 
-  // Remove image by index
+  // Toggle delete image
   const toggleDeleteImage = (index: number) => {
     setDeletedIndices((prev) => {
       const copy = new Set(prev);
-      if (copy.has(index)) {
-        copy.delete(index);
-      } else {
-        copy.add(index);
-      }
+      if (copy.has(index)) copy.delete(index);
+      else copy.add(index);
       return copy;
     });
   };
@@ -111,30 +121,28 @@ export default function UpdateChapterPage() {
   const handleSave = async () => {
     if (!details) return;
 
-    // Ensure chapter number is numeric
     if (!/^\d+$/.test(chapterNumber)) {
       setStatus("Chapter number must be numeric");
       return;
     }
 
-    // Ensure no duplicate chapter numbers in the same series
     const duplicate = chapterList.find(
       (ch) =>
         ch.chapter_number.toString() === chapterNumber.trim() &&
-        ch.id !== details.id // allow current chapter
+        ch.id !== details.id
     );
     if (duplicate) {
       setStatus(`Chapter ${chapterNumber} already exists in this series`);
       return;
     }
 
-    // Title is optional, but if filled, trim it
     const safeTitle = title.trim();
-
     setLoading(true);
     setStatus("Saving...");
 
     const keptImages = images.filter((_, i) => !deletedIndices.has(i));
+    const coverUrl =
+      chapterCoverIndex !== null ? keptImages[chapterCoverIndex] : undefined;
 
     const res = await fetch(`/api/admin/updateChapter/${details.id}`, {
       method: "PUT",
@@ -143,13 +151,13 @@ export default function UpdateChapterPage() {
         chapter_number: parseInt(chapterNumber, 10),
         title: safeTitle || null,
         image_urls: keptImages,
+        chapter_cover_url: coverUrl,
       }),
     });
 
     const data = await res.json();
-    if (!res.ok) {
-      setStatus("Error saving: " + (data.error || "Unknown error"));
-    } else {
+    if (!res.ok) setStatus("Error saving: " + (data.error || "Unknown error"));
+    else {
       setStatus("Chapter updated successfully!");
       setDetails({
         ...details,
@@ -166,11 +174,12 @@ export default function UpdateChapterPage() {
 
   const handleDeleteChapter = async () => {
     if (!details) return;
-
-    const confirmDelete = confirm(
-      `Are you sure you want to delete Chapter ${details.chapter_number}? This cannot be undone.`
-    );
-    if (!confirmDelete) return;
+    if (
+      !confirm(
+        `Are you sure you want to delete Chapter ${details.chapter_number}?`
+      )
+    )
+      return;
 
     setLoading(true);
     setStatus("Deleting chapter...");
@@ -181,26 +190,17 @@ export default function UpdateChapterPage() {
       });
       const data = await res.json();
 
-      if (!res.ok) {
+      if (!res.ok)
         setStatus("Error deleting chapter: " + (data.error || "Unknown error"));
-      } else {
+      else {
         setStatus("Chapter deleted successfully!");
-
-        // Remove deleted chapter from chapterList
         setChapterList((prev) => prev.filter((ch) => ch.id !== details.id));
-
-        // Clear selected chapter and details
         setSelectedChapterId("");
         setDetails(null);
         setChapterNumber("");
         setTitle("");
         setImages([]);
         setDeletedIndices(new Set());
-
-        // Optionally, show if series now has no chapters
-        if (!data.seriesHasChapters) {
-          console.log("This series has no chapters left.");
-        }
       }
     } catch (err) {
       console.error(err);
@@ -214,21 +214,13 @@ export default function UpdateChapterPage() {
     <div className="p-6 max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">Update Chapter</h1>
 
-      {/* Series Dropdown */}
-      <select
-        value={selectedSeriesId}
-        onChange={(e) => setSelectedSeriesId(e.target.value)}
-        className="w-full mb-4 p-2 bg-[var(--card-bg)] rounded"
-      >
-        <option value="">Select a series</option>
-        {seriesList.map((s) => (
-          <option key={s.id} value={s.id}>
-            {s.series_name}
-          </option>
-        ))}
-      </select>
+      <SeriesDropdown
+        seriesList={seriesList}
+        selectedSeriesId={selectedSeriesId}
+        setSelectedSeriesId={setSelectedSeriesId}
+        placeholder="Select a series"
+      />
 
-      {/* Chapter Dropdown */}
       {chapterList.length > 0 && (
         <select
           value={selectedChapterId}
@@ -244,9 +236,21 @@ export default function UpdateChapterPage() {
         </select>
       )}
 
-      {/* Chapter details */}
       {details && (
         <div className="space-y-4">
+          {/* Chapter Card Preview */}
+          <ChapterCard
+            seriesSlug="preview"
+            chapterNumber={chapterNumber}
+            title={title}
+            images={images}
+            chapterCoverUrl={
+              chapterCoverIndex !== null
+                ? images[chapterCoverIndex]
+                : chapterCoverUrl || undefined
+            }
+          />
+          {/* Chapter Number & Title */}
           <div>
             <label className="block mb-1">Chapter Number</label>
             <input
@@ -265,32 +269,40 @@ export default function UpdateChapterPage() {
             />
           </div>
 
+          {/* Images Grid */}
           <div>
             <label className="block mb-1">Images</label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {images.map((src, i) => {
-                const isDeleted = deletedIndices.has(i);
-                return (
-                  <div key={i} className="relative">
-                    <img
-                      src={src}
-                      alt={`Page ${i + 1}`}
-                      className={`rounded shadow border-4 w-full object-cover ${
-                        isDeleted
-                          ? "border-red-500 opacity-60"
-                          : "border-blue-500"
-                      }`}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => toggleDeleteImage(i)}
-                      className="absolute top-2 right-2 bg-green-500 hover:bg-green-600 text-white rounded-full w-7 h-7 flex items-center justify-center shadow-lg"
-                    >
-                      ×
-                    </button>
-                  </div>
-                );
-              })}
+            <div className="max-h-[600px] overflow-y-auto pr-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {images.map((src, i) => {
+                  const isDeleted = deletedIndices.has(i);
+                  const isCover = chapterCoverIndex === i;
+
+                  return (
+                    <div key={i} className="relative">
+                      <img
+                        src={src}
+                        alt={`Page ${i + 1}`}
+                        className={`rounded shadow border-4 w-full object-cover cursor-pointer ${
+                          isDeleted
+                            ? "border-red-500 opacity-60"
+                            : isCover
+                            ? "border-green-500"
+                            : "border-blue-500"
+                        }`}
+                        onClick={() => setChapterCoverIndex(i)}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => toggleDeleteImage(i)}
+                        className="absolute top-2 right-2 bg-green-500 hover:bg-green-600 text-white rounded-full w-7 h-7 flex items-center justify-center shadow-lg"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
 

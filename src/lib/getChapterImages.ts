@@ -14,24 +14,38 @@ export async function fetchChapterImages(
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  // get the chapter id by series slug + chapter number
-  const { data: chapterData, error: chapterError } = await supabase
-    .from("chapters")
-    .select("id, series_id")
-    .eq("chapter_number", chapterNumber)
+  // Step 1: Find the series ID from slug
+  const { data: seriesData, error: seriesError } = await supabase
+    .from("series")
+    .select("id")
+    .eq("slug", seriesSlug)
     .single();
 
-  if (chapterError || !chapterData)
-    return { data: null, error: chapterError || "Chapter not found" };
+  if (seriesError || !seriesData) {
+    return { data: null, error: seriesError || "Series not found" };
+  }
 
-  // get images for the chapter
+  // Step 2: Get chapter scoped to this series
+  const { data: chapterData, error: chapterError } = await supabase
+    .from("chapters")
+    .select("id")
+    .eq("chapter_number", chapterNumber)
+    .eq("series_id", seriesData.id) //  ensures uniqueness
+    .single();
+
+  if (chapterError || !chapterData) {
+    return { data: null, error: chapterError || "Chapter not found" };
+  }
+
+  // Step 3: Get images for the chapter
   const { data: imagesData, error: imagesError } = await supabase
     .from("chapter_images")
     .select("id, image_urls")
     .eq("chapter_id", chapterData.id);
 
-  if (imagesError || !imagesData)
+  if (imagesError || !imagesData) {
     return { data: null, error: imagesError || "Images not found" };
+  }
 
   return { data: imagesData as ChapterImages[], error: null };
 }

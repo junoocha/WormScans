@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import SeriesDropdown from "@/components/adminSeriesDropdown";
 
 type SeriesOption = { id: string; series_name: string };
 type SeriesDetails = {
@@ -9,6 +10,8 @@ type SeriesDetails = {
   series_desc: string | null;
   slug: string;
   cover_url: string | null;
+  status: string;
+  country_origin: string;
   chapters: {
     id: string;
     chapter_number: number;
@@ -28,20 +31,28 @@ export default function UpdateSeriesPage() {
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
 
   const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState("");
+  const [formStatus, setFormStatus] = useState("");
+
+  const [countryOrigin, setCountryOrigin] = useState("");
+  const [message, setMessage] = useState("");
 
   // fetch dropdown series list
   useEffect(() => {
     fetch("/api/getSeries")
       .then((res) => res.json())
-      .then((res) => setSeriesList(res.data || []))
+      .then((res) => {
+        const list: SeriesOption[] = res.data || [];
+        // sort alphabetically by series_name
+        list.sort((a, b) => a.series_name.localeCompare(b.series_name));
+        setSeriesList(list);
+      })
       .catch((err) => console.error("Error fetching series:", err));
   }, []);
 
   // fetch details when a series is selected
   useEffect(() => {
     if (!selectedSeriesId) return;
-    setStatus("Loading details...");
+    setMessage("Loading details...");
     fetch(`/api/admin/getSeriesDetails/${selectedSeriesId}`)
       .then((res) => res.json())
       .then((res) => {
@@ -49,13 +60,15 @@ export default function UpdateSeriesPage() {
           setDetails(res.data);
           setTitle(res.data.series_name || "");
           setDesc(res.data.series_desc || "");
+          setFormStatus(res.data.status || "ongoing");
+          setCountryOrigin(res.data.country_origin || "japan");
           setCoverPreview(null); // reset preview when selecting new series
         }
-        setStatus("");
+        setMessage("");
       })
       .catch((err) => {
         console.error("Error fetching series details:", err);
-        setStatus("Failed to load details");
+        setMessage("Failed to load details");
       });
   }, [selectedSeriesId]);
 
@@ -73,11 +86,11 @@ export default function UpdateSeriesPage() {
 
     // Basic validation
     if (!title.trim()) {
-      setStatus("Series title cannot be empty");
+      setMessage("Series title cannot be empty");
       return;
     }
     if (!desc.trim()) {
-      setStatus("Series description cannot be empty");
+      setMessage("Series description cannot be empty");
       return;
     }
 
@@ -88,12 +101,12 @@ export default function UpdateSeriesPage() {
         s.id !== details.id // allow current series name
     );
     if (duplicate) {
-      setStatus("Another series with this title already exists");
+      setMessage("Another series with this title already exists");
       return;
     }
 
     setLoading(true);
-    setStatus("Saving...");
+    setMessage("Saving...");
 
     let coverUrl = details.cover_url;
 
@@ -108,7 +121,7 @@ export default function UpdateSeriesPage() {
       });
       const uploadData = await uploadRes.json();
       if (!uploadRes.ok) {
-        setStatus("Error uploading cover: " + uploadData.error);
+        setMessage("Error uploading cover: " + uploadData.error);
         setLoading(false);
         return;
       }
@@ -122,14 +135,16 @@ export default function UpdateSeriesPage() {
         series_name: title.trim(),
         series_desc: desc.trim(),
         cover_url: coverUrl,
+        status: formStatus,
+        country_origin: countryOrigin,
       }),
     });
 
     const data = await res.json();
     if (!res.ok) {
-      setStatus("Error saving: " + (data.error || "Unknown error"));
+      setMessage("Error saving: " + (data.error || "Unknown error"));
     } else {
-      setStatus("Series updated successfully!");
+      setMessage("Series updated successfully!");
       setDetails({
         ...details,
         series_name: title.trim(),
@@ -148,18 +163,12 @@ export default function UpdateSeriesPage() {
       <h1 className="text-2xl font-bold mb-6">Update Series</h1>
 
       {/* Dropdown */}
-      <select
-        value={selectedSeriesId}
-        onChange={(e) => setSelectedSeriesId(e.target.value)}
-        className="w-full mb-6 p-2 bg-[var(--card-bg)] rounded"
-      >
-        <option value="">Select a series</option>
-        {seriesList.map((s) => (
-          <option key={s.id} value={s.id}>
-            {s.series_name}
-          </option>
-        ))}
-      </select>
+      <SeriesDropdown
+        seriesList={seriesList}
+        selectedSeriesId={selectedSeriesId}
+        setSelectedSeriesId={setSelectedSeriesId}
+        placeholder="Select a series"
+      />
 
       {/* Details form */}
       {details && (
@@ -181,6 +190,31 @@ export default function UpdateSeriesPage() {
               className="w-full p-2 rounded bg-[var(--card-bg)]"
               rows={4}
             />
+          </div>
+          <div>
+            <label className="block mb-1">Status</label>
+            <select
+              className="w-full p-2 rounded bg-[var(--card-bg)]"
+              value={formStatus}
+              onChange={(e) => setFormStatus(e.target.value)}
+            >
+              <option value="ongoing">Ongoing</option>
+              <option value="completed">Completed</option>
+              <option value="dropped">Dropped</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block mb-1">Country of Origin</label>
+            <select
+              className="w-full p-2 rounded bg-[var(--card-bg)]"
+              value={countryOrigin}
+              onChange={(e) => setCountryOrigin(e.target.value)}
+            >
+              <option value="japan">Japan</option>
+              <option value="korea">Korea</option>
+              <option value="china">China</option>
+            </select>
           </div>
 
           <div>
@@ -236,7 +270,7 @@ export default function UpdateSeriesPage() {
         </div>
       )}
 
-      {status && <p className="mt-4 text-sm text-gray-400">{status}</p>}
+      {message && <p className="mt-4 text-sm text-gray-400">{message}</p>}
     </div>
   );
 }

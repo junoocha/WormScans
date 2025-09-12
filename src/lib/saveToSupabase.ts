@@ -10,6 +10,8 @@ interface SaveOptions {
   images: string[];
   deletedIndices: Set<number>;
   coverFile?: File;
+  status?: string; // NEW
+  countryOrigin?: string;
 }
 
 // helper: insert chapter + images via API routes
@@ -20,6 +22,11 @@ async function insertChapterWithImagesAPI(
   images: string[],
   deletedIndices: Set<number>
 ) {
+  // set image constants
+  const keptImages = images.filter((_, i) => !deletedIndices.has(i));
+  const chapterCover =
+    keptImages[Math.floor(Math.random() * keptImages.length)];
+
   // insert chapter
   const chapterRes = await fetch("/api/addData/addNewChapter", {
     method: "POST",
@@ -28,6 +35,7 @@ async function insertChapterWithImagesAPI(
       series_id: seriesId,
       chapter_number: chapterNumber,
       title: chapterTitle || null,
+      chapter_cover_url: chapterCover,
     }),
   });
 
@@ -37,7 +45,6 @@ async function insertChapterWithImagesAPI(
   const chapterId = chapterData.data.id;
 
   // insert images
-  const keptImages = images.filter((_, i) => !deletedIndices.has(i));
   const imagesRes = await fetch("/api/addData/addChapterImages", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -61,8 +68,22 @@ export async function handleSaveToSupabase({
   images,
   deletedIndices,
   coverFile,
+  status = "ongoing",
+  countryOrigin = "japan",
 }: SaveOptions) {
   try {
+    //  make sure chapter number and images are valid
+    if (!chapterNumber.trim()) {
+      throw new Error("Chapter number cannot be empty.");
+    }
+    if (!/^\d+$/.test(chapterNumber.trim())) {
+      throw new Error("Chapter number must be numeric.");
+    }
+    const keptImages = images.filter((_, i) => !deletedIndices.has(i));
+    if (keptImages.length === 0) {
+      throw new Error("Cannot save chapter without images.");
+    }
+
     let seriesId: string;
     let coverUrl: string | null = null;
 
@@ -114,6 +135,8 @@ export async function handleSaveToSupabase({
           series_desc: seriesDescription,
           slug,
           cover_url: coverUrl,
+          status,
+          country_origin: countryOrigin,
         }),
       });
 
@@ -126,18 +149,6 @@ export async function handleSaveToSupabase({
       if (!selectedSeriesId)
         throw new Error("Please select an existing series");
       seriesId = selectedSeriesId;
-    }
-
-    //  make sure chapter number and images are valid
-    if (!chapterNumber.trim()) {
-      throw new Error("Chapter number cannot be empty.");
-    }
-    if (!/^\d+$/.test(chapterNumber.trim())) {
-      throw new Error("Chapter number must be numeric.");
-    }
-    const keptImages = images.filter((_, i) => !deletedIndices.has(i));
-    if (keptImages.length === 0) {
-      throw new Error("Cannot save chapter without images.");
     }
 
     const chapterCheckRes = await fetch(
