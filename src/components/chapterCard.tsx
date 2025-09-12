@@ -31,12 +31,12 @@ export default function ChapterCard({
       onClick={onClick}
     >
       {/* Left: Cover */}
-      <div className="w-35 h-25 rounded overflow-hidden bg-[var(--card-hover)] flex-shrink-0">
+      <div className="w-50 h-40 rounded overflow-hidden bg-[var(--card-hover)] flex-shrink-0">
         {cover ? (
           <img
             src={cover}
             alt={`Chapter ${chapterNumber} cover`}
-            className="w-full h-full object-cover object-center scale-160 transition-transform duration-300"
+            className="w-full h-full object-cover object-center scale-100 transition-transform duration-300"
           />
         ) : (
           <span className="flex items-center justify-center text-white/50 h-full">
