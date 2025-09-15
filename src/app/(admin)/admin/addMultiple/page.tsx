@@ -174,7 +174,7 @@ export default function ScrapeMultiplePage() {
         <div className="mb-4">
           <label className="block mb-1 font-medium">Select Chapter</label>
           <select
-            className="border rounded p-2"
+            className="border rounded p-2 bg-[var(--card-bg)]"
             value={selectedChapter}
             onChange={(e) => setSelectedChapter(Number(e.target.value))}
           >

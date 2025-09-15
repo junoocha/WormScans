@@ -6,7 +6,7 @@ def scrape(page, url):
     print("[*] Using AsuraScans-specific scraper")
 
     # wait until network is idle / no new requests. Then pretend to be human lol
-    page.goto(url, wait_until="networkidle")
+    # page.goto(url, wait_until="networkidle")
     simulate_human_behavior(page)
 
     # waiting for any image to actually be on the page
