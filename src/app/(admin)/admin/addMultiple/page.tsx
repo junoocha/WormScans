@@ -144,6 +144,55 @@ export default function ScrapeMultiplePage() {
     }
   };
 
+  const handleUploadMultiple = async () => {
+    if (!selectedSeriesId) {
+      alert("Please select a series.");
+      return;
+    }
+
+    const chaptersToUpload = chapterImages.map((images, idx) => ({
+      chapter_number: startChapter + idx,
+      images: imagesDeletedIndicesRemoved(idx),
+    }));
+
+    try {
+      const res = await fetch("/api/addData/addMultipleChapters", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          series_id: selectedSeriesId,
+          chapters: chaptersToUpload,
+        }),
+      });
+
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || "Upload failed");
+
+      if (result.skipped.length) {
+        alert(
+          `Some chapters were skipped because they already exist: ${result.skipped.join(
+            ", "
+          )}`
+        );
+      } else {
+        alert("All chapters uploaded successfully!");
+      }
+
+      console.log("Uploaded:", result.uploaded, "Skipped:", result.skipped);
+    } catch (err) {
+      console.error(err);
+      alert(
+        "Upload failed: " + (err instanceof Error ? err.message : String(err))
+      );
+    }
+  };
+
+  // helper to remove deleted indices for chapter
+  const imagesDeletedIndicesRemoved = (chapterIdx: number) => {
+    const deletedSet = deletedIndicesByChapter[chapterIdx] || new Set<number>();
+    return chapterImages[chapterIdx].filter((_, i) => !deletedSet.has(i));
+  };
+
   return (
     <div className="p-6 max-w-5xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Scrape Multiple Chapters</h1>
@@ -233,9 +282,17 @@ export default function ScrapeMultiplePage() {
 
           <button
             onClick={resetAllDeleted}
-            className="px-3 py-2 ml-4 mb-4 text-sm rounded bg-red-600 hover:bg-red-800 text-white"
+            className="px-3 py-2 mx-4 mb-4 text-sm rounded bg-red-600 hover:bg-red-800 text-white"
           >
             Reset ALL Deleted
+          </button>
+
+          <button
+            onClick={handleUploadMultiple}
+            disabled={chapterImages.length === 0}
+            className="px-4 py-2 text-sm rounded bg-green-600 hover:bg-green-700 text-white"
+          >
+            Save All Chapters
           </button>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
