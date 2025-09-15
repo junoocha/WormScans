@@ -4,10 +4,13 @@ import React, { useState, useEffect } from "react";
 import SeriesDropdown from "@/components/adminSeriesDropdown";
 
 export default function ScrapeMultiplePage() {
-  const [chapterUrls, setChapterUrls] = useState(""); // multi-line input
-  const [startChapter, setStartChapter] = useState(1); // starting chapter number
+  const [chapterUrls, setChapterUrls] = useState("");
+  const [startChapter, setStartChapter] = useState(1);
   const [logs, setLogs] = useState<string[]>([]);
   const [chapterImages, setChapterImages] = useState<string[][]>([]);
+  const [deletedIndicesByChapter, setDeletedIndicesByChapter] = useState<
+    Set<number>[]
+  >([]);
   const [loading, setLoading] = useState(false);
 
   const [existingSeriesList, setExistingSeriesList] = useState<
@@ -15,7 +18,7 @@ export default function ScrapeMultiplePage() {
   >([]);
   const [selectedSeriesId, setSelectedSeriesId] = useState("");
 
-  const [selectedChapter, setSelectedChapter] = useState<number>(0); // for dropdown
+  const [selectedChapter, setSelectedChapter] = useState<number>(0);
 
   useEffect(() => {
     const fetchSeries = async () => {
@@ -53,6 +56,7 @@ export default function ScrapeMultiplePage() {
     setLoading(true);
     setLogs([]);
     setChapterImages([]);
+    setDeletedIndicesByChapter([]); // reset deletes
     setSelectedChapter(0);
 
     const urlParam = encodeURIComponent(urls.join(","));
@@ -60,30 +64,32 @@ export default function ScrapeMultiplePage() {
       `/api/scrapeMultiple/manuallyPutChapters?urls=${urlParam}`
     );
 
-    // Prepare an array with empty arrays for each chapter
     const imagesByChapter: string[][] = urls.map(() => []);
+    const deletesByChapter: Set<number>[] = urls.map(() => new Set());
 
     eventSource.onmessage = (event) => {
       const message = event.data;
       setLogs((prev) => [...prev, message]);
 
-      // Match chapter number from the backend message
       const chapterMatch = message.match(/\[Chapter (\d+)\]/);
       if (!chapterMatch) return;
 
-      const chapterIndex = Number(chapterMatch[1]) - 1; // zero-based
-      // Match grabbed images
+      const chapterIndex = Number(chapterMatch[1]) - 1;
+
       const urlMatch = message.match(/Grabbed \d+ picture[s]?: (.+)$/);
       if (urlMatch) {
         imagesByChapter[chapterIndex].push(urlMatch[1]);
       }
 
-      // Detect finished scraping
       if (message.includes("Finished scraping")) {
-        // Update state immutably
         setChapterImages((prev) => {
           const copy = [...prev];
           copy[chapterIndex] = imagesByChapter[chapterIndex];
+          return copy;
+        });
+        setDeletedIndicesByChapter((prev) => {
+          const copy = [...prev];
+          copy[chapterIndex] = deletesByChapter[chapterIndex];
           return copy;
         });
         setLogs((prev) => [
@@ -106,11 +112,42 @@ export default function ScrapeMultiplePage() {
     };
   };
 
+  const toggleDelete = (chapterIdx: number, imgIdx: number) => {
+    setDeletedIndicesByChapter((prev) => {
+      const copy = [...prev];
+      const set = new Set(copy[chapterIdx] || []);
+      if (set.has(imgIdx)) {
+        set.delete(imgIdx);
+      } else {
+        set.add(imgIdx);
+      }
+      copy[chapterIdx] = set;
+      return copy;
+    });
+  };
+
+  const resetDeleted = (chapterIdx: number) => {
+    setDeletedIndicesByChapter((prev) => {
+      const copy = [...prev];
+      copy[chapterIdx] = new Set();
+      return copy;
+    });
+  };
+
+  const resetAllDeleted = () => {
+    if (
+      window.confirm(
+        "This will reset ALL deleted images across ALL chapters. Continue?"
+      )
+    ) {
+      setDeletedIndicesByChapter((prev) => prev.map(() => new Set()));
+    }
+  };
+
   return (
     <div className="p-6 max-w-5xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Scrape Multiple Chapters</h1>
 
-      {/* Series Dropdown */}
       <div className="mb-4">
         <SeriesDropdown
           seriesList={existingSeriesList}
@@ -120,7 +157,6 @@ export default function ScrapeMultiplePage() {
         />
       </div>
 
-      {/* Chapter URLs input */}
       <div className="mb-4">
         <label className="block mb-1 font-medium">
           Chapter URLs (one per line)
@@ -134,7 +170,6 @@ export default function ScrapeMultiplePage() {
         />
       </div>
 
-      {/* Start Chapter Number */}
       <div className="mb-4">
         <label className="block mb-1 font-medium">Start Chapter Number</label>
         <input
@@ -146,7 +181,6 @@ export default function ScrapeMultiplePage() {
         />
       </div>
 
-      {/* Scrape button */}
       <div className="mb-4">
         <button
           className={`px-4 py-2 rounded text-white ${
@@ -161,7 +195,6 @@ export default function ScrapeMultiplePage() {
         </button>
       </div>
 
-      {/* Logs */}
       <div className="bg-black text-green-400 p-3 rounded text-sm mb-4 h-48 overflow-y-auto whitespace-pre-wrap font-mono">
         {logs.length === 0 && <p className="opacity-50">Waiting for logs...</p>}
         {logs.map((log, i) => (
@@ -169,7 +202,6 @@ export default function ScrapeMultiplePage() {
         ))}
       </div>
 
-      {/* Chapter selection */}
       {chapterImages.length > 0 && (
         <div className="mb-4">
           <label className="block mb-1 font-medium">Select Chapter</label>
@@ -187,23 +219,43 @@ export default function ScrapeMultiplePage() {
         </div>
       )}
 
-      {/* Images for selected chapter */}
       {chapterImages[selectedChapter] && (
         <div>
           <h2 className="text-lg font-semibold mb-2">
             Chapter {startChapter + selectedChapter}
           </h2>
+          <button
+            onClick={() => resetDeleted(selectedChapter)}
+            className="px-3 py-2 mb-4 text-sm rounded bg-red-600 hover:bg-red-700 text-white"
+          >
+            Reset Deleted
+          </button>
+
+          <button
+            onClick={resetAllDeleted}
+            className="px-3 py-2 ml-4 mb-4 text-sm rounded bg-red-600 hover:bg-red-800 text-white"
+          >
+            Reset ALL Deleted
+          </button>
+
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-            {chapterImages[selectedChapter].map((src, imgIndex) => (
-              <img
-                key={imgIndex}
-                src={src}
-                alt={`Chapter ${startChapter + selectedChapter} img ${
-                  imgIndex + 1
-                }`}
-                className="rounded shadow border-2 border-blue-500"
-              />
-            ))}
+            {chapterImages[selectedChapter].map((src, imgIdx) => {
+              const isDeleted =
+                deletedIndicesByChapter[selectedChapter]?.has(imgIdx);
+              return (
+                <img
+                  key={imgIdx}
+                  src={src}
+                  alt={`Chapter ${startChapter + selectedChapter} img ${
+                    imgIdx + 1
+                  }`}
+                  onClick={() => toggleDelete(selectedChapter, imgIdx)}
+                  className={`rounded shadow border-4 cursor-pointer ${
+                    isDeleted ? "border-red-500 opacity-60" : "border-blue-500"
+                  }`}
+                />
+              );
+            })}
           </div>
         </div>
       )}
