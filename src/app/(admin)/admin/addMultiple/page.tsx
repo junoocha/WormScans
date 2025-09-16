@@ -226,7 +226,9 @@ export default function ScrapeMultiplePage() {
           className="border rounded w-full p-2"
           value={chapterUrls}
           onChange={(e) => setChapterUrls(e.target.value)}
-          placeholder="https://example.com/ch2\nhttps://example.com/ch3\nhttps://example.com/ch4"
+          placeholder={`https://example.com/ch2
+https://example.com/ch3
+https://example.com/ch4`}
         />
       </div>
 
