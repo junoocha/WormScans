@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import SeriesDropdown from "@/components/adminSeriesDropdown";
+import ChapterUrlGeneratorModal from "@/components/generateUrlFromInput";
 
 export default function ScrapeMultiplePage() {
   const [chapterUrls, setChapterUrls] = useState("");
@@ -20,6 +21,8 @@ export default function ScrapeMultiplePage() {
 
   const [selectedChapter, setSelectedChapter] = useState<number>(0);
   const [lockedStartChapter, setLockedStartChapter] = useState(startChapter);
+
+  const [isUrlGeneratorOpen, setIsUrlGeneratorOpen] = useState(false);
 
   useEffect(() => {
     const fetchSeries = async () => {
@@ -224,6 +227,14 @@ export default function ScrapeMultiplePage() {
       </div>
 
       <div className="mb-4">
+        <div className="flex gap-2">
+          <button
+            className="px-4 py-2 mb-4 rounded bg-indigo-600 hover:bg-indigo-700 text-white"
+            onClick={() => setIsUrlGeneratorOpen(true)}
+          >
+            Generate Links From URL
+          </button>
+        </div>
         <label className="block mb-1 font-medium">
           Chapter URLs (one per line and consecutive)
         </label>
@@ -237,6 +248,13 @@ https://example.com/ch3
 https://example.com/ch4`}
         />
       </div>
+
+      {/* Modal integration */}
+      <ChapterUrlGeneratorModal
+        isOpen={isUrlGeneratorOpen}
+        onClose={() => setIsUrlGeneratorOpen(false)}
+        onConfirm={(urls) => setChapterUrls(urls.join("\n"))}
+      />
 
       <div className="mb-4">
         <label className="block mb-1 font-medium">Start Chapter Number</label>
