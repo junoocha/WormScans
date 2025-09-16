@@ -219,7 +219,7 @@ export default function ScrapeMultiplePage() {
 
       <div className="mb-4">
         <label className="block mb-1 font-medium">
-          Chapter URLs (one per line)
+          Chapter URLs (one per line and consecutive)
         </label>
         <textarea
           rows={6}
