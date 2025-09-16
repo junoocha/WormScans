@@ -11,12 +11,18 @@ export default function AdminLanding() {
           Quick access to manage series, chapters, and updates.
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-6 w-full">
           <Link
             href="/admin/add"
             className="bg-green-400 hover:bg-green-300 text-black font-semibold py-6 rounded-lg text-center transition"
           >
             Add Series / Chapter
+          </Link>
+          <Link
+            href="/admin/addMultiple"
+            className="bg-green-400 hover:bg-green-300 text-black font-semibold py-6 rounded-lg text-center transition"
+          >
+            Add Multiple Chapters
           </Link>
           <Link
             href="/admin/updateSeries"
