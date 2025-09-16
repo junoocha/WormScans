@@ -229,6 +229,12 @@ export default function ScrapeMultiplePage() {
       <div className="mb-4">
         <div className="flex gap-2">
           <button
+            className="px-4 py-2 mb-4 rounded bg-red-600 hover:bg-red-700 text-white"
+            onClick={() => setChapterUrls("")}
+          >
+            Clear All URLs
+          </button>
+          <button
             className="px-4 py-2 mb-4 rounded bg-indigo-600 hover:bg-indigo-700 text-white"
             onClick={() => setIsUrlGeneratorOpen(true)}
           >
