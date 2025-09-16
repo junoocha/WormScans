@@ -67,7 +67,9 @@ export default function ScrapeMultiplePage() {
     );
 
     const imagesByChapter: string[][] = urls.map(() => []);
-    const deletesByChapter: Set<number>[] = urls.map(() => new Set());
+    const deletesByChapter = urls.map(() => new Set<number>());
+    setChapterImages(urls.map(() => []));
+    setDeletedIndicesByChapter(urls.map(() => new Set<number>()));
     const totalChapters = urls.length;
 
     eventSource.onmessage = (event) => {
@@ -87,7 +89,8 @@ export default function ScrapeMultiplePage() {
         }]`
       );
 
-      const urlMatch = message.match(/Grabbed \d+ picture[s]?: (.+)$/);
+      const urlRegex = /Grabbed \d+ picture[s]?: (.+)$/;
+      const urlMatch = urlRegex.exec(message);
       if (urlMatch) {
         imagesByChapter[chapterIndex].push(urlMatch[1]);
       }
@@ -117,7 +120,10 @@ export default function ScrapeMultiplePage() {
     eventSource.addEventListener("end", () => {
       eventSource.close();
       setLoading(false);
-      setLogs((prev) => [...prev, "\nAll chapters scraped!"]);
+      setLogs((prev) => [
+        ...prev,
+        "\nAll chapters scraped! Worm sleeping now.",
+      ]);
     });
 
     eventSource.onerror = () => {
@@ -166,7 +172,7 @@ export default function ScrapeMultiplePage() {
     }
 
     const chaptersToUpload = chapterImages.map((images, idx) => ({
-      chapter_number: startChapter + idx,
+      chapter_number: lockedStartChapter + idx,
       images: imagesDeletedIndicesRemoved(idx),
     }));
 
@@ -316,7 +322,7 @@ https://example.com/ch4`}
                 <img
                   key={imgIdx}
                   src={src}
-                  alt={`Chapter ${startChapter + selectedChapter} img ${
+                  alt={`Chapter ${lockedStartChapter + selectedChapter} img ${
                     imgIdx + 1
                   }`}
                   onClick={() => toggleDelete(selectedChapter, imgIdx)}
