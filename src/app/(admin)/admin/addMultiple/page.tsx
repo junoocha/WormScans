@@ -19,6 +19,7 @@ export default function ScrapeMultiplePage() {
   const [selectedSeriesId, setSelectedSeriesId] = useState("");
 
   const [selectedChapter, setSelectedChapter] = useState<number>(0);
+  const [lockedStartChapter, setLockedStartChapter] = useState(startChapter);
 
   useEffect(() => {
     const fetchSeries = async () => {
@@ -58,6 +59,7 @@ export default function ScrapeMultiplePage() {
     setChapterImages([]);
     setDeletedIndicesByChapter([]); // reset deletes
     setSelectedChapter(0);
+    setLockedStartChapter(startChapter);
 
     const urlParam = encodeURIComponent(urls.join(","));
     const eventSource = new EventSource(
@@ -66,22 +68,33 @@ export default function ScrapeMultiplePage() {
 
     const imagesByChapter: string[][] = urls.map(() => []);
     const deletesByChapter: Set<number>[] = urls.map(() => new Set());
+    const totalChapters = urls.length;
 
     eventSource.onmessage = (event) => {
-      const message = event.data;
-      setLogs((prev) => [...prev, message]);
+      const rawMessage = event.data; // preserve the original message
+      let message = rawMessage; // message we can transform
 
-      const chapterMatch = message.match(/\[Chapter (\d+)\]/);
+      const chapterMatch = rawMessage.match(/\[Chapter (\d+)\]/);
       if (!chapterMatch) return;
 
       const chapterIndex = Number(chapterMatch[1]) - 1;
+
+      // rewrite chapter reference to include total
+      message = message.replace(
+        /\[Chapter \d+\]/,
+        `[Chapter ${lockedStartChapter + chapterIndex}/${
+          lockedStartChapter + totalChapters - 1
+        }]`
+      );
 
       const urlMatch = message.match(/Grabbed \d+ picture[s]?: (.+)$/);
       if (urlMatch) {
         imagesByChapter[chapterIndex].push(urlMatch[1]);
       }
 
-      if (message.includes("Finished scraping")) {
+      setLogs((prev) => [...prev, message]);
+
+      if (rawMessage.includes("Finished scraping")) {
         setChapterImages((prev) => {
           const copy = [...prev];
           copy[chapterIndex] = imagesByChapter[chapterIndex];
@@ -94,7 +107,9 @@ export default function ScrapeMultiplePage() {
         });
         setLogs((prev) => [
           ...prev,
-          `=== Finished chapter ${startChapter + chapterIndex} ===`,
+          `=== Finished chapter ${lockedStartChapter + chapterIndex}/${
+            lockedStartChapter + totalChapters - 1
+          } ===`,
         ]);
       }
     };
@@ -168,17 +183,13 @@ export default function ScrapeMultiplePage() {
       const result = await res.json();
       if (!res.ok) throw new Error(result.error || "Upload failed");
 
+      let msg = "All chapters uploaded successfully!";
       if (result.skipped.length) {
-        alert(
-          `Some chapters were skipped because they already exist: ${result.skipped.join(
-            ", "
-          )}`
-        );
-      } else {
-        alert("All chapters uploaded successfully!");
+        msg += `\nNotice: these chapters were skipped due to already existing: ${result.skipped.join(
+          ", "
+        )}`;
       }
-
-      console.log("Uploaded:", result.uploaded, "Skipped:", result.skipped);
+      alert(msg);
     } catch (err) {
       console.error(err);
       alert(
@@ -244,7 +255,7 @@ export default function ScrapeMultiplePage() {
         </button>
       </div>
 
-      <div className="bg-black text-green-400 p-3 rounded text-sm mb-4 h-48 overflow-y-auto whitespace-pre-wrap font-mono">
+      <div className="bg-black text-green-400 p-3 rounded text-sm mb-4 h-70 overflow-y-scroll whitespace-pre-wrap font-mono">
         {logs.length === 0 && <p className="opacity-50">Waiting for logs...</p>}
         {logs.map((log, i) => (
           <div key={i}>{log}</div>
@@ -261,7 +272,7 @@ export default function ScrapeMultiplePage() {
           >
             {chapterImages.map((_, idx) => (
               <option key={idx} value={idx}>
-                Chapter {startChapter + idx}
+                Chapter {lockedStartChapter + idx}
               </option>
             ))}
           </select>
@@ -271,7 +282,7 @@ export default function ScrapeMultiplePage() {
       {chapterImages[selectedChapter] && (
         <div>
           <h2 className="text-lg font-semibold mb-2">
-            Chapter {startChapter + selectedChapter}
+            Chapter {lockedStartChapter + selectedChapter}
           </h2>
           <button
             onClick={() => resetDeleted(selectedChapter)}
