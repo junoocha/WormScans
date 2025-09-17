@@ -5,7 +5,7 @@ import React, { useState, useEffect } from "react";
 interface ChapterUrlGeneratorModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (urls: string[]) => void;
+  onConfirm: (urls: string[], startChapter: number) => void;
 }
 
 export default function ChapterUrlGeneratorModal({
@@ -141,7 +141,7 @@ export default function ChapterUrlGeneratorModal({
           <button
             className="px-4 py-2 rounded bg-green-600 hover:bg-green-700 text-white"
             onClick={() => {
-              onConfirm(generatedUrls);
+              onConfirm(generatedUrls, startChapter);
               onClose();
             }}
             disabled={generatedUrls.length === 0}

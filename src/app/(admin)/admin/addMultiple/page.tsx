@@ -259,7 +259,10 @@ https://example.com/ch4`}
       <ChapterUrlGeneratorModal
         isOpen={isUrlGeneratorOpen}
         onClose={() => setIsUrlGeneratorOpen(false)}
-        onConfirm={(urls) => setChapterUrls(urls.join("\n"))}
+        onConfirm={(urls, startChapterFromModal) => {
+          setChapterUrls(urls.join("\n"));
+          setStartChapter(startChapterFromModal);
+        }}
       />
 
       <div className="mb-4">
