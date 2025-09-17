@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import SeriesDropdown from "@/components/adminSeriesDropdown";
 import ChapterUrlGeneratorModal from "@/components/generateUrlFromInput";
+import ChapterLinkGeneratorModal from "@/components/chapterLinkGenerator";
 
 export default function ScrapeMultiplePage() {
   const [chapterUrls, setChapterUrls] = useState("");
@@ -23,6 +24,7 @@ export default function ScrapeMultiplePage() {
   const [lockedStartChapter, setLockedStartChapter] = useState(startChapter);
 
   const [isUrlGeneratorOpen, setIsUrlGeneratorOpen] = useState(false);
+  const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchSeries = async () => {
@@ -240,6 +242,15 @@ export default function ScrapeMultiplePage() {
           >
             Generate Links From URL
           </button>
+
+          <div className="mb-4 flex gap-2">
+            <button
+              onClick={() => setIsLinkModalOpen(true)}
+              className="px-4 py-2 rounded bg-purple-600 hover:bg-purple-700 text-white"
+            >
+              Generate from Series Page
+            </button>
+          </div>
         </div>
         <label className="block mb-1 font-medium">
           Chapter URLs (one per line and consecutive)
@@ -262,6 +273,15 @@ https://example.com/ch4`}
         onConfirm={(urls, startChapterFromModal) => {
           setChapterUrls(urls.join("\n"));
           setStartChapter(startChapterFromModal);
+        }}
+      />
+
+      <ChapterLinkGeneratorModal
+        isOpen={isLinkModalOpen}
+        onClose={() => setIsLinkModalOpen(false)}
+        onConfirm={(urls, startChapterFromModal) => {
+          setChapterUrls(urls.join("\n")); // fill textarea
+          setStartChapter(startChapterFromModal); // update start chapter
         }}
       />
 
