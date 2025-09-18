@@ -135,7 +135,7 @@ export async function handleSaveToSupabase({
           series_desc: seriesDescription,
           slug,
           cover_url: coverUrl,
-          status,
+          series_status: status,
           country_origin: countryOrigin,
         }),
       });

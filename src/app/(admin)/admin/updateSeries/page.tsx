@@ -10,7 +10,7 @@ type SeriesDetails = {
   series_desc: string | null;
   slug: string;
   cover_url: string | null;
-  status: string;
+  series_status: string;
   country_origin: string;
   chapters: {
     id: string;
@@ -60,7 +60,7 @@ export default function UpdateSeriesPage() {
           setDetails(res.data);
           setTitle(res.data.series_name || "");
           setDesc(res.data.series_desc || "");
-          setFormStatus(res.data.status || "ongoing");
+          setFormStatus(res.data.series_status || "ongoing");
           setCountryOrigin(res.data.country_origin || "japan");
           setCoverPreview(null); // reset preview when selecting new series
         }
@@ -135,7 +135,7 @@ export default function UpdateSeriesPage() {
         series_name: title.trim(),
         series_desc: desc.trim(),
         cover_url: coverUrl,
-        status: formStatus,
+        series_status: formStatus,
         country_origin: countryOrigin,
       }),
     });
