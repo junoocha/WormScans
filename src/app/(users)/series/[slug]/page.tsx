@@ -7,7 +7,7 @@ interface SeriesPageProps {
 }
 
 export default async function SeriesPage({ params }: SeriesPageProps) {
-  const { slug } = params;
+  const { slug } = await params;
   const { data: series, error } = await fetchSeries({ slug });
 
   if (error || !series) {
