@@ -5,6 +5,7 @@ from urllib.parse import urlparse
 from playwright.sync_api import sync_playwright
 import os
 import sys
+sys.dont_write_bytecode = True
 
 # import the scaper modules. Prob more in the future
 from scraper.domains import fallback, asurascans
