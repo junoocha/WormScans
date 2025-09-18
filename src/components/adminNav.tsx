@@ -10,6 +10,7 @@ export default function AdminNav() {
   const navLinks = [
     { name: "Admin Home", href: "/admin" },
     { name: "Add Series/Chapter", href: "/admin/add" },
+    { name: "Add Multiple Chapters", href: "/admin/addMultiple" },
     { name: "Update Chapter", href: "/admin/updateChapter" },
     { name: "Update Series", href: "/admin/updateSeries" },
   ];
