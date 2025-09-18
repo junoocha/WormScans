@@ -227,6 +227,7 @@ export default function ScrapePage() {
             <option value="ongoing">Ongoing</option>
             <option value="completed">Completed</option>
             <option value="dropped">Dropped</option>
+            <option value="hiatus">Hiatus</option>
           </select>
 
           {/* Country of Origin dropdown */}

@@ -201,6 +201,7 @@ export default function UpdateSeriesPage() {
               <option value="ongoing">Ongoing</option>
               <option value="completed">Completed</option>
               <option value="dropped">Dropped</option>
+              <option value="hiatus">Hiatus</option>
             </select>
           </div>
 
