@@ -188,11 +188,37 @@ export default function ScrapePage() {
 
     if (result.success) {
       alert("Saved successfully!");
-      setSaving(false);
+
+      if (seriesOption === "new") {
+        // Reset everything except seriesOption
+        setSeriesName("");
+        setSeriesDescription("");
+        setCoverFile(undefined);
+        setStatus("ongoing");
+        setCountryOrigin("japan");
+        setUrl("");
+        setChapterNumber("");
+        setChapterTitle("");
+        setLogs([]);
+        setImages([]);
+        setDeletedIndices(new Set());
+        setRemoveFront(0);
+        setRemoveBack(0);
+      } else {
+        // Existing series: reset only chapter-specific things
+        setChapterNumber("");
+        setChapterTitle("");
+        setImages([]);
+        setLogs([]);
+        setDeletedIndices(new Set());
+        setRemoveFront(0);
+        setRemoveBack(0);
+      }
     } else {
       alert("Failed to save: " + result.error);
-      setSaving(false);
     }
+
+    setSaving(false);
   };
 
   // to help logs scroll automatically

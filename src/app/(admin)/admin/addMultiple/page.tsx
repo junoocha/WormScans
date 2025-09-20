@@ -223,6 +223,11 @@ export default function ScrapeMultiplePage() {
       );
     } finally {
       setSaving(false);
+      setChapterImages([]);
+      setDeletedIndicesByChapter([]);
+      setLogs([]);
+      setSelectedChapter(0);
+      setLockedStartChapter(startChapter);
     }
   };
 
