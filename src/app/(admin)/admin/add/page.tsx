@@ -3,6 +3,7 @@
 import React, { useState, useRef, useLayoutEffect } from "react";
 import { handleSaveToSupabase } from "@/lib/saveToSupabase";
 import SeriesDropdown from "@/components/adminSeriesDropdown";
+import { Loader2 } from "lucide-react";
 
 export default function ScrapePage() {
   // input, logs, streaming images
@@ -52,6 +53,9 @@ export default function ScrapePage() {
     (isNewSeries
       ? seriesName.trim() !== "" && seriesDescription.trim() !== ""
       : selectedSeriesId !== "");
+
+  // to show supabase upload is working
+  const [saving, setSaving] = useState(false);
 
   // Fetch existing series when the page loads
   React.useEffect(() => {
@@ -167,6 +171,7 @@ export default function ScrapePage() {
   };
 
   const handleClick = async () => {
+    setSaving(true);
     const result = await handleSaveToSupabase({
       seriesOption,
       seriesName,
@@ -183,8 +188,10 @@ export default function ScrapePage() {
 
     if (result.success) {
       alert("Saved successfully!");
+      setSaving(false);
     } else {
       alert("Failed to save: " + result.error);
+      setSaving(false);
     }
   };
 
@@ -374,7 +381,7 @@ export default function ScrapePage() {
       </div>
 
       {/* Trim controls */}
-      <div className="flex items-end gap-2 mb-4">
+      <div className="flex flex-wrap items-end gap-2 mb-4">
         <div className="flex flex-col">
           <label className="text-xs mb-1">Delete from front</label>
           <input
@@ -385,6 +392,7 @@ export default function ScrapePage() {
             onChange={(e) => setRemoveFront(Number(e.target.value || 0))}
           />
         </div>
+
         <div className="flex flex-col">
           <label className="text-xs mb-1">Delete from back</label>
           <input
@@ -395,22 +403,24 @@ export default function ScrapePage() {
             onChange={(e) => setRemoveBack(Number(e.target.value || 0))}
           />
         </div>
+
         <button
-          className={`px-3 py-2 rounded ${
+          className={`px-3 py-2 rounded text-white ${
             images.length === 0
               ? "bg-gray-400 cursor-not-allowed"
-              : "bg-red-600 text-white"
+              : "bg-red-600 hover:bg-red-700"
           }`}
           onClick={handleApplyTrimClick}
           disabled={images.length === 0}
         >
           Apply Trim
         </button>
+
         <button
-          className={`px-3 py-2 rounded ${
+          className={`px-3 py-2 rounded text-white ${
             images.length === 0 && deletedIndices.size === 0
               ? "bg-gray-400 cursor-not-allowed"
-              : "bg-gray-600 text-white"
+              : "bg-gray-600 hover:bg-gray-700"
           }`}
           onClick={handleResetTrimClick}
           disabled={images.length === 0 && deletedIndices.size === 0}
@@ -419,15 +429,16 @@ export default function ScrapePage() {
         </button>
 
         <button
-          className={`px-3 py-2 rounded text-white ${
-            canSave
+          onClick={handleClick}
+          disabled={!canSave || saving}
+          className={`px-3 py-2 rounded text-white flex items-center justify-center gap-2 ${
+            canSave && !saving
               ? "bg-green-600 hover:bg-green-700"
               : "bg-gray-400 cursor-not-allowed"
           }`}
-          onClick={handleClick}
-          disabled={!canSave}
         >
-          Save to Supabase
+          {saving && <Loader2 className="animate-spin w-4 h-4" />}
+          <span>{saving ? "Saving..." : "Save Chapter"}</span>
         </button>
       </div>
 

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import SeriesDropdown from "@/components/adminSeriesDropdown";
 import ChapterUrlGeneratorModal from "@/components/generateUrlFromInput";
 import ChapterLinkGeneratorModal from "@/components/chapterLinkGenerator";
+import { Loader2 } from "lucide-react";
 
 export default function ScrapeMultiplePage() {
   const [chapterUrls, setChapterUrls] = useState("");
@@ -34,6 +35,9 @@ export default function ScrapeMultiplePage() {
     chapterImages.every((imgs) => imgs.length > 0) &&
     !loading;
   const canSave = selectedSeriesId !== "" && allChaptersScraped;
+
+  // to show supabase upload is working
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const fetchSeries = async () => {
@@ -185,6 +189,8 @@ export default function ScrapeMultiplePage() {
       return;
     }
 
+    setSaving(true);
+
     const chaptersToUpload = chapterImages.map((images, idx) => ({
       chapter_number: lockedStartChapter + idx,
       images: imagesDeletedIndicesRemoved(idx),
@@ -215,6 +221,8 @@ export default function ScrapeMultiplePage() {
       alert(
         "Upload failed: " + (err instanceof Error ? err.message : String(err))
       );
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -372,31 +380,34 @@ https://example.com/ch4`}
           <h2 className="text-lg font-semibold mb-2">
             Chapter {lockedStartChapter + selectedChapter}
           </h2>
-          <button
-            onClick={() => resetDeleted(selectedChapter)}
-            className="px-3 py-2 mb-4 text-sm rounded bg-red-600 hover:bg-red-700 text-white"
-          >
-            Reset Deleted
-          </button>
+          <div className="flex flex-wrap items-center mb-4 gap-2">
+            <button
+              onClick={() => resetDeleted(selectedChapter)}
+              className="px-3 py-2 text-sm rounded bg-red-600 hover:bg-red-700 text-white"
+            >
+              Reset Deleted
+            </button>
 
-          <button
-            onClick={resetAllDeleted}
-            className="px-3 py-2 mx-4 mb-4 text-sm rounded bg-red-600 hover:bg-red-800 text-white"
-          >
-            Reset ALL Deleted
-          </button>
+            <button
+              onClick={resetAllDeleted}
+              className="px-3 py-2 text-sm rounded bg-red-600 hover:bg-red-800 text-white"
+            >
+              Reset ALL Deleted
+            </button>
 
-          <button
-            onClick={handleUploadMultiple}
-            disabled={!canSave}
-            className={`px-4 py-2 text-sm rounded text-white ${
-              canSave
-                ? "bg-green-600 hover:bg-green-700"
-                : "bg-gray-400 cursor-not-allowed"
-            }`}
-          >
-            Save All Chapters
-          </button>
+            <button
+              onClick={handleUploadMultiple}
+              disabled={!canSave || saving}
+              className={`px-3 py-2 text-sm rounded text-white flex items-center justify-center gap-2 ${
+                canSave && !saving
+                  ? "bg-green-600 hover:bg-green-700"
+                  : "bg-gray-400 cursor-not-allowed"
+              }`}
+            >
+              {saving && <Loader2 className="animate-spin w-4 h-4" />}
+              <span>{saving ? "Saving..." : "Save All Chapters"}</span>
+            </button>
+          </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
             {chapterImages[selectedChapter].map((src, imgIdx) => {
