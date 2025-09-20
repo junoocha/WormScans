@@ -43,6 +43,16 @@ export default function ScrapePage() {
   const [status, setStatus] = useState("ongoing");
   const [countryOrigin, setCountryOrigin] = useState("japan");
 
+  // to prevent supabase button from prematurely being clickable
+  const isNewSeries = seriesOption === "new";
+  const canSave =
+    !loading && // wait until scraping is fully finished
+    images.length > 0 &&
+    chapterNumber.trim() !== "" &&
+    (isNewSeries
+      ? seriesName.trim() !== "" && seriesDescription.trim() !== ""
+      : selectedSeriesId !== "");
+
   // Fetch existing series when the page loads
   React.useEffect(() => {
     const fetchSeries = async () => {
@@ -409,13 +419,13 @@ export default function ScrapePage() {
         </button>
 
         <button
-          className={`px-3 py-2 rounded ${
-            images.length === 0
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-green-600 text-white"
+          className={`px-3 py-2 rounded text-white ${
+            canSave
+              ? "bg-green-600 hover:bg-green-700"
+              : "bg-gray-400 cursor-not-allowed"
           }`}
           onClick={handleClick}
-          disabled={images.length === 0}
+          disabled={!canSave}
         >
           Save to Supabase
         </button>

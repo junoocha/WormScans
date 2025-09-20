@@ -28,6 +28,13 @@ export default function ScrapeMultiplePage() {
   const [isUrlGeneratorOpen, setIsUrlGeneratorOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
 
+  // prevent save to supabase button from prematurely being able to click
+  const allChaptersScraped =
+    chapterImages.length > 0 &&
+    chapterImages.every((imgs) => imgs.length > 0) &&
+    !loading;
+  const canSave = selectedSeriesId !== "" && allChaptersScraped;
+
   useEffect(() => {
     const fetchSeries = async () => {
       try {
@@ -381,8 +388,12 @@ https://example.com/ch4`}
 
           <button
             onClick={handleUploadMultiple}
-            disabled={chapterImages.length === 0}
-            className="px-4 py-2 text-sm rounded bg-green-600 hover:bg-green-700 text-white"
+            disabled={!canSave}
+            className={`px-4 py-2 text-sm rounded text-white ${
+              canSave
+                ? "bg-green-600 hover:bg-green-700"
+                : "bg-gray-400 cursor-not-allowed"
+            }`}
           >
             Save All Chapters
           </button>
