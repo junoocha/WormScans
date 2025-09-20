@@ -5,6 +5,7 @@ import path from "path";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
+  const lazyFlag = searchParams.get("lazy") ?? "true";
 
   // Expect URLs as comma-separated string
   const urlsParam = searchParams.get("urls");
@@ -36,7 +37,7 @@ export async function GET(req: NextRequest) {
               env: {
                 ...process.env,
                 TARGET_URL: url,
-                USE_LAZY: "true",
+                USE_LAZY: lazyFlag,
                 PYTHONPATH: path.join(process.cwd()),
               },
             }

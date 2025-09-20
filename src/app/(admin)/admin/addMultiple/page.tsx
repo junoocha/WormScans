@@ -12,6 +12,7 @@ export default function ScrapeMultiplePage() {
   const [logs, setLogs] = useState<string[]>([]);
   const logsContainerRef = useRef<HTMLDivElement | null>(null);
   const [autoScroll, setAutoScroll] = useState(true);
+  const [lazyLoad, setLazyLoad] = useState(false);
   const [chapterImages, setChapterImages] = useState<string[][]>([]);
   const [deletedIndicesByChapter, setDeletedIndicesByChapter] = useState<
     Set<number>[]
@@ -57,7 +58,7 @@ export default function ScrapeMultiplePage() {
     fetchSeries();
   }, []);
 
-  const handleScrapeMultiple = () => {
+  const handleScrapeMultiple = (currentLazy = lazyLoad) => {
     const urls = chapterUrls
       .split("\n")
       .map((u) => u.trim())
@@ -81,7 +82,7 @@ export default function ScrapeMultiplePage() {
 
     const urlParam = encodeURIComponent(urls.join(","));
     const eventSource = new EventSource(
-      `/api/scrapeMultiple/manuallyPutChapters?urls=${urlParam}`
+      `/api/scrapeMultiple/manuallyPutChapters?urls=${urlParam}&lazy=${currentLazy}`
     );
 
     const imagesByChapter: string[][] = urls.map(() => []);
@@ -338,6 +339,20 @@ https://example.com/ch4`}
         />
       </div>
 
+      {/* Lazy Load Toggle */}
+      <div className="flex items-center gap-2 mb-4">
+        <input
+          type="checkbox"
+          id="lazyToggleMulti"
+          checked={lazyLoad}
+          onChange={() => setLazyLoad(!lazyLoad)}
+          className="cursor-pointer"
+        />
+        <label htmlFor="lazyToggleMulti" className="text-sm cursor-pointer">
+          Enable Lazy Loading Scroll
+        </label>
+      </div>
+
       <div className="mb-4">
         <button
           className={`px-4 py-2 rounded text-white ${
@@ -345,7 +360,7 @@ https://example.com/ch4`}
               ? "bg-gray-400 cursor-not-allowed"
               : "bg-blue-600 hover:bg-blue-700"
           }`}
-          onClick={handleScrapeMultiple}
+          onClick={() => handleScrapeMultiple(lazyLoad)}
           disabled={loading}
         >
           {loading ? "Scraping..." : "Start Scraping"}
