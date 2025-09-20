@@ -414,24 +414,28 @@ https://example.com/ch4`}
             </button>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-            {chapterImages[selectedChapter].map((src, imgIdx) => {
-              const isDeleted =
-                deletedIndicesByChapter[selectedChapter]?.has(imgIdx);
-              return (
-                <img
-                  key={imgIdx}
-                  src={src}
-                  alt={`Chapter ${lockedStartChapter + selectedChapter} img ${
-                    imgIdx + 1
-                  }`}
-                  onClick={() => toggleDelete(selectedChapter, imgIdx)}
-                  className={`rounded shadow border-4 cursor-pointer ${
-                    isDeleted ? "border-red-500 opacity-60" : "border-blue-500"
-                  }`}
-                />
-              );
-            })}
+          <div className="max-h-[90vh] overflow-y-scroll pr-2 pb-20">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {chapterImages[selectedChapter].map((src, imgIdx) => {
+                const isDeleted =
+                  deletedIndicesByChapter[selectedChapter]?.has(imgIdx);
+                return (
+                  <img
+                    key={imgIdx}
+                    src={src}
+                    alt={`Chapter ${lockedStartChapter + selectedChapter} img ${
+                      imgIdx + 1
+                    }`}
+                    onClick={() => toggleDelete(selectedChapter, imgIdx)}
+                    className={`rounded shadow border-4 cursor-pointer ${
+                      isDeleted
+                        ? "border-red-500 opacity-60"
+                        : "border-blue-500"
+                    }`}
+                  />
+                );
+              })}
+            </div>
           </div>
         </div>
       )}

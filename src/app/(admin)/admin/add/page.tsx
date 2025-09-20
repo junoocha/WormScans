@@ -242,7 +242,7 @@ export default function ScrapePage() {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-6 max-w-5xl mx-auto">
       <h1 className="text-2xl font-bold mb-4"> Web Scraper Admin</h1>
 
       <div className="mb-4 flex gap-4 items-center">
@@ -481,7 +481,7 @@ export default function ScrapePage() {
       </div>
 
       {/* images wooo */}
-      <div className="max-h-[400px] overflow-y-auto pr-2">
+      <div className="max-h-[90vh] overflow-y-scroll pr-2 pb-20">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {images.map((src, i) => {
             const isDeleted = deletedIndices.has(i);

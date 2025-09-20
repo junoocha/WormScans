@@ -39,7 +39,7 @@ body {
 
 /* Scrollbar for chapter lists or any overflow */
 ::-webkit-scrollbar {
-  width: 2px;
+  width: 8px;
 }
 ::-webkit-scrollbar-track {
   background: var(--background);
