@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useLayoutEffect } from "react";
 import { handleSaveToSupabase } from "@/lib/saveToSupabase";
 import SeriesDropdown from "@/components/adminSeriesDropdown";
 
@@ -8,6 +8,8 @@ export default function ScrapePage() {
   // input, logs, streaming images
   const [url, setUrl] = useState("");
   const [logs, setLogs] = useState<string[]>([]);
+  const logsContainerRef = useRef<HTMLDivElement | null>(null);
+  const [autoScroll, setAutoScroll] = useState(true);
   const [images, setImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(false); // for the webscraping button
 
@@ -174,6 +176,26 @@ export default function ScrapePage() {
     } else {
       alert("Failed to save: " + result.error);
     }
+  };
+
+  // to help logs scroll automatically
+  useLayoutEffect(() => {
+    if (autoScroll && logsContainerRef.current) {
+      logsContainerRef.current.scrollTop =
+        logsContainerRef.current.scrollHeight;
+    }
+  }, [logs, autoScroll]);
+
+  // to help logs scroll automatically
+  const handleScroll = () => {
+    const container = logsContainerRef.current;
+    if (!container) return;
+
+    const isAtBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight <
+      50;
+
+    setAutoScroll(isAtBottom);
   };
 
   return (
@@ -400,7 +422,11 @@ export default function ScrapePage() {
       </div>
 
       {/* console logs */}
-      <div className="bg-black text-green-400 p-3 rounded text-sm mb-4 h-48 overflow-y-auto whitespace-pre-wrap font-mono">
+      <div
+        ref={logsContainerRef}
+        onScroll={handleScroll}
+        className="bg-black text-green-400 p-3 rounded text-sm mb-4 h-48 overflow-y-auto  overflow-x-hidden whitespace-pre-wrap font-mono"
+      >
         {logs.length === 0 && <p className="opacity-50">Waiting for logs...</p>}
         {logs.map((log, i) => (
           <div key={i}>{log}</div>

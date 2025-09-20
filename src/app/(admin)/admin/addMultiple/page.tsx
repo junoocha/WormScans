@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import SeriesDropdown from "@/components/adminSeriesDropdown";
 import ChapterUrlGeneratorModal from "@/components/generateUrlFromInput";
 import ChapterLinkGeneratorModal from "@/components/chapterLinkGenerator";
@@ -9,6 +9,8 @@ export default function ScrapeMultiplePage() {
   const [chapterUrls, setChapterUrls] = useState("");
   const [startChapter, setStartChapter] = useState(1);
   const [logs, setLogs] = useState<string[]>([]);
+  const logsContainerRef = useRef<HTMLDivElement | null>(null);
+  const [autoScroll, setAutoScroll] = useState(true);
   const [chapterImages, setChapterImages] = useState<string[][]>([]);
   const [deletedIndicesByChapter, setDeletedIndicesByChapter] = useState<
     Set<number>[]
@@ -215,6 +217,26 @@ export default function ScrapeMultiplePage() {
     return chapterImages[chapterIdx].filter((_, i) => !deletedSet.has(i));
   };
 
+  // to help logs scroll automatically
+  useLayoutEffect(() => {
+    if (autoScroll && logsContainerRef.current) {
+      logsContainerRef.current.scrollTop =
+        logsContainerRef.current.scrollHeight;
+    }
+  }, [logs, autoScroll]);
+
+  // to help logs scroll automatically
+  const handleScroll = () => {
+    const container = logsContainerRef.current;
+    if (!container) return;
+
+    const isAtBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight <
+      50;
+
+    setAutoScroll(isAtBottom);
+  };
+
   return (
     <div className="p-6 max-w-5xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Scrape Multiple Chapters</h1>
@@ -310,7 +332,11 @@ https://example.com/ch4`}
         </button>
       </div>
 
-      <div className="bg-black text-green-400 p-3 rounded text-sm mb-4 h-70 overflow-y-scroll whitespace-pre-wrap font-mono">
+      <div
+        ref={logsContainerRef}
+        onScroll={handleScroll}
+        className="bg-black text-green-400 p-3 rounded text-sm mb-4 h-48 overflow-y-auto  overflow-x-hidden whitespace-pre-wrap font-mono"
+      >
         {logs.length === 0 && <p className="opacity-50">Waiting for logs...</p>}
         {logs.map((log, i) => (
           <div key={i}>{log}</div>
