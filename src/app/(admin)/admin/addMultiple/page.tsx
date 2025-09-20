@@ -386,6 +386,38 @@ https://example.com/ch4`}
             Chapter {lockedStartChapter + selectedChapter}
           </h2>
           <div className="flex flex-wrap items-center mb-4 gap-2">
+            {/* Prev/Next navigation */}
+            <button
+              onClick={() =>
+                setSelectedChapter((prev) => Math.max(prev - 1, 0))
+              }
+              disabled={selectedChapter === 0}
+              className={`px-3 py-2 text-sm rounded text-white ${
+                selectedChapter === 0
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700"
+              }`}
+            >
+              ◀ Prev
+            </button>
+
+            <button
+              onClick={() =>
+                setSelectedChapter((prev) =>
+                  Math.min(prev + 1, chapterImages.length - 1)
+                )
+              }
+              disabled={selectedChapter === chapterImages.length - 1}
+              className={`px-3 py-2 text-sm rounded text-white ${
+                selectedChapter === chapterImages.length - 1
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700"
+              }`}
+            >
+              Next ▶
+            </button>
+
+            {/* Reset buttons */}
             <button
               onClick={() => resetDeleted(selectedChapter)}
               className="px-3 py-2 text-sm rounded bg-red-600 hover:bg-red-700 text-white"
@@ -400,6 +432,7 @@ https://example.com/ch4`}
               Reset ALL Deleted
             </button>
 
+            {/* Save all chapters */}
             <button
               onClick={handleUploadMultiple}
               disabled={!canSave || saving}
