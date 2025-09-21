@@ -19,7 +19,7 @@ export default function NavBar() {
 
   const navLinks = [
     { name: "Home", href: "/" },
-    { name: "Bookmarks", href: "/bookmarks" },
+    // { name: "Bookmarks", href: "/bookmarks" },
     { name: "Comics", href: "/series" },
   ];
 
