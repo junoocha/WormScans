@@ -77,7 +77,7 @@ export default async function SeriesPage({ params }: SeriesPageProps) {
             )}
 
             {/* New row stacked below */}
-            <div className="flex justify-between items-center mt-10 text-sm text-gray-300">
+            <div className="flex justify-between items-center mt-10 text-gray-300">
               <span>
                 <strong className="text-white">Country of Origin:</strong>{" "}
                 {formatOrigin(series.country_origin)}
