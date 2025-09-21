@@ -5,6 +5,7 @@ import SeriesDropdown from "@/components/adminSeriesDropdown";
 import ChapterUrlGeneratorModal from "@/components/generateUrlFromInput";
 import ChapterLinkGeneratorModal from "@/components/chapterLinkGenerator";
 import { Loader2 } from "lucide-react";
+import toast from "react-hot-toast";
 
 export default function ScrapeMultiplePage() {
   const [chapterUrls, setChapterUrls] = useState("");
@@ -68,11 +69,11 @@ export default function ScrapeMultiplePage() {
       .filter(Boolean);
 
     if (!selectedSeriesId) {
-      alert("Please select a series.");
+      toast.error("Please select a series.");
       return;
     }
     if (urls.length === 0) {
-      alert("Please enter at least one chapter URL.");
+      toast.error("Please enter at least one chapter URL.");
       return;
     }
 
@@ -189,7 +190,7 @@ export default function ScrapeMultiplePage() {
 
   const handleUploadMultiple = async () => {
     if (!selectedSeriesId) {
-      alert("Please select a series.");
+      toast.error("Please select a series.");
       return;
     }
 
@@ -215,15 +216,18 @@ export default function ScrapeMultiplePage() {
 
       let msg = "All chapters uploaded successfully!";
       if (result.skipped.length) {
-        msg += `\nNotice: these chapters were skipped due to already existing: ${result.skipped.join(
+        msg += `\n\nNotice: these chapters were skipped due to already existing: ${result.skipped.join(
           ", "
         )}`;
       }
-      alert(msg);
+      toast.success(msg, {
+        duration: 5500,
+        style: { whiteSpace: "pre-line" },
+      });
     } catch (err) {
       console.error(err);
-      alert(
-        "Upload failed: " + (err instanceof Error ? err.message : String(err))
+      toast.error(
+        "Failed to save: " + (err instanceof Error ? err.message : String(err))
       );
     } finally {
       setSaving(false);

@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import SeriesDropdown from "@/components/adminSeriesDropdown";
 import ChapterCard from "@/components/chapterCard";
+import toast from "react-hot-toast";
+import { Loader2 } from "lucide-react";
 
 type SeriesOption = { id: string; series_name: string };
 type ChapterOption = {
@@ -27,8 +29,8 @@ export default function UpdateChapterPage() {
   const [chapterNumber, setChapterNumber] = useState("");
   const [title, setTitle] = useState("");
   const [images, setImages] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState("");
+  const [saveLoading, setSaveLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const [deletedIndices, setDeletedIndices] = useState<Set<number>>(new Set());
   const [chapterCoverIndex, setChapterCoverIndex] = useState<number | null>(
@@ -120,45 +122,42 @@ export default function UpdateChapterPage() {
 
   const handleSave = async () => {
     if (!details) return;
-
     if (!/^\d+$/.test(chapterNumber)) {
-      setStatus("Chapter number must be numeric");
+      toast.error("Chapter number must be numeric");
       return;
     }
-
     const duplicate = chapterList.find(
       (ch) =>
         ch.chapter_number.toString() === chapterNumber.trim() &&
         ch.id !== details.id
     );
     if (duplicate) {
-      setStatus(`Chapter ${chapterNumber} already exists in this series`);
+      toast.error(`Chapter ${chapterNumber} already exists in this series`);
       return;
     }
 
     const safeTitle = title.trim();
-    setLoading(true);
-    setStatus("Saving...");
+    setSaveLoading(true);
 
     const keptImages = images.filter((_, i) => !deletedIndices.has(i));
     const coverUrl =
       chapterCoverIndex !== null ? keptImages[chapterCoverIndex] : undefined;
 
-    const res = await fetch(`/api/admin/updateChapter/${details.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chapter_number: parseInt(chapterNumber, 10),
-        title: safeTitle || null,
-        image_urls: keptImages,
-        chapter_cover_url: coverUrl,
-      }),
-    });
+    try {
+      const res = await fetch(`/api/admin/updateChapter/${details.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chapter_number: parseInt(chapterNumber, 10),
+          title: safeTitle || null,
+          image_urls: keptImages,
+          chapter_cover_url: coverUrl,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Unknown error");
 
-    const data = await res.json();
-    if (!res.ok) setStatus("Error saving: " + (data.error || "Unknown error"));
-    else {
-      setStatus("Chapter updated successfully!");
+      toast.success("Chapter updated successfully!", { duration: 7000 });
       setDetails({
         ...details,
         chapter_number: parseInt(chapterNumber, 10),
@@ -167,9 +166,14 @@ export default function UpdateChapterPage() {
       });
       setImages(keptImages);
       setDeletedIndices(new Set());
+      setChapterCoverIndex(null);
+    } catch (err: any) {
+      toast.error("Error saving chapter: " + (err.message || err), {
+        duration: 10000,
+      });
+    } finally {
+      setSaveLoading(false);
     }
-
-    setLoading(false);
   };
 
   const handleDeleteChapter = async () => {
@@ -181,33 +185,31 @@ export default function UpdateChapterPage() {
     )
       return;
 
-    setLoading(true);
-    setStatus("Deleting chapter...");
+    setDeleteLoading(true);
 
     try {
       const res = await fetch(`/api/admin/deleteChapter/${details.id}`, {
         method: "DELETE",
       });
       const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Unknown error");
 
-      if (!res.ok)
-        setStatus("Error deleting chapter: " + (data.error || "Unknown error"));
-      else {
-        setStatus("Chapter deleted successfully!");
-        setChapterList((prev) => prev.filter((ch) => ch.id !== details.id));
-        setSelectedChapterId("");
-        setDetails(null);
-        setChapterNumber("");
-        setTitle("");
-        setImages([]);
-        setDeletedIndices(new Set());
-      }
-    } catch (err) {
-      console.error(err);
-      setStatus("Error deleting chapter: " + err);
+      toast.success("Chapter deleted successfully!", { duration: 7000 });
+      setChapterList((prev) => prev.filter((ch) => ch.id !== details.id));
+      setSelectedChapterId("");
+      setDetails(null);
+      setChapterNumber("");
+      setTitle("");
+      setImages([]);
+      setDeletedIndices(new Set());
+      setChapterCoverIndex(null);
+    } catch (err: any) {
+      toast.error("Error deleting chapter: " + (err.message || err), {
+        duration: 10000,
+      });
+    } finally {
+      setDeleteLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (
@@ -306,24 +308,27 @@ export default function UpdateChapterPage() {
             </div>
           </div>
 
-          <button
-            onClick={handleSave}
-            disabled={loading}
-            className="px-4 py-2 bg-green-500 hover:bg-green-400 text-black font-semibold rounded"
-          >
-            {loading ? "Saving..." : "Save Changes"}
-          </button>
+          <div className="flex gap-3 mt-4">
+            <button
+              onClick={handleSave}
+              disabled={saveLoading}
+              className="px-4 py-2 bg-green-500 hover:bg-green-400 text-black font-semibold rounded flex items-center gap-2"
+            >
+              {saveLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+              {saveLoading ? "Saving..." : "Save Changes"}
+            </button>
 
-          <button
-            onClick={handleDeleteChapter}
-            className="mt-3 ml-3 px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded"
-          >
-            Delete Chapter
-          </button>
+            <button
+              onClick={handleDeleteChapter}
+              disabled={deleteLoading}
+              className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded flex items-center gap-2"
+            >
+              {deleteLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+              {deleteLoading ? "Deleting..." : "Delete Chapter"}
+            </button>
+          </div>
         </div>
       )}
-
-      {status && <p className="mt-4 text-sm text-gray-400">{status}</p>}
     </div>
   );
 }

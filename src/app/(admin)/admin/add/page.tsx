@@ -4,6 +4,7 @@ import React, { useState, useRef, useLayoutEffect } from "react";
 import { handleSaveToSupabase } from "@/lib/saveToSupabase";
 import SeriesDropdown from "@/components/adminSeriesDropdown";
 import { Loader2 } from "lucide-react";
+import toast from "react-hot-toast";
 
 export default function ScrapePage() {
   // input, logs, streaming images
@@ -187,7 +188,7 @@ export default function ScrapePage() {
     });
 
     if (result.success) {
-      alert("Saved successfully!");
+      toast.success("Saved successfully!");
 
       if (seriesOption === "new") {
         // Reset everything except seriesOption
@@ -215,7 +216,7 @@ export default function ScrapePage() {
         setRemoveBack(0);
       }
     } else {
-      alert("Failed to save: " + result.error);
+      toast.error("Failed to save: " + result.error);
     }
 
     setSaving(false);
