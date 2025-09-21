@@ -17,6 +17,8 @@ export type SeriesDetail = {
   chapters: Chapter[];
   slug: string;
   cover_url: string;
+  country_origin: string;
+  series_status: string;
 };
 
 export async function fetchSeries(seriesIdentifier: {
@@ -35,6 +37,8 @@ export async function fetchSeries(seriesIdentifier: {
       series_desc,
       slug,
       cover_url,
+      country_origin,
+      series_status,
       chapters (
         id,
         chapter_number,

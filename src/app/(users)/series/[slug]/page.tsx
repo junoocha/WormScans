@@ -6,6 +6,24 @@ interface SeriesPageProps {
   params: { slug: string };
 }
 
+function formatOrigin(origin: string | null) {
+  switch (origin?.toLowerCase()) {
+    case "korea":
+      return "Korea / Manhwa";
+    case "japan":
+      return "Japan / Manga";
+    case "china":
+      return "China / Manhua";
+    default:
+      return origin || "Unknown";
+  }
+}
+
+function capitalizeFirst(text: string | null) {
+  if (!text) return "Unknown";
+  return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+}
+
 export default async function SeriesPage({ params }: SeriesPageProps) {
   const { slug } = await params;
   const { data: series, error } = await fetchSeries({ slug });
@@ -57,6 +75,18 @@ export default async function SeriesPage({ params }: SeriesPageProps) {
                 {series.series_desc}
               </p>
             )}
+
+            {/* New row stacked below */}
+            <div className="flex justify-between items-center mt-10 text-sm text-gray-300">
+              <span>
+                <strong className="text-white">Country of Origin:</strong>{" "}
+                {formatOrigin(series.country_origin)}
+              </span>
+              <span>
+                <strong className="text-white">Status:</strong>{" "}
+                {capitalizeFirst(series.series_status)}
+              </span>
+            </div>
           </div>
         </div>
 
