@@ -14,7 +14,7 @@ export default async function HomePage() {
   }
 
   return (
-    <main className="p-6 max-w-6xl mx-auto">
+    <main className="p-6 sm:p-6 max-w-6xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">Recent Updates</h1>
 
       {seriesList.length === 0 ? (
@@ -38,7 +38,7 @@ export default async function HomePage() {
             <div className="flex justify-center gap-4 mt-8">
               <a
                 href="/page/2"
-                className="px-4 py-2 rounded font-semibold transition bg-[var(--accent)] text-white hover:opacity-70"
+                className="px-4 py-2 w-full sm:w-auto text-center rounded font-semibold transition bg-[var(--accent)] text-white hover:opacity-70"
               >
                 Next →
               </a>
