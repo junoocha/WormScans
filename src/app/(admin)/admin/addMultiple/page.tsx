@@ -30,6 +30,9 @@ export default function ScrapeMultiplePage() {
   const [isUrlGeneratorOpen, setIsUrlGeneratorOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
 
+  const [removeFront, setRemoveFront] = useState(0);
+  const [removeBack, setRemoveBack] = useState(0);
+
   // prevent save to supabase button from prematurely being able to click
   const allChaptersScraped =
     chapterImages.length > 0 &&
@@ -258,6 +261,30 @@ export default function ScrapeMultiplePage() {
     setAutoScroll(isAtBottom);
   };
 
+  const applyTrimAll = () => {
+    setDeletedIndicesByChapter((prev) => {
+      const updated = prev.map((_, chapterIdx) => {
+        const toDelete = new Set<number>();
+        const total = chapterImages[chapterIdx]?.length || 0;
+
+        const front = Math.max(0, Math.min(removeFront, total));
+        const back = Math.max(0, Math.min(removeBack, total - front));
+
+        for (let i = 0; i < front; i++) toDelete.add(i);
+        for (let i = Math.max(total - back, 0); i < total; i++) toDelete.add(i);
+
+        return toDelete;
+      });
+      return updated;
+    });
+  };
+
+  const resetTrimAll = () => {
+    setDeletedIndicesByChapter((prev) => prev.map(() => new Set<number>()));
+    setRemoveFront(0);
+    setRemoveBack(0);
+  };
+
   return (
     <div className="p-6 max-w-5xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Scrape Multiple Chapters</h1>
@@ -400,8 +427,8 @@ https://example.com/ch4`}
           <h2 className="text-lg font-semibold mb-2">
             Chapter {lockedStartChapter + selectedChapter}
           </h2>
-          <div className="flex flex-wrap items-center mb-4 gap-2">
-            {/* Prev/Next navigation */}
+          {/* Row 1: Prev / Next + Reset */}
+          <div className="flex flex-wrap items-center mb-5 gap-2">
             <button
               onClick={() =>
                 setSelectedChapter((prev) => Math.max(prev - 1, 0))
@@ -432,22 +459,72 @@ https://example.com/ch4`}
               Next ▶
             </button>
 
-            {/* Reset buttons */}
             <button
               onClick={() => resetDeleted(selectedChapter)}
               className="px-3 py-2 text-sm rounded bg-red-600 hover:bg-red-700 text-white"
             >
-              Reset Deleted
+              Reset Selected Deleted
             </button>
 
             <button
               onClick={resetAllDeleted}
               className="px-3 py-2 text-sm rounded bg-red-600 hover:bg-red-800 text-white"
             >
-              Reset ALL Deleted
+              Reset All Selected Deleted
+            </button>
+          </div>
+
+          {/* Row 2: Global Trim Controls */}
+          <div className="flex flex-wrap items-end gap-2 mb-5">
+            <div className="flex flex-col">
+              <label className="text-xs mb-1">Delete from front</label>
+              <input
+                type="number"
+                min="0"
+                className="border rounded px-3 py-1 w-28"
+                value={removeFront}
+                onChange={(e) => setRemoveFront(Number(e.target.value || 0))}
+              />
+            </div>
+
+            <div className="flex flex-col">
+              <label className="text-xs mb-1">Delete from back</label>
+              <input
+                type="number"
+                min="0"
+                className="border rounded px-3 py-1 w-28"
+                value={removeBack}
+                onChange={(e) => setRemoveBack(Number(e.target.value || 0))}
+              />
+            </div>
+
+            <button
+              className={`px-3 py-2 rounded text-white ${
+                chapterImages.length === 0
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-red-600 hover:bg-red-700"
+              }`}
+              onClick={applyTrimAll}
+              disabled={chapterImages.length === 0}
+            >
+              Apply Trim
             </button>
 
-            {/* Save all chapters */}
+            <button
+              className={`px-3 py-2 rounded text-white ${
+                chapterImages.length === 0
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-gray-600 hover:bg-gray-700"
+              }`}
+              onClick={resetTrimAll}
+              disabled={chapterImages.length === 0}
+            >
+              Reset
+            </button>
+          </div>
+
+          {/* Row 3: Save All */}
+          <div className="flex mb-4">
             <button
               onClick={handleUploadMultiple}
               disabled={!canSave || saving}
