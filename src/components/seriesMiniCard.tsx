@@ -18,7 +18,7 @@ export default function SeriesMiniCard({
       className="block bg-[var(--card-bg)] rounded-xl shadow-md overflow-hidden hover:shadow-lg transition"
     >
       {/* Cover */}
-      <div className="w-full h-56 bg-[var(--card-hover)]">
+      <div className="w-full h-50 sm:h-56 bg-[var(--card-hover)]">
         {coverUrl ? (
           <img
             src={coverUrl}

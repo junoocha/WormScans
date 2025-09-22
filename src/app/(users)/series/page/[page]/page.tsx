@@ -67,7 +67,7 @@ export default async function SeriesPaginatedPage({
         <select
           name="series_status"
           defaultValue={statusFilter || ""}
-          className="px-3 py-2 border rounded bg-[var(--card-bg)] text-white"
+          className="px-2 py-1 border rounded bg-[var(--card-bg)] text-white text-sm"
         >
           <option value="">All Status</option>
           {statusOptions.map((s) => (
@@ -80,7 +80,7 @@ export default async function SeriesPaginatedPage({
         <select
           name="country"
           defaultValue={countryUI || ""}
-          className="px-3 py-2 border rounded bg-[var(--card-bg)] text-white"
+          className="px-2 py-1 border rounded bg-[var(--card-bg)] text-white text-sm"
         >
           <option value="">All Origins</option>
           {countryOptions.map((c) => (
@@ -92,7 +92,7 @@ export default async function SeriesPaginatedPage({
 
         <button
           type="submit"
-          className="px-4 py-2 bg-[var(--accent)] text-white rounded hover:opacity-70 font-semibold"
+          className="px-3 py-1 bg-[var(--accent)] text-white rounded hover:opacity-70 font-semibold text-sm"
         >
           Apply
         </button>
@@ -114,19 +114,19 @@ export default async function SeriesPaginatedPage({
           </div>
 
           {/* Pagination */}
-          <div className="flex justify-center gap-4 mt-8">
+          <div className="flex flex-col sm:flex-row justify-center gap-4 mt-8">
             {pageNumber > 1 ? (
               <a
                 href={`/series/page/${pageNumber - 1}${buildQuery(
                   statusFilter,
                   countryUI
                 )}`}
-                className="px-4 py-2 rounded font-semibold bg-[var(--accent)] text-white hover:opacity-70 transition"
+                className="w-full sm:w-auto text-center px-4 py-2 rounded font-semibold bg-[var(--accent)] text-white hover:opacity-70 transition"
               >
                 ← Prev
               </a>
             ) : (
-              <span className="px-4 py-2 rounded font-semibold bg-gray-700 text-gray-400 cursor-not-allowed">
+              <span className="w-full sm:w-auto text-center px-4 py-2 rounded font-semibold bg-gray-700 text-gray-400 cursor-not-allowed">
                 ← Prev
               </span>
             )}
@@ -137,12 +137,12 @@ export default async function SeriesPaginatedPage({
                   statusFilter,
                   countryUI
                 )}`}
-                className="px-4 py-2 rounded font-semibold bg-[var(--accent)] text-white hover:opacity-70 transition"
+                className="w-full sm:w-auto text-center px-4 py-2 rounded font-semibold bg-[var(--accent)] text-white hover:opacity-70 transition"
               >
                 Next →
               </a>
             ) : (
-              <span className="px-4 py-2 rounded font-semibold bg-gray-700 text-gray-400 cursor-not-allowed">
+              <span className="w-full sm:w-auto text-center px-4 py-2 rounded font-semibold bg-gray-700 text-gray-400 cursor-not-allowed">
                 Next →
               </span>
             )}
