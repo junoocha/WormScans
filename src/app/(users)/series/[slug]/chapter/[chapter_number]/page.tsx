@@ -72,8 +72,18 @@ export default async function ChapterPage({ params }: ChapterPageProps) {
 
           {/* Prev / Next */}
           <div className="flex justify-between w-full sm:w-auto">
-            <NavButton slug={slug} chapter={prev} label="← Prev" />
-            <NavButton slug={slug} chapter={next} label="Next →" />
+            <NavButton
+              slug={slug}
+              chapter={prev}
+              className="sm:mr-4"
+              label="← Prev"
+            />
+            <NavButton
+              slug={slug}
+              chapter={next}
+              className="sm:mr-4"
+              label="Next →"
+            />
           </div>
         </div>
 
@@ -117,8 +127,18 @@ export default async function ChapterPage({ params }: ChapterPageProps) {
 
           {/* Prev / Next */}
           <div className="flex justify-between w-full sm:w-auto">
-            <NavButton slug={slug} chapter={prev} label="← Prev" />
-            <NavButton slug={slug} chapter={next} label="Next →" />
+            <NavButton
+              slug={slug}
+              chapter={prev}
+              className="sm:mr-4"
+              label="← Prev"
+            />
+            <NavButton
+              slug={slug}
+              chapter={next}
+              className="sm:mr-4"
+              label="Next →"
+            />
           </div>
         </div>
       </main>
@@ -130,21 +150,23 @@ function NavButton({
   slug,
   chapter,
   label,
+  className = "",
 }: {
   slug: string;
   chapter: number | null;
   label: string;
+  className?: string;
 }) {
   return (
     <a
       href={
         chapter ? `/series/${slug}/chapter/${chapter?.toString() ?? ""}` : "#"
       }
-      className={`px-2 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold transition ${
+      className={`px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold transition text-sm sm:text-base ${
         chapter
           ? "bg-[var(--accent)] text-white hover:opacity-90"
           : "bg-gray-700 text-gray-400 cursor-not-allowed"
-      }`}
+      } ${className}`}
     >
       {label}
     </a>
