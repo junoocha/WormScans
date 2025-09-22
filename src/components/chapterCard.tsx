@@ -1,14 +1,12 @@
-import Link from "next/link";
-
 interface ChapterCardProps {
   seriesSlug: string;
   chapterNumber: number | string;
   title?: string | null;
   date?: string;
   images: string[];
-  chapterCoverUrl?: string; // current cover
-  isSelected?: boolean; // highlight if selected
-  onClick?: () => void; // sets this chapter as cover
+  chapterCoverUrl?: string;
+  isSelected?: boolean;
+  onClick?: () => void;
 }
 
 export default function ChapterCard({
@@ -16,7 +14,6 @@ export default function ChapterCard({
   chapterNumber,
   title,
   date,
-  images,
   chapterCoverUrl,
   isSelected = false,
   onClick,
@@ -30,13 +27,13 @@ export default function ChapterCard({
       }`}
       onClick={onClick}
     >
-      {/* Left: Cover */}
-      <div className="w-50 h-40 rounded overflow-hidden bg-[var(--card-hover)] flex-shrink-0">
+      {/* Cover (hidden on mobile) */}
+      <div className="hidden md:block w-32 h-24 rounded overflow-hidden bg-[var(--card-hover)] flex-shrink-0">
         {cover ? (
           <img
             src={cover}
             alt={`Chapter ${chapterNumber} cover`}
-            className="w-full h-full object-cover object-center scale-100 transition-transform duration-300"
+            className="w-full h-full object-cover"
           />
         ) : (
           <span className="flex items-center justify-center text-white/50 h-full">
@@ -45,8 +42,8 @@ export default function ChapterCard({
         )}
       </div>
 
-      {/* Right: Info  */}
-      <div className="flex-1 flex flex-col ml-4 min-w-0 justify-center">
+      {/* Info */}
+      <div className="flex-1 flex flex-col ml-0 md:ml-4 min-w-0 justify-center">
         <span className="font-bold text-white truncate">
           Chapter {chapterNumber}
           {title ? `: ${title}` : ""}
