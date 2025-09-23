@@ -143,7 +143,7 @@ export default function NavBar() {
 
           {/* Login */}
           <Link
-            href="/login"
+            href="/users/login"
             className="flex items-center gap-2 px-4 py-2 rounded-md text-base font-semibold bg-[#4dbb3a] text-white transition hover:bg-[#3fae2f]"
           >
             <User className="w-5 h-5" />
