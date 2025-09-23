@@ -29,7 +29,7 @@ export default function AdminNav() {
         <div className="flex items-center gap-6">
           <Logo />
 
-          {/* Desktop links */}
+          {/* Desktop links  */}
           <ul className="hidden md:flex flex-row gap-3">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
