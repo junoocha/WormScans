@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import SeriesDropdown from "@/components/adminSeriesDropdown";
+import { Loader2 } from "lucide-react";
+import toast from "react-hot-toast";
 
 type SeriesOption = { id: string; series_name: string };
 type SeriesDetails = {
@@ -10,7 +12,7 @@ type SeriesDetails = {
   series_desc: string | null;
   slug: string;
   cover_url: string | null;
-  status: string;
+  series_status: string;
   country_origin: string;
   chapters: {
     id: string;
@@ -30,11 +32,10 @@ export default function UpdateSeriesPage() {
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
 
-  const [loading, setLoading] = useState(false);
-  const [formStatus, setFormStatus] = useState("");
+  const [saveLoading, setSaveLoading] = useState(false);
 
-  const [countryOrigin, setCountryOrigin] = useState("");
-  const [message, setMessage] = useState("");
+  const [formStatus, setFormStatus] = useState("ongoing");
+  const [countryOrigin, setCountryOrigin] = useState("japan");
 
   // fetch dropdown series list
   useEffect(() => {
@@ -42,7 +43,6 @@ export default function UpdateSeriesPage() {
       .then((res) => res.json())
       .then((res) => {
         const list: SeriesOption[] = res.data || [];
-        // sort alphabetically by series_name
         list.sort((a, b) => a.series_name.localeCompare(b.series_name));
         setSeriesList(list);
       })
@@ -52,7 +52,6 @@ export default function UpdateSeriesPage() {
   // fetch details when a series is selected
   useEffect(() => {
     if (!selectedSeriesId) return;
-    setMessage("Loading details...");
     fetch(`/api/admin/getSeriesDetails/${selectedSeriesId}`)
       .then((res) => res.json())
       .then((res) => {
@@ -60,19 +59,17 @@ export default function UpdateSeriesPage() {
           setDetails(res.data);
           setTitle(res.data.series_name || "");
           setDesc(res.data.series_desc || "");
-          setFormStatus(res.data.status || "ongoing");
+          setFormStatus(res.data.series_status || "ongoing");
           setCountryOrigin(res.data.country_origin || "japan");
-          setCoverPreview(null); // reset preview when selecting new series
+          setCoverPreview(null); // reset preview
         }
-        setMessage("");
       })
       .catch((err) => {
-        console.error("Error fetching series details:", err);
-        setMessage("Failed to load details");
+        toast.error("Error fetching series details:", err);
       });
   }, [selectedSeriesId]);
 
-  // update preview when a new file is selected
+  // handle cover change
   const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     setCoverFile(file);
@@ -84,67 +81,59 @@ export default function UpdateSeriesPage() {
   const handleSave = async () => {
     if (!details) return;
 
-    // Basic validation
     if (!title.trim()) {
-      setMessage("Series title cannot be empty");
+      toast.error("Series title cannot be empty");
       return;
     }
     if (!desc.trim()) {
-      setMessage("Series description cannot be empty");
+      toast.error("Series description cannot be empty");
       return;
     }
 
-    // Check for duplicate series name (case insensitive)
     const duplicate = seriesList.find(
       (s) =>
         s.series_name.toLowerCase().trim() === title.toLowerCase().trim() &&
-        s.id !== details.id // allow current series name
+        s.id !== details.id
     );
     if (duplicate) {
-      setMessage("Another series with this title already exists");
+      toast.error("Another series with this title already exists");
       return;
     }
 
-    setLoading(true);
-    setMessage("Saving...");
+    setSaveLoading(true);
 
     let coverUrl = details.cover_url;
 
-    if (coverFile) {
-      const formData = new FormData();
-      formData.append("file", coverFile);
-      formData.append("slug", details.slug);
+    try {
+      if (coverFile) {
+        const formData = new FormData();
+        formData.append("file", coverFile);
+        formData.append("slug", details.slug);
 
-      const uploadRes = await fetch("/api/addData/uploadCover", {
-        method: "POST",
-        body: formData,
-      });
-      const uploadData = await uploadRes.json();
-      if (!uploadRes.ok) {
-        setMessage("Error uploading cover: " + uploadData.error);
-        setLoading(false);
-        return;
+        const uploadRes = await fetch("/api/addData/uploadCover", {
+          method: "POST",
+          body: formData,
+        });
+        const uploadData = await uploadRes.json();
+        if (!uploadRes.ok) throw new Error(uploadData.error || "Upload failed");
+        coverUrl = uploadData.coverUrl;
       }
-      coverUrl = uploadData.coverUrl;
-    }
 
-    const res = await fetch(`/api/admin/updateSeries/${details.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        series_name: title.trim(),
-        series_desc: desc.trim(),
-        cover_url: coverUrl,
-        status: formStatus,
-        country_origin: countryOrigin,
-      }),
-    });
+      const res = await fetch(`/api/admin/updateSeries/${details.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          series_name: title.trim(),
+          series_desc: desc.trim(),
+          cover_url: coverUrl,
+          series_status: formStatus,
+          country_origin: countryOrigin,
+        }),
+      });
 
-    const data = await res.json();
-    if (!res.ok) {
-      setMessage("Error saving: " + (data.error || "Unknown error"));
-    } else {
-      setMessage("Series updated successfully!");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Unknown error");
+
       setDetails({
         ...details,
         series_name: title.trim(),
@@ -153,9 +142,12 @@ export default function UpdateSeriesPage() {
       });
       setCoverFile(null);
       setCoverPreview(null);
+      toast.success("Series Updated Successfully!");
+    } catch (err: any) {
+      toast.error("Error saving: " + (err.message || err));
+    } finally {
+      setSaveLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (
@@ -191,6 +183,7 @@ export default function UpdateSeriesPage() {
               rows={4}
             />
           </div>
+
           <div>
             <label className="block mb-1">Status</label>
             <select
@@ -201,6 +194,7 @@ export default function UpdateSeriesPage() {
               <option value="ongoing">Ongoing</option>
               <option value="completed">Completed</option>
               <option value="dropped">Dropped</option>
+              <option value="hiatus">Hiatus</option>
             </select>
           </div>
 
@@ -242,7 +236,6 @@ export default function UpdateSeriesPage() {
               )}
             </div>
 
-            {/* Hidden input */}
             <input
               type="file"
               id="cover-upload"
@@ -251,7 +244,6 @@ export default function UpdateSeriesPage() {
               className="hidden"
             />
 
-            {/* Styled button that triggers input */}
             <label
               htmlFor="cover-upload"
               className="inline-block px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded cursor-pointer"
@@ -262,15 +254,14 @@ export default function UpdateSeriesPage() {
 
           <button
             onClick={handleSave}
-            disabled={loading}
-            className="px-4 py-2 bg-green-500 hover:bg-green-400 text-black font-semibold rounded"
+            disabled={saveLoading}
+            className="px-4 py-2 bg-green-500 mb-6 hover:bg-green-400 text-black font-semibold rounded flex items-center gap-2"
           >
-            {loading ? "Saving..." : "Save Changes"}
+            {saveLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+            {saveLoading ? "Saving..." : "Save Changes"}
           </button>
         </div>
       )}
-
-      {message && <p className="mt-4 text-sm text-gray-400">{message}</p>}
     </div>
   );
 }

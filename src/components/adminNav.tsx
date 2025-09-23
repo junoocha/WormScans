@@ -17,7 +17,7 @@ export default function AdminNav() {
 
   return (
     <header className="bg-[var(--accent)] text-white">
-      <div className="max-w-6xl mx-auto px-4 flex items-center gap-5">
+      <div className="max-w-6xl mx-auto px-6 flex items-center gap-5 h-20">
         {/* Logo - Home button */}
         <div className="flex items-center gap-6">
           <Logo />

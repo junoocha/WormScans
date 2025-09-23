@@ -16,10 +16,10 @@ export default function SeriesCard({
   coverUrl,
 }: SeriesCardProps) {
   return (
-    <div className="flex bg-[var(--card-bg)] rounded-xl shadow-md overflow-hidden hover:shadow-lg transition p-4">
+    <div className="flex flex-col sm:flex-row bg-[var(--card-bg)] rounded-xl shadow-md overflow-hidden hover:shadow-lg transition p-4">
       {/* Left: Cover */}
       <Link href={`/series/${slug}`} className="flex-shrink-0">
-        <div className="w-32 h-44 rounded overflow-hidden bg-[var(--card-hover)] cursor-pointer">
+        <div className="w-full sm:w-32 h-44 rounded overflow-hidden bg-[var(--card-hover)] cursor-pointer">
           {coverUrl ? (
             <img
               src={coverUrl}
@@ -35,8 +35,8 @@ export default function SeriesCard({
       </Link>
 
       {/* Right: Title + Chapters */}
-      <div className="flex-1 flex flex-col ml-4 min-w-0">
-        {/* Title (always at top) */}
+      <div className="flex-1 flex flex-col mt-4 sm:mt-0 sm:ml-4 min-w-0">
+        {/* Title */}
         <Link href={`/series/${slug}`}>
           <h2
             className="text-xl font-bold text-white cursor-pointer truncate"
@@ -46,8 +46,8 @@ export default function SeriesCard({
           </h2>
         </Link>
 
-        {/* Chapters (slightly more margin from title, more spacing between rows) */}
-        <div className="mt-5 flex flex-col gap-3">
+        {/* Chapters */}
+        <div className="mt-4 sm:mt-5 flex flex-col gap-2">
           {[...chapters]
             .sort((a, b) => Number(b.chapter_number) - Number(a.chapter_number))
             .map((ch) => (

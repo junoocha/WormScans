@@ -1,13 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useLayoutEffect } from "react";
 import { handleSaveToSupabase } from "@/lib/saveToSupabase";
 import SeriesDropdown from "@/components/adminSeriesDropdown";
+import { Loader2 } from "lucide-react";
+import toast from "react-hot-toast";
 
 export default function ScrapePage() {
   // input, logs, streaming images
   const [url, setUrl] = useState("");
   const [logs, setLogs] = useState<string[]>([]);
+  const logsContainerRef = useRef<HTMLDivElement | null>(null);
+  const [autoScroll, setAutoScroll] = useState(true);
   const [images, setImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(false); // for the webscraping button
 
@@ -40,6 +44,19 @@ export default function ScrapePage() {
   // status for ongoing and type
   const [status, setStatus] = useState("ongoing");
   const [countryOrigin, setCountryOrigin] = useState("japan");
+
+  // to prevent supabase button from prematurely being clickable
+  const isNewSeries = seriesOption === "new";
+  const canSave =
+    !loading && // wait until scraping is fully finished
+    images.length > 0 &&
+    chapterNumber.trim() !== "" &&
+    (isNewSeries
+      ? seriesName.trim() !== "" && seriesDescription.trim() !== ""
+      : selectedSeriesId !== "");
+
+  // to show supabase upload is working
+  const [saving, setSaving] = useState(false);
 
   // Fetch existing series when the page loads
   React.useEffect(() => {
@@ -155,6 +172,7 @@ export default function ScrapePage() {
   };
 
   const handleClick = async () => {
+    setSaving(true);
     const result = await handleSaveToSupabase({
       seriesOption,
       seriesName,
@@ -170,14 +188,62 @@ export default function ScrapePage() {
     });
 
     if (result.success) {
-      alert("Saved successfully!");
+      toast.success("Saved successfully!");
+
+      if (seriesOption === "new") {
+        // Reset everything except seriesOption
+        setSeriesName("");
+        setSeriesDescription("");
+        setCoverFile(undefined);
+        setStatus("ongoing");
+        setCountryOrigin("japan");
+        setUrl("");
+        setChapterNumber("");
+        setChapterTitle("");
+        setLogs([]);
+        setImages([]);
+        setDeletedIndices(new Set());
+        setRemoveFront(0);
+        setRemoveBack(0);
+      } else {
+        // Existing series: reset only chapter-specific things
+        setChapterNumber("");
+        setChapterTitle("");
+        setImages([]);
+        setLogs([]);
+        setDeletedIndices(new Set());
+        setRemoveFront(0);
+        setRemoveBack(0);
+      }
     } else {
-      alert("Failed to save: " + result.error);
+      toast.error("Failed to save: " + result.error);
     }
+
+    setSaving(false);
+  };
+
+  // to help logs scroll automatically
+  useLayoutEffect(() => {
+    if (autoScroll && logsContainerRef.current) {
+      logsContainerRef.current.scrollTop =
+        logsContainerRef.current.scrollHeight;
+    }
+  }, [logs, autoScroll]);
+
+  // to help logs scroll automatically
+  const handleScroll = () => {
+    const container = logsContainerRef.current;
+    if (!container) return;
+
+    const isAtBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight <
+      50;
+
+    setAutoScroll(isAtBottom);
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-6 max-w-5xl mx-auto">
       <h1 className="text-2xl font-bold mb-4"> Web Scraper Admin</h1>
 
       <div className="mb-4 flex gap-4 items-center">
@@ -227,6 +293,7 @@ export default function ScrapePage() {
             <option value="ongoing">Ongoing</option>
             <option value="completed">Completed</option>
             <option value="dropped">Dropped</option>
+            <option value="hiatus">Hiatus</option>
           </select>
 
           {/* Country of Origin dropdown */}
@@ -341,7 +408,7 @@ export default function ScrapePage() {
       </div>
 
       {/* Trim controls */}
-      <div className="flex items-end gap-2 mb-4">
+      <div className="flex flex-wrap items-end gap-2 mb-4">
         <div className="flex flex-col">
           <label className="text-xs mb-1">Delete from front</label>
           <input
@@ -352,6 +419,7 @@ export default function ScrapePage() {
             onChange={(e) => setRemoveFront(Number(e.target.value || 0))}
           />
         </div>
+
         <div className="flex flex-col">
           <label className="text-xs mb-1">Delete from back</label>
           <input
@@ -362,22 +430,24 @@ export default function ScrapePage() {
             onChange={(e) => setRemoveBack(Number(e.target.value || 0))}
           />
         </div>
+
         <button
-          className={`px-3 py-2 rounded ${
+          className={`px-3 py-2 rounded text-white ${
             images.length === 0
               ? "bg-gray-400 cursor-not-allowed"
-              : "bg-red-600 text-white"
+              : "bg-red-600 hover:bg-red-700"
           }`}
           onClick={handleApplyTrimClick}
           disabled={images.length === 0}
         >
           Apply Trim
         </button>
+
         <button
-          className={`px-3 py-2 rounded ${
+          className={`px-3 py-2 rounded text-white ${
             images.length === 0 && deletedIndices.size === 0
               ? "bg-gray-400 cursor-not-allowed"
-              : "bg-gray-600 text-white"
+              : "bg-gray-600 hover:bg-gray-700"
           }`}
           onClick={handleResetTrimClick}
           disabled={images.length === 0 && deletedIndices.size === 0}
@@ -386,20 +456,25 @@ export default function ScrapePage() {
         </button>
 
         <button
-          className={`px-3 py-2 rounded ${
-            images.length === 0
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-green-600 text-white"
-          }`}
           onClick={handleClick}
-          disabled={images.length === 0}
+          disabled={!canSave || saving}
+          className={`px-3 py-2 rounded text-white flex items-center justify-center gap-2 ${
+            canSave && !saving
+              ? "bg-green-600 hover:bg-green-700"
+              : "bg-gray-400 cursor-not-allowed"
+          }`}
         >
-          Save to Supabase
+          {saving && <Loader2 className="animate-spin w-4 h-4" />}
+          <span>{saving ? "Saving..." : "Save Chapter"}</span>
         </button>
       </div>
 
       {/* console logs */}
-      <div className="bg-black text-green-400 p-3 rounded text-sm mb-4 h-48 overflow-y-auto whitespace-pre-wrap font-mono">
+      <div
+        ref={logsContainerRef}
+        onScroll={handleScroll}
+        className="bg-black text-green-400 p-3 rounded text-sm mb-4 h-48 overflow-y-auto  overflow-x-hidden whitespace-pre-wrap font-mono"
+      >
         {logs.length === 0 && <p className="opacity-50">Waiting for logs...</p>}
         {logs.map((log, i) => (
           <div key={i}>{log}</div>
@@ -407,7 +482,7 @@ export default function ScrapePage() {
       </div>
 
       {/* images wooo */}
-      <div className="max-h-[400px] overflow-y-auto pr-2">
+      <div className="max-h-[90vh] overflow-y-scroll pr-2 pb-20">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {images.map((src, i) => {
             const isDeleted = deletedIndices.has(i);

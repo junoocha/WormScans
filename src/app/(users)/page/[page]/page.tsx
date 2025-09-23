@@ -23,7 +23,7 @@ export default async function PaginatedPage({ params }: PageProps) {
 
   return (
     <div>
-      <main className="p-6 max-w-6xl mx-auto">
+      <main className="p-6 sm:p-6 max-w-6xl mx-auto">
         <h1 className="text-2xl font-bold mb-6">
           Recent Updates - Page {pageNumber}
         </h1>
@@ -45,16 +45,16 @@ export default async function PaginatedPage({ params }: PageProps) {
             </div>
 
             {/* Pagination buttons */}
-            <div className="flex justify-center gap-4 mt-8">
+            <div className="flex flex-col sm:flex-row justify-center gap-4 mt-8">
               {pageNumber > 1 ? (
                 <Link
                   href={pageNumber === 2 ? "/" : `/page/${pageNumber - 1}`}
-                  className="px-4 py-2 rounded font-semibold bg-[var(--accent)] text-white hover:opacity-70 transition"
+                  className="px-4 py-2 w-full sm:w-auto text-center rounded font-semibold bg-[var(--accent)] text-white hover:opacity-70 transition"
                 >
                   ← Prev
                 </Link>
               ) : (
-                <span className="px-4 py-2 rounded font-semibold bg-gray-700 text-gray-400 cursor-not-allowed">
+                <span className="px-4 py-2 w-full sm:w-auto text-center rounded font-semibold bg-gray-700 text-gray-400 cursor-not-allowed">
                   ← Prev
                 </span>
               )}
@@ -62,12 +62,12 @@ export default async function PaginatedPage({ params }: PageProps) {
               {seriesList.length === 10 ? (
                 <Link
                   href={`/page/${pageNumber + 1}`}
-                  className="px-4 py-2 rounded font-semibold bg-[var(--accent)] text-white hover:opacity-70 transition"
+                  className="px-4 py-2 w-full sm:w-auto text-center rounded font-semibold bg-[var(--accent)] text-white hover:opacity-70 transition"
                 >
                   Next →
                 </Link>
               ) : (
-                <span className="px-4 py-2 rounded font-semibold bg-gray-700 text-gray-400 cursor-not-allowed">
+                <span className="px-4 py-2 w-full sm:w-auto text-center rounded font-semibold bg-gray-700 text-gray-400 cursor-not-allowed">
                   Next →
                 </span>
               )}

@@ -19,6 +19,7 @@ export default function ChapterDropdown({
     const selected = e.target.value;
     if (selected) {
       router.push(`/series/${slug}/chapter/${selected}`);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 

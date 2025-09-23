@@ -65,13 +65,25 @@ export default async function ChapterPage({ params }: ChapterPageProps) {
           </a>
         </div>
 
-        {/* Top bar: dropdown + nav */}
-        <div className="flex justify-between items-center w-full max-w-4xl px-6 py-4">
+        {/* Top bar */}
+        <div className="w-full max-w-4xl px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+          {/* Dropdown */}
           <ChapterDropdown slug={slug} chapters={chapters} current={current} />
 
-          <div className="flex gap-2">
-            <NavButton slug={slug} chapter={prev} label="← Prev" />
-            <NavButton slug={slug} chapter={next} label="Next →" />
+          {/* Prev / Next */}
+          <div className="flex justify-between w-full sm:w-auto">
+            <NavButton
+              slug={slug}
+              chapter={prev}
+              className="sm:mr-4"
+              label="← Prev"
+            />
+            <NavButton
+              slug={slug}
+              chapter={next}
+              className="sm:mr-4"
+              label="Next →"
+            />
           </div>
         </div>
 
@@ -109,12 +121,24 @@ export default async function ChapterPage({ params }: ChapterPageProps) {
         )} */}
 
         {/* bottom nav */}
-        <div className="flex justify-between items-center w-full max-w-4xl px-6 py-4">
+        <div className="w-full max-w-4xl px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+          {/* Dropdown */}
           <ChapterDropdown slug={slug} chapters={chapters} current={current} />
 
-          <div className="flex gap-2">
-            <NavButton slug={slug} chapter={prev} label="← Prev" />
-            <NavButton slug={slug} chapter={next} label="Next →" />
+          {/* Prev / Next */}
+          <div className="flex justify-between w-full sm:w-auto">
+            <NavButton
+              slug={slug}
+              chapter={prev}
+              className="sm:mr-4"
+              label="← Prev"
+            />
+            <NavButton
+              slug={slug}
+              chapter={next}
+              className="sm:mr-4"
+              label="Next →"
+            />
           </div>
         </div>
       </main>
@@ -126,21 +150,23 @@ function NavButton({
   slug,
   chapter,
   label,
+  className = "",
 }: {
   slug: string;
   chapter: number | null;
   label: string;
+  className?: string;
 }) {
   return (
     <a
       href={
         chapter ? `/series/${slug}/chapter/${chapter?.toString() ?? ""}` : "#"
       }
-      className={`px-4 py-2 rounded-lg font-semibold transition ${
+      className={`px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold transition text-sm sm:text-base ${
         chapter
           ? "bg-[var(--accent)] text-white hover:opacity-90"
           : "bg-gray-700 text-gray-400 cursor-not-allowed"
-      }`}
+      } ${className}`}
     >
       {label}
     </a>

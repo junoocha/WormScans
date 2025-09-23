@@ -3,11 +3,10 @@ import SeriesMiniCard from "@/components/seriesMiniCard";
 import { fetchAllSeries, Series } from "@/lib/getAllSeries";
 
 interface PageProps {
-  params: { page: string };
-  searchParams?: { series_status?: string; country?: string };
+  params: Promise<{ page: string }>;
+  searchParams?: Promise<{ series_status?: string; country?: string }>;
 }
 
-// Map UI -> DB values
 const originMap: Record<string, string> = {
   manhwa: "korea",
   manhua: "china",
@@ -18,20 +17,19 @@ export default async function SeriesPaginatedPage({
   params,
   searchParams,
 }: PageProps) {
-  const pageNumber = parseInt(params.page) || 1;
+  const resolvedParams = await params;
+  const resolvedSearch = (await searchParams) || {};
 
-  // --- Extract filters safely ---
-  const rawStatus = searchParams?.series_status;
+  const pageNumber = parseInt(resolvedParams.page) || 1;
+
+  const rawStatus = resolvedSearch.series_status;
   const statusFilter =
     typeof rawStatus === "string" && rawStatus.trim() !== ""
       ? rawStatus.toLowerCase()
       : undefined;
-  // console.log(statusFilter);
 
-  const countryUI = searchParams?.country || undefined;
+  const countryUI = resolvedSearch.country || undefined;
   const countryFilter = countryUI ? originMap[countryUI] : undefined;
-
-  // console.log("Server Filters:", { statusFilter, countryFilter });
 
   const { data: seriesList, error } = await fetchAllSeries({
     page: pageNumber,
@@ -44,15 +42,13 @@ export default async function SeriesPaginatedPage({
     return <p className="p-6 text-red-500">Error loading series.</p>;
   }
 
-  // Helper to build query string for pagination links
   const buildQuery = (status?: string, country?: string) => {
     const params = new URLSearchParams();
-    if (status) params.set("status", status);
+    if (status) params.set("series_status", status);
     if (country) params.set("country", country);
     return params.toString() ? `?${params.toString()}` : "";
   };
 
-  // Dropdown options
   const statusOptions = ["ongoing", "completed", "dropped"];
   const countryOptions: { value: string; label: string }[] = [
     { value: "manga", label: "Manga" },
@@ -71,7 +67,7 @@ export default async function SeriesPaginatedPage({
         <select
           name="series_status"
           defaultValue={statusFilter || ""}
-          className="px-3 py-2 border rounded bg-[var(--card-bg)] text-white"
+          className="px-2 py-1 border rounded bg-[var(--card-bg)] text-white text-sm"
         >
           <option value="">All Status</option>
           {statusOptions.map((s) => (
@@ -84,7 +80,7 @@ export default async function SeriesPaginatedPage({
         <select
           name="country"
           defaultValue={countryUI || ""}
-          className="px-3 py-2 border rounded bg-[var(--card-bg)] text-white"
+          className="px-2 py-1 border rounded bg-[var(--card-bg)] text-white text-sm"
         >
           <option value="">All Origins</option>
           {countryOptions.map((c) => (
@@ -96,13 +92,12 @@ export default async function SeriesPaginatedPage({
 
         <button
           type="submit"
-          className="px-4 py-2 bg-[var(--accent)] text-white rounded hover:opacity-70 font-semibold"
+          className="px-3 py-1 bg-[var(--accent)] text-white rounded hover:opacity-70 font-semibold text-sm"
         >
           Apply
         </button>
       </form>
 
-      {/* Series Grid */}
       {seriesList.length === 0 ? (
         <p className="text-gray-500">No series available.</p>
       ) : (
@@ -119,19 +114,19 @@ export default async function SeriesPaginatedPage({
           </div>
 
           {/* Pagination */}
-          <div className="flex justify-center gap-4 mt-8">
+          <div className="flex flex-col sm:flex-row justify-center gap-4 mt-8">
             {pageNumber > 1 ? (
               <a
                 href={`/series/page/${pageNumber - 1}${buildQuery(
                   statusFilter,
                   countryUI
                 )}`}
-                className="px-4 py-2 rounded font-semibold bg-[var(--accent)] text-white hover:opacity-70 transition"
+                className="w-full sm:w-auto text-center px-4 py-2 rounded font-semibold bg-[var(--accent)] text-white hover:opacity-70 transition"
               >
                 ← Prev
               </a>
             ) : (
-              <span className="px-4 py-2 rounded font-semibold bg-gray-700 text-gray-400 cursor-not-allowed">
+              <span className="w-full sm:w-auto text-center px-4 py-2 rounded font-semibold bg-gray-700 text-gray-400 cursor-not-allowed">
                 ← Prev
               </span>
             )}
@@ -142,12 +137,12 @@ export default async function SeriesPaginatedPage({
                   statusFilter,
                   countryUI
                 )}`}
-                className="px-4 py-2 rounded font-semibold bg-[var(--accent)] text-white hover:opacity-70 transition"
+                className="w-full sm:w-auto text-center px-4 py-2 rounded font-semibold bg-[var(--accent)] text-white hover:opacity-70 transition"
               >
                 Next →
               </a>
             ) : (
-              <span className="px-4 py-2 rounded font-semibold bg-gray-700 text-gray-400 cursor-not-allowed">
+              <span className="w-full sm:w-auto text-center px-4 py-2 rounded font-semibold bg-gray-700 text-gray-400 cursor-not-allowed">
                 Next →
               </span>
             )}

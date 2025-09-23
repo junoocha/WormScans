@@ -1,14 +1,19 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import SeriesDropdown from "@/components/adminSeriesDropdown";
 import ChapterUrlGeneratorModal from "@/components/generateUrlFromInput";
 import ChapterLinkGeneratorModal from "@/components/chapterLinkGenerator";
+import { Loader2 } from "lucide-react";
+import toast from "react-hot-toast";
 
 export default function ScrapeMultiplePage() {
   const [chapterUrls, setChapterUrls] = useState("");
   const [startChapter, setStartChapter] = useState(1);
   const [logs, setLogs] = useState<string[]>([]);
+  const logsContainerRef = useRef<HTMLDivElement | null>(null);
+  const [autoScroll, setAutoScroll] = useState(true);
+  const [lazyLoad, setLazyLoad] = useState(false);
   const [chapterImages, setChapterImages] = useState<string[][]>([]);
   const [deletedIndicesByChapter, setDeletedIndicesByChapter] = useState<
     Set<number>[]
@@ -25,6 +30,19 @@ export default function ScrapeMultiplePage() {
 
   const [isUrlGeneratorOpen, setIsUrlGeneratorOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+
+  const [removeFront, setRemoveFront] = useState(0);
+  const [removeBack, setRemoveBack] = useState(0);
+
+  // prevent save to supabase button from prematurely being able to click
+  const allChaptersScraped =
+    chapterImages.length > 0 &&
+    chapterImages.every((imgs) => imgs.length > 0) &&
+    !loading;
+  const canSave = selectedSeriesId !== "" && allChaptersScraped;
+
+  // to show supabase upload is working
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const fetchSeries = async () => {
@@ -44,18 +62,18 @@ export default function ScrapeMultiplePage() {
     fetchSeries();
   }, []);
 
-  const handleScrapeMultiple = () => {
+  const handleScrapeMultiple = (currentLazy = lazyLoad) => {
     const urls = chapterUrls
       .split("\n")
       .map((u) => u.trim())
       .filter(Boolean);
 
     if (!selectedSeriesId) {
-      alert("Please select a series.");
+      toast.error("Please select a series.");
       return;
     }
     if (urls.length === 0) {
-      alert("Please enter at least one chapter URL.");
+      toast.error("Please enter at least one chapter URL.");
       return;
     }
 
@@ -68,7 +86,7 @@ export default function ScrapeMultiplePage() {
 
     const urlParam = encodeURIComponent(urls.join(","));
     const eventSource = new EventSource(
-      `/api/scrapeMultiple/manuallyPutChapters?urls=${urlParam}`
+      `/api/scrapeMultiple/manuallyPutChapters?urls=${urlParam}&lazy=${currentLazy}`
     );
 
     const imagesByChapter: string[][] = urls.map(() => []);
@@ -172,9 +190,11 @@ export default function ScrapeMultiplePage() {
 
   const handleUploadMultiple = async () => {
     if (!selectedSeriesId) {
-      alert("Please select a series.");
+      toast.error("Please select a series.");
       return;
     }
+
+    setSaving(true);
 
     const chaptersToUpload = chapterImages.map((images, idx) => ({
       chapter_number: lockedStartChapter + idx,
@@ -196,16 +216,26 @@ export default function ScrapeMultiplePage() {
 
       let msg = "All chapters uploaded successfully!";
       if (result.skipped.length) {
-        msg += `\nNotice: these chapters were skipped due to already existing: ${result.skipped.join(
+        msg += `\n\nNotice: these chapters were skipped due to already existing: ${result.skipped.join(
           ", "
         )}`;
       }
-      alert(msg);
+      toast.success(msg, {
+        duration: 5500,
+        style: { whiteSpace: "pre-line" },
+      });
     } catch (err) {
       console.error(err);
-      alert(
-        "Upload failed: " + (err instanceof Error ? err.message : String(err))
+      toast.error(
+        "Failed to save: " + (err instanceof Error ? err.message : String(err))
       );
+    } finally {
+      setSaving(false);
+      setChapterImages([]);
+      setDeletedIndicesByChapter([]);
+      setLogs([]);
+      setSelectedChapter(0);
+      setLockedStartChapter(startChapter);
     }
   };
 
@@ -213,6 +243,50 @@ export default function ScrapeMultiplePage() {
   const imagesDeletedIndicesRemoved = (chapterIdx: number) => {
     const deletedSet = deletedIndicesByChapter[chapterIdx] || new Set<number>();
     return chapterImages[chapterIdx].filter((_, i) => !deletedSet.has(i));
+  };
+
+  // to help logs scroll automatically
+  useLayoutEffect(() => {
+    if (autoScroll && logsContainerRef.current) {
+      logsContainerRef.current.scrollTop =
+        logsContainerRef.current.scrollHeight;
+    }
+  }, [logs, autoScroll]);
+
+  // to help logs scroll automatically
+  const handleScroll = () => {
+    const container = logsContainerRef.current;
+    if (!container) return;
+
+    const isAtBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight <
+      50;
+
+    setAutoScroll(isAtBottom);
+  };
+
+  const applyTrimAll = () => {
+    setDeletedIndicesByChapter((prev) => {
+      const updated = prev.map((_, chapterIdx) => {
+        const toDelete = new Set<number>();
+        const total = chapterImages[chapterIdx]?.length || 0;
+
+        const front = Math.max(0, Math.min(removeFront, total));
+        const back = Math.max(0, Math.min(removeBack, total - front));
+
+        for (let i = 0; i < front; i++) toDelete.add(i);
+        for (let i = Math.max(total - back, 0); i < total; i++) toDelete.add(i);
+
+        return toDelete;
+      });
+      return updated;
+    });
+  };
+
+  const resetTrimAll = () => {
+    setDeletedIndicesByChapter((prev) => prev.map(() => new Set<number>()));
+    setRemoveFront(0);
+    setRemoveBack(0);
   };
 
   return (
@@ -296,6 +370,20 @@ https://example.com/ch4`}
         />
       </div>
 
+      {/* Lazy Load Toggle */}
+      <div className="flex items-center gap-2 mb-4">
+        <input
+          type="checkbox"
+          id="lazyToggleMulti"
+          checked={lazyLoad}
+          onChange={() => setLazyLoad(!lazyLoad)}
+          className="cursor-pointer"
+        />
+        <label htmlFor="lazyToggleMulti" className="text-sm cursor-pointer">
+          Enable Lazy Loading Scroll
+        </label>
+      </div>
+
       <div className="mb-4">
         <button
           className={`px-4 py-2 rounded text-white ${
@@ -303,14 +391,18 @@ https://example.com/ch4`}
               ? "bg-gray-400 cursor-not-allowed"
               : "bg-blue-600 hover:bg-blue-700"
           }`}
-          onClick={handleScrapeMultiple}
+          onClick={() => handleScrapeMultiple(lazyLoad)}
           disabled={loading}
         >
           {loading ? "Scraping..." : "Start Scraping"}
         </button>
       </div>
 
-      <div className="bg-black text-green-400 p-3 rounded text-sm mb-4 h-70 overflow-y-scroll whitespace-pre-wrap font-mono">
+      <div
+        ref={logsContainerRef}
+        onScroll={handleScroll}
+        className="bg-black text-green-400 p-3 rounded text-sm mb-4 h-48 overflow-y-auto  overflow-x-hidden whitespace-pre-wrap font-mono"
+      >
         {logs.length === 0 && <p className="opacity-50">Waiting for logs...</p>}
         {logs.map((log, i) => (
           <div key={i}>{log}</div>
@@ -339,46 +431,140 @@ https://example.com/ch4`}
           <h2 className="text-lg font-semibold mb-2">
             Chapter {lockedStartChapter + selectedChapter}
           </h2>
-          <button
-            onClick={() => resetDeleted(selectedChapter)}
-            className="px-3 py-2 mb-4 text-sm rounded bg-red-600 hover:bg-red-700 text-white"
-          >
-            Reset Deleted
-          </button>
+          {/* Row 1: Prev / Next + Reset */}
+          <div className="flex flex-wrap items-center mb-5 gap-2">
+            <button
+              onClick={() =>
+                setSelectedChapter((prev) => Math.max(prev - 1, 0))
+              }
+              disabled={selectedChapter === 0}
+              className={`px-3 py-2 text-sm rounded text-white ${
+                selectedChapter === 0
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700"
+              }`}
+            >
+              ◀ Prev
+            </button>
 
-          <button
-            onClick={resetAllDeleted}
-            className="px-3 py-2 mx-4 mb-4 text-sm rounded bg-red-600 hover:bg-red-800 text-white"
-          >
-            Reset ALL Deleted
-          </button>
+            <button
+              onClick={() =>
+                setSelectedChapter((prev) =>
+                  Math.min(prev + 1, chapterImages.length - 1)
+                )
+              }
+              disabled={selectedChapter === chapterImages.length - 1}
+              className={`px-3 py-2 text-sm rounded text-white ${
+                selectedChapter === chapterImages.length - 1
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700"
+              }`}
+            >
+              Next ▶
+            </button>
 
-          <button
-            onClick={handleUploadMultiple}
-            disabled={chapterImages.length === 0}
-            className="px-4 py-2 text-sm rounded bg-green-600 hover:bg-green-700 text-white"
-          >
-            Save All Chapters
-          </button>
+            <button
+              onClick={() => resetDeleted(selectedChapter)}
+              className="px-3 py-2 text-sm rounded bg-red-600 hover:bg-red-700 text-white"
+            >
+              Reset Selected Deleted
+            </button>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-            {chapterImages[selectedChapter].map((src, imgIdx) => {
-              const isDeleted =
-                deletedIndicesByChapter[selectedChapter]?.has(imgIdx);
-              return (
-                <img
-                  key={imgIdx}
-                  src={src}
-                  alt={`Chapter ${lockedStartChapter + selectedChapter} img ${
-                    imgIdx + 1
-                  }`}
-                  onClick={() => toggleDelete(selectedChapter, imgIdx)}
-                  className={`rounded shadow border-4 cursor-pointer ${
-                    isDeleted ? "border-red-500 opacity-60" : "border-blue-500"
-                  }`}
-                />
-              );
-            })}
+            <button
+              onClick={resetAllDeleted}
+              className="px-3 py-2 text-sm rounded bg-red-600 hover:bg-red-800 text-white"
+            >
+              Reset All Selected Deleted
+            </button>
+          </div>
+
+          {/* Row 2: Global Trim Controls */}
+          <div className="flex flex-wrap items-end gap-2 mb-5">
+            <div className="flex flex-col">
+              <label className="text-xs mb-1">Delete from front</label>
+              <input
+                type="number"
+                min="0"
+                className="border rounded px-3 py-1 w-28"
+                value={removeFront}
+                onChange={(e) => setRemoveFront(Number(e.target.value || 0))}
+              />
+            </div>
+
+            <div className="flex flex-col">
+              <label className="text-xs mb-1">Delete from back</label>
+              <input
+                type="number"
+                min="0"
+                className="border rounded px-3 py-1 w-28"
+                value={removeBack}
+                onChange={(e) => setRemoveBack(Number(e.target.value || 0))}
+              />
+            </div>
+
+            <button
+              className={`px-3 py-2 rounded text-white ${
+                chapterImages.length === 0
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-red-600 hover:bg-red-700"
+              }`}
+              onClick={applyTrimAll}
+              disabled={chapterImages.length === 0}
+            >
+              Apply Trim
+            </button>
+
+            <button
+              className={`px-3 py-2 rounded text-white ${
+                chapterImages.length === 0
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-gray-600 hover:bg-gray-700"
+              }`}
+              onClick={resetTrimAll}
+              disabled={chapterImages.length === 0}
+            >
+              Reset
+            </button>
+          </div>
+
+          {/* Row 3: Save All */}
+          <div className="flex mb-4">
+            <button
+              onClick={handleUploadMultiple}
+              disabled={!canSave || saving}
+              className={`px-3 py-2 text-sm rounded text-white flex items-center justify-center gap-2 ${
+                canSave && !saving
+                  ? "bg-green-600 hover:bg-green-700"
+                  : "bg-gray-400 cursor-not-allowed"
+              }`}
+            >
+              {saving && <Loader2 className="animate-spin w-4 h-4" />}
+              <span>{saving ? "Saving..." : "Save All Chapters"}</span>
+            </button>
+          </div>
+
+          <div className="max-h-[90vh] overflow-y-scroll pr-2 pb-20">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {chapterImages[selectedChapter].map((src, imgIdx) => {
+                const isDeleted =
+                  deletedIndicesByChapter[selectedChapter]?.has(imgIdx);
+                return (
+                  <img
+                    key={imgIdx}
+                    src={src}
+                    alt={`Chapter ${lockedStartChapter + selectedChapter} img ${
+                      imgIdx + 1
+                    }`}
+                    onClick={() => toggleDelete(selectedChapter, imgIdx)}
+                    className={`rounded shadow border-4 cursor-pointer ${
+                      isDeleted
+                        ? "border-red-500 opacity-60"
+                        : "border-blue-500"
+                    }`}
+                  />
+                );
+              })}
+            </div>
           </div>
         </div>
       )}

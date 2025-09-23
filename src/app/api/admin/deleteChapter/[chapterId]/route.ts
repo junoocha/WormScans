@@ -12,7 +12,7 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: { chapterId: string } }
 ) {
-  const { chapterId } = params;
+  const { chapterId } = await params;
 
   if (!chapterId) {
     return NextResponse.json({ error: "Chapter ID required" }, { status: 400 });
