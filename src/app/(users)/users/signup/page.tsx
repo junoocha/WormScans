@@ -94,10 +94,15 @@ export default function AdminSignup() {
         </button>
       </form>
 
-      <p>Already have an account?</p>
-      <a href="/users/login" className="underline hover:text-white transition">
-        Log in
-      </a>
+      <p className="mt-4 text-gray-400">
+        Already have an account?{" "}
+        <a
+          href="/users/login"
+          className="underline hover:text-white transition"
+        >
+          Log in
+        </a>
+      </p>
     </div>
   );
 }

@@ -34,14 +34,9 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-[var(--card-bg)] p-6 rounded-xl shadow-md w-80 flex flex-col gap-4"
-      >
-        <h2 className="text-xl font-bold text-white text-center">
-          Forgot Password
-        </h2>
+    <div className="max-w-md mx-auto mt-20 p-6 bg-[var(--card-bg)] rounded-xl shadow-md">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <h2 className="text-xl font-bold text-white ">Forgot Password</h2>
 
         <input
           type="email"
@@ -62,9 +57,9 @@ export default function ForgotPasswordPage() {
 
         <a
           href="/users/login"
-          className="underline hover:text-white transition"
+          className="underline text-gray-400 hover:text-white text-center transition"
         >
-          Login
+          Back to Login
         </a>
       </form>
     </div>
