@@ -2,7 +2,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import NavBar from "@/components/navbar";
+import NavBarServer from "@/components/navbarServer";
 import { Toaster } from "react-hot-toast";
 
 const geistSans = Geist({
@@ -34,7 +34,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[var(--background)] text-white`}
       >
         {/* Global NavBar */}
-        <NavBar />
+        <NavBarServer />
 
         {/* Page Content */}
         {children}
