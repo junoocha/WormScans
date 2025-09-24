@@ -241,17 +241,19 @@ export default function UpdateChapterPage() {
       {details && (
         <div className="space-y-4">
           {/* Chapter Card Preview */}
-          <ChapterCard
-            seriesSlug="preview"
-            chapterNumber={chapterNumber}
-            title={title}
-            images={images}
-            chapterCoverUrl={
-              chapterCoverIndex !== null
-                ? images[chapterCoverIndex]
-                : chapterCoverUrl || undefined
-            }
-          />
+          <div className="hidden sm:block">
+            <ChapterCard
+              seriesSlug="preview"
+              chapterNumber={chapterNumber}
+              title={title}
+              images={images}
+              chapterCoverUrl={
+                chapterCoverIndex !== null
+                  ? images[chapterCoverIndex]
+                  : chapterCoverUrl || undefined
+              }
+            />
+          </div>
           {/* Chapter Number & Title */}
           <div>
             <label className="block mb-1">Chapter Number</label>
