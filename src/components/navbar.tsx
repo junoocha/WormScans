@@ -13,7 +13,11 @@ type SeriesResult = {
   cover_url?: string;
 };
 
-export default function NavBar() {
+type NavBarClientProps = {
+  isAdmin: boolean;
+};
+
+export default function NavBarClient({ isAdmin }: NavBarClientProps) {
   const pathname = usePathname() || "/";
   const router = useRouter();
 
@@ -67,7 +71,7 @@ export default function NavBar() {
   return (
     <header className="bg-[var(--accent)] text-white relative z-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-20">
-        {/* Left: Logo + nav links */}
+        {/* Left */}
         <div className="flex items-center gap-4">
           <Logo />
           <ul className="hidden md:flex flex-row gap-2 ml-4">
@@ -90,7 +94,7 @@ export default function NavBar() {
           </ul>
         </div>
 
-        {/* Right side */}
+        {/* Right */}
         <div className="flex items-center gap-2 md:gap-4">
           {/* Desktop search */}
           <div className="hidden md:flex flex-col relative">
@@ -141,13 +145,13 @@ export default function NavBar() {
             <Search className="w-6 h-6" />
           </button>
 
-          {/* Login */}
+          {/* Login/Admin button — shows on all screen sizes */}
           <Link
-            href="/login"
+            href={isAdmin ? "/admin" : "/users/login"}
             className="flex items-center gap-2 px-4 py-2 rounded-md text-base font-semibold bg-[#4dbb3a] text-white transition hover:bg-[#3fae2f]"
           >
             <User className="w-5 h-5" />
-            <span>Login</span>
+            <span>{isAdmin ? "Admin" : "Login"}</span>
           </Link>
 
           {/* Mobile hamburger */}
@@ -160,7 +164,7 @@ export default function NavBar() {
         </div>
       </div>
 
-      {/* Mobile search bar */}
+      {/* Mobile search input */}
       {mobileSearchOpen && (
         <div className="md:hidden px-4 pb-2 relative">
           <input
@@ -190,10 +194,9 @@ export default function NavBar() {
               ))}
             </ul>
           )}
-          {/* No results message */}
           {searchQuery && results.length === 0 && !loading && (
             <div className="absolute mt-2 w-full bg-[#16151D] border border-black rounded-xl shadow-lg px-4 py-3 text-gray-400 text-lg">
-              No results found.
+              No results found
             </div>
           )}
         </div>
@@ -212,7 +215,7 @@ export default function NavBar() {
         </div>
         <ul className="flex flex-col gap-2 px-4">
           {navLinks.map((link) => {
-            const Icon = link.name === "Home" ? Home : BookOpen; // placeholder icons
+            const Icon = link.name === "Home" ? Home : BookOpen;
             return (
               <li key={link.name}>
                 <Link

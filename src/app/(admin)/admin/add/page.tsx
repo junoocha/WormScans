@@ -324,16 +324,18 @@ export default function ScrapePage() {
           />
 
           {/* styled button */}
-          <label
-            htmlFor="cover-upload"
-            className="inline-block px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded cursor-pointer w-fit"
-          >
-            Upload Cover
-          </label>
+          <div className="flex w-full sm:w-auto">
+            <label
+              htmlFor="cover-upload"
+              className="flex justify-center items-center w-full sm:w-auto px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded cursor-pointer"
+            >
+              Upload Cover
+            </label>
+          </div>
 
           {/* preview if chosen */}
           {coverFile && (
-            <div className="mt-2">
+            <div className="mt-2 mb-3">
               <p className="text-xs text-gray-400 mb-1">Selected:</p>
               <img
                 src={(() => {
@@ -361,15 +363,15 @@ export default function ScrapePage() {
       )}
 
       {/* url input + scrape button */}
-      <div className="flex gap-2 mb-4">
+      <div className="flex flex-col sm:flex-row gap-2 mb-4">
         <input
-          className="border rounded px-3 py-2 flex-1"
+          className="border rounded px-3 py-2 flex-1 mb-1 sm:mb-0"
           placeholder="Enter chapter URL"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
         />
         <button
-          className="bg-blue-600 text-white px-4 py-2 rounded"
+          className="inline-block px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded cursor-pointer w-full sm:w-auto"
           onClick={handleScrape}
           disabled={loading}
         >
@@ -392,9 +394,9 @@ export default function ScrapePage() {
       </div>
 
       {/* chapter details */}
-      <div className="flex gap-2 mb-4">
+      <div className="flex flex-col md:flex-row gap-2 mb-4">
         <input
-          className="border rounded px-3 py-2 w-50"
+          className="border rounded px-3 py-2 w-full md:w-32"
           placeholder="Chapter Number"
           value={chapterNumber}
           onChange={(e) => setChapterNumber(e.target.value)}
