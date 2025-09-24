@@ -430,107 +430,119 @@ https://example.com/ch4`}
             Chapter {lockedStartChapter + selectedChapter}
           </h2>
           {/* Row 1: Prev / Next + Reset */}
-          <div className="flex flex-wrap items-center mb-5 gap-2">
-            <button
-              onClick={() =>
-                setSelectedChapter((prev) => Math.max(prev - 1, 0))
-              }
-              disabled={selectedChapter === 0}
-              className={`px-3 py-2 text-sm rounded text-white ${
-                selectedChapter === 0
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-blue-600 hover:bg-blue-700"
-              }`}
-            >
-              ◀ Prev
-            </button>
+          {/* Row 1: Prev / Next + Reset */}
+          <div className="flex flex-col sm:flex-row mb-5 gap-2">
+            {/* Prev / Next buttons: mobile full-width, desktop untouched */}
+            <div className="flex gap-2 w-full sm:w-auto">
+              <button
+                onClick={() =>
+                  setSelectedChapter((prev) => Math.max(prev - 1, 0))
+                }
+                disabled={selectedChapter === 0}
+                className={`flex-1 sm:flex-none px-3 py-2 text-sm rounded text-white ${
+                  selectedChapter === 0
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-blue-600 hover:bg-blue-700"
+                }`}
+              >
+                ◀ Prev
+              </button>
 
-            <button
-              onClick={() =>
-                setSelectedChapter((prev) =>
-                  Math.min(prev + 1, chapterImages.length - 1)
-                )
-              }
-              disabled={selectedChapter === chapterImages.length - 1}
-              className={`px-3 py-2 text-sm rounded text-white ${
-                selectedChapter === chapterImages.length - 1
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-blue-600 hover:bg-blue-700"
-              }`}
-            >
-              Next ▶
-            </button>
+              <button
+                onClick={() =>
+                  setSelectedChapter((prev) =>
+                    Math.min(prev + 1, chapterImages.length - 1)
+                  )
+                }
+                disabled={selectedChapter === chapterImages.length - 1}
+                className={`flex-1 sm:flex-none px-3 py-2 text-sm rounded text-white ${
+                  selectedChapter === chapterImages.length - 1
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-blue-600 hover:bg-blue-700"
+                }`}
+              >
+                Next ▶
+              </button>
+            </div>
 
-            <button
-              onClick={() => resetDeleted(selectedChapter)}
-              className="px-3 py-2 text-sm rounded bg-red-600 hover:bg-red-700 text-white"
-            >
-              Reset Selected Deleted
-            </button>
+            {/* Reset buttons: stacked vertically on mobile, desktop unchanged */}
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <button
+                onClick={() => resetDeleted(selectedChapter)}
+                className="px-3 py-2 text-sm rounded bg-red-600 hover:bg-red-700 text-white"
+              >
+                Reset Selected Deleted
+              </button>
 
-            <button
-              onClick={resetAllDeleted}
-              className="px-3 py-2 text-sm rounded bg-red-600 hover:bg-red-800 text-white"
-            >
-              Reset All Selected Deleted
-            </button>
+              <button
+                onClick={resetAllDeleted}
+                className="px-3 py-2 text-sm rounded bg-red-600 hover:bg-red-800 text-white"
+              >
+                Reset All Selected Deleted
+              </button>
+            </div>
           </div>
 
           {/* Row 2: Global Trim Controls */}
-          <div className="flex flex-wrap items-end gap-2 mb-5">
-            <div className="flex flex-col">
-              <label className="text-xs mb-1">Delete from front</label>
-              <input
-                type="number"
-                min="0"
-                className="border rounded px-3 py-1 w-28"
-                value={removeFront}
-                onChange={(e) => setRemoveFront(Number(e.target.value || 0))}
-              />
+          <div className="flex flex-col sm:flex-row items-end gap-2 mb-5">
+            <div className="flex gap-2 w-full sm:w-auto">
+              <div className="flex flex-col flex-1 sm:flex-none">
+                <label className="text-xs mb-1">Delete from front</label>
+                <input
+                  type="number"
+                  min="0"
+                  className="border rounded px-3 py-1 w-full"
+                  value={removeFront}
+                  onChange={(e) => setRemoveFront(Number(e.target.value || 0))}
+                />
+              </div>
+
+              <div className="flex flex-col flex-1 sm:flex-none">
+                <label className="text-xs mb-1">Delete from back</label>
+                <input
+                  type="number"
+                  min="0"
+                  className="border rounded px-3 py-1 w-full"
+                  value={removeBack}
+                  onChange={(e) => setRemoveBack(Number(e.target.value || 0))}
+                />
+              </div>
             </div>
 
-            <div className="flex flex-col">
-              <label className="text-xs mb-1">Delete from back</label>
-              <input
-                type="number"
-                min="0"
-                className="border rounded px-3 py-1 w-28"
-                value={removeBack}
-                onChange={(e) => setRemoveBack(Number(e.target.value || 0))}
-              />
+            {/* Trim + Reset buttons: below input row on mobile */}
+            <div className="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+              <button
+                className={`flex-1 sm:flex-none px-3 py-2 rounded text-white ${
+                  chapterImages.length === 0
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-red-600 hover:bg-red-700"
+                }`}
+                onClick={applyTrimAll}
+                disabled={chapterImages.length === 0}
+              >
+                Apply Trim
+              </button>
+
+              <button
+                className={`flex-1 sm:flex-none px-3 py-2 rounded text-white ${
+                  chapterImages.length === 0
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-gray-600 hover:bg-gray-700"
+                }`}
+                onClick={resetTrimAll}
+                disabled={chapterImages.length === 0}
+              >
+                Reset
+              </button>
             </div>
-
-            <button
-              className={`px-3 py-2 rounded text-white ${
-                chapterImages.length === 0
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-red-600 hover:bg-red-700"
-              }`}
-              onClick={applyTrimAll}
-              disabled={chapterImages.length === 0}
-            >
-              Apply Trim
-            </button>
-
-            <button
-              className={`px-3 py-2 rounded text-white ${
-                chapterImages.length === 0
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-gray-600 hover:bg-gray-700"
-              }`}
-              onClick={resetTrimAll}
-              disabled={chapterImages.length === 0}
-            >
-              Reset
-            </button>
           </div>
 
           {/* Row 3: Save All */}
-          <div className="flex mb-4">
+          <div className="mb-4 flex justify-center sm:justify-start">
             <button
               onClick={handleUploadMultiple}
               disabled={!canSave || saving}
-              className={`px-3 py-2 text-sm rounded text-white flex items-center justify-center gap-2 ${
+              className={`w-full sm:w-auto px-3 py-2 text-sm rounded text-white flex items-center justify-center gap-2 ${
                 canSave && !saving
                   ? "bg-green-600 hover:bg-green-700"
                   : "bg-gray-400 cursor-not-allowed"
