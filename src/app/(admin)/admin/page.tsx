@@ -22,23 +22,26 @@ export default function AdminLanding() {
           >
             Add Series / Chapter
           </Link>
+
           <Link
             href="/admin/addMultiple"
             className="bg-[var(--accent)] hover:bg-green-600 text-white font-semibold py-6 rounded-lg text-center transition"
           >
             Add Multiple Chapters
           </Link>
-          <Link
-            href="/admin/updateSeries"
-            className="bg-[var(--accent)] hover:bg-green-600 text-white font-semibold py-6 rounded-lg text-center transition"
-          >
-            Update Series
-          </Link>
+
           <Link
             href="/admin/updateChapter"
             className="bg-[var(--accent)] hover:bg-green-600 text-white font-semibold py-6 rounded-lg text-center transition"
           >
             Update Chapter
+          </Link>
+
+          <Link
+            href="/admin/updateSeries"
+            className="bg-[var(--accent)] hover:bg-green-600 text-white font-semibold py-6 rounded-lg text-center transition"
+          >
+            Update Series
           </Link>
         </div>
       </main>
