@@ -30,12 +30,10 @@ export default function ChapterLinkGeneratorModal({
     setChapterLinks([]);
     setSelectedLinks(new Set());
 
-    const prependBaseStr = prependBase ? "true" : "false";
-
     const eventSource = new EventSource(
       `/api/admin/getChapterLinks?url=${encodeURIComponent(
         seriesUrl
-      )}&prependBase=${prependBaseStr}`
+      )}&prependBase=${prependBase}`
     );
 
     eventSource.onmessage = (e) => {
@@ -44,8 +42,6 @@ export default function ChapterLinkGeneratorModal({
 
       if (raw.startsWith("Grabbed link: ")) {
         const url = raw.replace("Grabbed link: ", "").trim();
-
-        // Deduplicate
         if (!chapterLinks.includes(url)) {
           setChapterLinks((prev) => [...prev, url]);
           setSelectedLinks((prev) => new Set(prev).add(url));
@@ -76,27 +72,20 @@ export default function ChapterLinkGeneratorModal({
   };
 
   const confirmSelection = () => {
-    // Send sorted & filtered links
     const sortedSelected = sortedLinks
       .filter(({ link }) => selectedLinks.has(link))
       .map(({ link }) => link);
-
-    onConfirm(sortedSelected, 1); // startChapter ignored
+    onConfirm(sortedSelected, 1);
     onClose();
   };
 
   if (!isOpen) return null;
 
-  // Deduplicate and map chapter numbers
   const uniqueLinks = Array.from(new Set(chapterLinks));
   const sortedLinks = uniqueLinks
     .map((link, idx) => {
       const match = link.match(/chapter[-_/]?(\d+)/i);
-      const chapterNum = match
-        ? match[1] === "0" // because 0 is not an integer according to code!
-          ? 0
-          : parseInt(match[1], 10)
-        : idx;
+      const chapterNum = match ? parseInt(match[1], 10) : idx;
       return { link, chapterNum };
     })
     .sort((a, b) =>
@@ -104,53 +93,82 @@ export default function ChapterLinkGeneratorModal({
     );
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-[var(--card-bg)] p-6 rounded-lg w-[90%] max-w-3xl max-h-[80%] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/80 flex justify-center items-start sm:items-center sm:pt-0 pt-6 z-50 p-4">
+      <div className="bg-[var(--card-bg)] p-6 rounded-lg w-full max-w-3xl max-h-[90vh] flex flex-col ">
         <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
           Generate Chapters from Series Page
           <Info className="w-4 h-4 text-gray-400 cursor-pointer">
             <title>
-              Note that this may not work with many websites. Additionally, only
-              use the prepend when you notice the links look weird, as it may
-              help format the site properly.
+              May not work on all websites. Use prepend only if links look
+              weird.
             </title>
           </Info>
         </h2>
 
-        <div className="mb-4">
-          <label className="block mb-1 font-medium">Series URL</label>
-          <input
-            type="text"
-            className="border rounded w-full p-2"
-            value={seriesUrl}
-            onChange={(e) => setSeriesUrl(e.target.value)}
-          />
+        <div className="overflow-y-auto flex-1 pr-1">
+          <div className="mb-4">
+            <label className="block mb-1 font-medium">Series URL</label>
+            <input
+              type="text"
+              className="border rounded w-full p-2"
+              value={seriesUrl}
+              onChange={(e) => setSeriesUrl(e.target.value)}
+            />
+          </div>
+
+          <div className="mb-4 flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="prependBase"
+              checked={prependBase}
+              onChange={() => setPrependBase(!prependBase)}
+            />
+            <label htmlFor="prependBase" className="text-sm">
+              Prepend base URL for relative links
+            </label>
+          </div>
+
+          {chapterLinks.length > 0 && (
+            <button
+              className="px-2 py-1 text-xs rounded bg-gray-600 hover:bg-gray-700 text-white mb-2"
+              onClick={() => setSortAsc((prev) => !prev)}
+            >
+              Sort: {sortAsc ? "Ascending" : "Descending"}
+            </button>
+          )}
+
+          <div className="mb-4 bg-black/80 text-green-400 p-4 rounded text-sm max-h-40 overflow-y-scroll font-mono whitespace-pre-wrap">
+            {logs.length === 0 && (
+              <p className="opacity-50">Waiting for logs...</p>
+            )}
+            {logs.map((log, i) => (
+              <div key={i}>{log}</div>
+            ))}
+          </div>
+
+          {sortedLinks.length > 0 && (
+            <div className="mb-4">
+              <h3 className="font-medium mb-2">Select Chapters</h3>
+              <div className="flex flex-col gap-1 max-h-96 overflow-y-auto">
+                {sortedLinks.map(({ link }) => (
+                  <button
+                    key={link}
+                    onClick={() => toggleSelect(link)}
+                    className={`p-2 border rounded text-sm text-left break-all ${
+                      selectedLinks.has(link)
+                        ? "bg-blue-600 text-white"
+                        : "bg-[var(--card-bg)]"
+                    }`}
+                  >
+                    {link}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Prepend base toggle */}
-        <div className="mb-4 flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="prependBase"
-            checked={prependBase}
-            onChange={() => setPrependBase(!prependBase)}
-          />
-          <label htmlFor="prependBase" className="text-sm">
-            Prepend base URL for relative links
-          </label>
-        </div>
-
-        {/* Sort toggle */}
-        {chapterLinks.length > 0 && (
-          <button
-            className="px-2 py-1 text-xs rounded bg-gray-600 hover:bg-gray-700 text-white mb-2"
-            onClick={() => setSortAsc((prev) => !prev)}
-          >
-            Sort: {sortAsc ? "Ascending" : "Descending"}
-          </button>
-        )}
-
-        <div className="mb-4 flex gap-2">
+        <div className="flex flex-col sm:flex-row justify-end gap-2 mt-4">
           <button
             className={`px-4 py-2 rounded text-white ${
               loading
@@ -163,49 +181,23 @@ export default function ChapterLinkGeneratorModal({
             {loading ? "Scraping..." : "Start Scraping"}
           </button>
           <button
-            className="px-4 py-2 rounded bg-green-600 hover:bg-green-700 text-white"
+            className={`px-4 py-2 rounded text-white ${
+              selectedLinks.size === 0
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-green-600 hover:bg-green-700"
+            }`}
             onClick={confirmSelection}
             disabled={selectedLinks.size === 0}
           >
             Confirm Selection
           </button>
           <button
-            className="px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white"
+            className="px-4 py-2 rounded bg-gray-600 hover:bg-gray-700"
             onClick={onClose}
           >
             Close
           </button>
         </div>
-
-        <div className="mb-4 bg-black/80 text-green-400 p-3 rounded text-sm max-h-40 overflow-y-scroll font-mono whitespace-pre-wrap">
-          {logs.length === 0 && (
-            <p className="opacity-50">Waiting for logs...</p>
-          )}
-          {logs.map((log, i) => (
-            <div key={i}>{log}</div>
-          ))}
-        </div>
-
-        {sortedLinks.length > 0 && (
-          <div className="mb-4">
-            <h3 className="font-medium mb-2">Select Chapters</h3>
-            <div className="flex flex-col gap-1 max-h-96 overflow-y-auto">
-              {sortedLinks.map(({ link }) => (
-                <button
-                  key={link}
-                  onClick={() => toggleSelect(link)}
-                  className={`p-2 border rounded text-sm text-left break-all ${
-                    selectedLinks.has(link)
-                      ? "bg-blue-600 text-white"
-                      : "bg-[var(--card-bg)]"
-                  }`}
-                >
-                  {link}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

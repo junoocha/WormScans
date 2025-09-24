@@ -303,28 +303,26 @@ export default function ScrapeMultiplePage() {
       </div>
 
       <div className="mb-4">
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 mb-4">
           <button
-            className="px-4 py-2 mb-4 rounded bg-red-600 hover:bg-red-700 text-white"
+            className="w-full sm:w-auto px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white"
             onClick={() => setChapterUrls("")}
           >
             Clear All URLs
           </button>
           <button
-            className="px-4 py-2 mb-4 rounded bg-indigo-600 hover:bg-indigo-700 text-white"
+            className="w-full sm:w-auto px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white"
             onClick={() => setIsUrlGeneratorOpen(true)}
           >
             Generate Links From URL
           </button>
 
-          <div className="mb-4 flex gap-2">
-            <button
-              onClick={() => setIsLinkModalOpen(true)}
-              className="px-4 py-2 rounded bg-purple-600 hover:bg-purple-700 text-white"
-            >
-              Generate from Series Page
-            </button>
-          </div>
+          <button
+            onClick={() => setIsLinkModalOpen(true)}
+            className="w-full sm:w-auto px-4 py-2 rounded bg-purple-600 hover:bg-purple-700 text-white"
+          >
+            Generate from Series Page
+          </button>
         </div>
         <label className="block mb-1 font-medium">
           Chapter URLs (one per line and consecutive)
