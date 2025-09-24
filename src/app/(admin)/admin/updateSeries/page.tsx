@@ -213,7 +213,7 @@ export default function UpdateSeriesPage() {
 
           <div>
             <label className="block mb-1">Cover Image</label>
-            <div className="flex gap-4 mb-2">
+            <div className="flex flex-wrap gap-4 mb-2 justify-center sm:justify-start">
               {details.cover_url && !coverPreview && (
                 <div className="flex flex-col items-center">
                   <span className="text-sm text-gray-400 mb-1">Current</span>
@@ -244,18 +244,20 @@ export default function UpdateSeriesPage() {
               className="hidden"
             />
 
+            {/* Change Cover Button */}
             <label
               htmlFor="cover-upload"
-              className="inline-block px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded cursor-pointer"
+              className="w-full mt-2 sm:w-auto inline-block px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded cursor-pointer text-center"
             >
               Change Cover
             </label>
           </div>
 
+          {/* Save Changes Button */}
           <button
             onClick={handleSave}
             disabled={saveLoading}
-            className="px-4 py-2 bg-green-500 mb-6 hover:bg-green-400 text-black font-semibold rounded flex items-center gap-2"
+            className="w-full sm:w-auto px-4 py-2 bg-green-500 mb-6 hover:bg-green-400 text-white font-semibold rounded flex items-center justify-center gap-2"
           >
             {saveLoading && <Loader2 className="w-4 h-4 animate-spin" />}
             {saveLoading ? "Saving..." : "Save Changes"}
