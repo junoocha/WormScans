@@ -26,18 +26,22 @@ export async function fetchAllSeries({
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
+  // calculate range of rows to fetch for pagination
   const from = (page - 1) * limit;
   const to = from + limit - 1;
 
+  // build query
   let query = supabase
     .from("series")
     .select("id, series_name, slug, cover_url, series_status, country_origin")
     .order("series_name", { ascending: true })
     .range(from, to);
 
+  // apply optional filters if providied
   if (series_status) query = query.eq("series_status", series_status);
   if (countryOrigin) query = query.eq("country_origin", countryOrigin);
 
+  // then execute query
   const { data, error } = await query;
 
   if (error) {

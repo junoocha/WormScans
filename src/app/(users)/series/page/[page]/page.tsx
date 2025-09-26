@@ -17,20 +17,25 @@ export default async function SeriesPaginatedPage({
   params,
   searchParams,
 }: PageProps) {
+  // resolve async promises from route and query
   const resolvedParams = await params;
   const resolvedSearch = (await searchParams) || {};
 
+  // get current page number from params
   const pageNumber = parseInt(resolvedParams.page) || 1;
 
+  // extract and normalize series_status from query params
   const rawStatus = resolvedSearch.series_status;
   const statusFilter =
     typeof rawStatus === "string" && rawStatus.trim() !== ""
       ? rawStatus.toLowerCase()
       : undefined;
 
+  // extract and map country/origin filter
   const countryUI = resolvedSearch.country || undefined;
   const countryFilter = countryUI ? originMap[countryUI] : undefined;
 
+  // fetch series from backend with pagination and filters
   const { data: seriesList, error } = await fetchAllSeries({
     page: pageNumber,
     limit: 18,
@@ -42,6 +47,7 @@ export default async function SeriesPaginatedPage({
     return <p className="p-6 text-red-500">Error loading series.</p>;
   }
 
+  // builkd query strings for pagination links
   const buildQuery = (status?: string, country?: string) => {
     const params = new URLSearchParams();
     if (status) params.set("series_status", status);
@@ -49,6 +55,7 @@ export default async function SeriesPaginatedPage({
     return params.toString() ? `?${params.toString()}` : "";
   };
 
+  // ui options for filters
   const statusOptions = ["ongoing", "completed", "dropped"];
   const countryOptions: { value: string; label: string }[] = [
     { value: "manga", label: "Manga" },
@@ -113,7 +120,7 @@ export default async function SeriesPaginatedPage({
             ))}
           </div>
 
-          {/* Pagination */}
+          {/* Pagination buttons */}
           <div className="flex flex-col sm:flex-row justify-center gap-4 mt-8">
             {pageNumber > 1 ? (
               <a
