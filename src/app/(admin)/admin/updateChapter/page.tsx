@@ -20,19 +20,30 @@ type ChapterDetails = {
 };
 
 export default function UpdateChapterPage() {
+  // state for series dropdown list and the selected list
   const [seriesList, setSeriesList] = useState<SeriesOption[]>([]);
   const [selectedSeriesId, setSelectedSeriesId] = useState<string>("");
+
+  // state for chapter dropdown list and the selected chapter list
   const [chapterList, setChapterList] = useState<ChapterOption[]>([]);
   const [selectedChapterId, setSelectedChapterId] = useState<string>("");
+
+  // state for chapter details, the descp
   const [details, setDetails] = useState<ChapterDetails | null>(null);
 
+  // state for other chapter details + images
   const [chapterNumber, setChapterNumber] = useState("");
   const [title, setTitle] = useState("");
   const [images, setImages] = useState<string[]>([]);
+
+  // loading state for save/delete
   const [saveLoading, setSaveLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
+  // set of deleted image indices
   const [deletedIndices, setDeletedIndices] = useState<Set<number>>(new Set());
+
+  // index of selected cover image + the url for that cover
   const [chapterCoverIndex, setChapterCoverIndex] = useState<number | null>(
     null
   );
@@ -52,6 +63,7 @@ export default function UpdateChapterPage() {
 
   // Fetch chapters when a series is selected
   useEffect(() => {
+    // yeah show nothing if no bueno
     if (!selectedSeriesId) {
       setChapterList([]);
       setSelectedChapterId("");
@@ -59,6 +71,7 @@ export default function UpdateChapterPage() {
       return;
     }
 
+    // ok but go time we do some api fetchin yaya. but mostly grabbin all the chapters of the series
     fetch(`/api/admin/getSeriesDetails/${selectedSeriesId}`)
       .then((res) => res.json())
       .then((res) => {
@@ -80,10 +93,11 @@ export default function UpdateChapterPage() {
       .catch((err) => console.error("Error fetching chapters:", err));
   }, [selectedSeriesId]);
 
-  // Fetch chapter details when selected
+  // Fetch chapter details when selected, like the actual chapter details
   useEffect(() => {
     if (!selectedChapterId) return;
 
+    // gogogo fetch it all
     fetch(`/api/admin/getChapterDetails/${selectedChapterId}`)
       .then((res) => res.json())
       .then((res) => {
@@ -120,12 +134,14 @@ export default function UpdateChapterPage() {
     });
   };
 
+  // save chapter changes
   const handleSave = async () => {
     if (!details) return;
     if (!/^\d+$/.test(chapterNumber)) {
       toast.error("Chapter number must be numeric");
       return;
     }
+    // prevent dupe chapter numbers at least before updating details
     const duplicate = chapterList.find(
       (ch) =>
         ch.chapter_number.toString() === chapterNumber.trim() &&
@@ -139,10 +155,12 @@ export default function UpdateChapterPage() {
     const safeTitle = title.trim();
     setSaveLoading(true);
 
+    // set the images to be kept + the cover url
     const keptImages = images.filter((_, i) => !deletedIndices.has(i));
     const coverUrl =
       chapterCoverIndex !== null ? keptImages[chapterCoverIndex] : undefined;
 
+    // now we update once we get past those stuff
     try {
       const res = await fetch(`/api/admin/updateChapter/${details.id}`, {
         method: "PUT",
@@ -172,14 +190,17 @@ export default function UpdateChapterPage() {
         duration: 10000,
       });
     } finally {
+      //ok button you can stop circling now
       setSaveLoading(false);
     }
   };
 
+  // delete chapter
   const handleDeleteChapter = async () => {
     if (!details) return;
     if (
       !confirm(
+        // lets first make a confirmation
         `Are you sure you want to delete Chapter ${details.chapter_number}?`
       )
     )
@@ -187,6 +208,7 @@ export default function UpdateChapterPage() {
 
     setDeleteLoading(true);
 
+    // delete the whole chapter when green light
     try {
       const res = await fetch(`/api/admin/deleteChapter/${details.id}`, {
         method: "DELETE",
@@ -216,6 +238,7 @@ export default function UpdateChapterPage() {
     <div className="p-6 max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">Update Chapter</h1>
 
+      {/* series dropdwon */}
       <SeriesDropdown
         seriesList={seriesList}
         selectedSeriesId={selectedSeriesId}
@@ -223,6 +246,7 @@ export default function UpdateChapterPage() {
         placeholder="Select a series"
       />
 
+      {/* chapter dropdown */}
       {chapterList.length > 0 && (
         <select
           value={selectedChapterId}
@@ -238,6 +262,7 @@ export default function UpdateChapterPage() {
         </select>
       )}
 
+      {/* chapter details seciton */}
       {details && (
         <div className="space-y-4">
           {/* Chapter Card Preview */}
@@ -282,6 +307,7 @@ export default function UpdateChapterPage() {
                   const isDeleted = deletedIndices.has(i);
                   const isCover = chapterCoverIndex === i;
 
+                  // all the images can be deleted + set as the chapter cover
                   return (
                     <div key={i} className="relative">
                       <img
@@ -289,13 +315,15 @@ export default function UpdateChapterPage() {
                         alt={`Page ${i + 1}`}
                         className={`rounded shadow border-4 w-full object-cover cursor-pointer ${
                           isDeleted
-                            ? "border-red-500 opacity-60"
+                            ? "border-red-500 opacity-60" // deleted
                             : isCover
-                            ? "border-green-500"
-                            : "border-blue-500"
+                            ? "border-green-500" // chosen cover
+                            : "border-blue-500" // regular lol
                         }`}
                         onClick={() => setChapterCoverIndex(i)}
                       />
+
+                      {/* each image is straight up the button so you just lcick on it ya */}
                       <button
                         type="button"
                         onClick={() => toggleDeleteImage(i)}
@@ -310,6 +338,7 @@ export default function UpdateChapterPage() {
             </div>
           </div>
 
+          {/* action buttons */}
           <div className="flex gap-3 mt-4">
             <button
               onClick={handleSave}
