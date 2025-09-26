@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 export type SeriesOption = { id: string; series_name: string };
 
@@ -17,17 +17,20 @@ export default function SeriesDropdown({
   setSelectedSeriesId,
   placeholder = "Select a series...",
 }: SeriesDropdownProps) {
+  // track search query in input
   const [query, setQuery] = useState("");
+
+  // track dropdown open/close state
   const [open, setOpen] = useState(false);
 
+  // filter list by query
   const filtered = seriesList.filter((s) =>
     s.series_name.toLowerCase().includes(query.toLowerCase())
   );
 
-  const selectedSeries = seriesList.find((s) => s.id === selectedSeriesId);
-
   return (
     <div className="relative w-full mb-4">
+      {/* search input field */}
       <input
         type="text"
         value={query}
@@ -40,10 +43,12 @@ export default function SeriesDropdown({
         className="w-full p-2 rounded bg-[var(--card-bg)]"
       />
 
+      {/* dropdown list */}
       {open && (
         <ul className="absolute z-10 w-full max-h-40 overflow-y-auto mt-1 bg-[var(--card-bg)] rounded shadow-lg">
           {filtered.length > 0 ? (
             filtered.map((s) => (
+              // render each series option
               <li
                 key={s.id}
                 className="px-2 py-1 hover:bg-blue-500 cursor-pointer"
@@ -57,7 +62,8 @@ export default function SeriesDropdown({
               </li>
             ))
           ) : (
-            <li className="px-2 py-1 text-gray-400">No results</li>
+            // message when no results found
+            <li className="px-2 py-1 text-gray-400">no results</li>
           )}
         </ul>
       )}

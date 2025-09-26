@@ -81,6 +81,7 @@ export default function ScrapePage() {
     fetchSeries();
   }, []);
 
+  // stuff after pressing scrape
   const handleScrape = () => {
     if (!url.trim()) {
       setLogs(["Error: Please enter a URL"]);
@@ -171,6 +172,7 @@ export default function ScrapePage() {
     setRemoveBack(0);
   };
 
+  // after pressing SAVE to SUPABASE
   const handleClick = async () => {
     setSaving(true);
     const result = await handleSaveToSupabase({
@@ -246,6 +248,7 @@ export default function ScrapePage() {
     <div className="p-6 max-w-5xl mx-auto">
       <h1 className="text-2xl font-bold mb-4"> Web Scraper Admin</h1>
 
+      {/* choose between new or existing series when adding chapter */}
       <div className="mb-4 flex gap-4 items-center">
         <label>
           <input
@@ -268,6 +271,7 @@ export default function ScrapePage() {
         </label>
       </div>
 
+      {/* new series */}
       {seriesOption === "new" ? (
         <div className="flex flex-col gap-2 mb-4">
           <input
@@ -283,7 +287,7 @@ export default function ScrapePage() {
             onChange={(e) => setSeriesDescription(e.target.value)}
           />
 
-          {/* Status dropdown */}
+          {/* status dropdown */}
           <label className="text-sm font-medium">Status</label>
           <select
             className="border rounded px-3 py-2 bg-[var(--card-bg)] text-white"
@@ -296,7 +300,7 @@ export default function ScrapePage() {
             <option value="hiatus">Hiatus</option>
           </select>
 
-          {/* Country of Origin dropdown */}
+          {/* country of Origin dropdown */}
           <label className="text-sm font-medium">Country of Origin</label>
           <select
             className="border rounded px-3 py-2 bg-[var(--card-bg)] text-white"
@@ -308,10 +312,10 @@ export default function ScrapePage() {
             <option value="china">China</option>
           </select>
 
-          {/* Cover upload */}
+          {/* cover upload */}
           <label className="text-sm mb-1">Series Cover (optional)</label>
 
-          {/* hidden input */}
+          {/* hidden input for cover */}
           <input
             type="file"
             id="cover-upload"
