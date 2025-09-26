@@ -1,6 +1,6 @@
 # WormScans - Manga/Manhwa Reader Platform
 
-A full-stack web app built with **Next.js 13 (App Router)** and **Supabase** that lets users browse, read, and manage manga/manhwa/manhua series.  
+A full-stack web app built with **Next.js 13 (App Router)** and **Supabase** that lets users browse, read, and upload manga/manhwa/manhua series.  
 Includes an **admin dashboard** for managing series, chapters, and covers.
 
 Access it here:
@@ -40,18 +40,6 @@ Access it here:
 - Access to scrape chapters from websites and upload them to WormScans.
 
 ---
-
-### Project Structure
-
-app/
-├─ (users)/ # User-facing routes (login, signup, reset password)
-│ ├─ series/ # Series listing + paginated browsing
-│ ├─ users/ # Auth pages
-├─ admin/ # Admin dashboard
-└─ api/ # API routes (auth, series management)
-
-components/ # Shared UI components (dropdowns, navigation, etc.)
-lib/ # Data fetching utilities (Supabase queries)
 
 ## Tech Stack
 
