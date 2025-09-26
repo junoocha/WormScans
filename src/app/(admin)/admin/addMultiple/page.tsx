@@ -8,31 +8,45 @@ import { Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function ScrapeMultiplePage() {
+  // text area for urls, chapter number to start, and lazy load option
   const [chapterUrls, setChapterUrls] = useState("");
   const [startChapter, setStartChapter] = useState(1);
+  const [lazyLoad, setLazyLoad] = useState(false);
+
+  // array of log messages, container, and setting the autoscroll for logs
   const [logs, setLogs] = useState<string[]>([]);
   const logsContainerRef = useRef<HTMLDivElement | null>(null);
   const [autoScroll, setAutoScroll] = useState(true);
-  const [lazyLoad, setLazyLoad] = useState(false);
+
+  // list of images for each chapter + track deleted images
   const [chapterImages, setChapterImages] = useState<string[][]>([]);
   const [deletedIndicesByChapter, setDeletedIndicesByChapter] = useState<
     Set<number>[]
   >([]);
+
+  // scraping state for the button visibility stuff
   const [loading, setLoading] = useState(false);
 
+  // list of existing series from database and selecting chosen series id
   const [existingSeriesList, setExistingSeriesList] = useState<
     { id: string; series_name: string }[]
   >([]);
   const [selectedSeriesId, setSelectedSeriesId] = useState("");
 
+  // currently active chapter index and locking the starting chapter for consistency and prevent users from switching halfway through (could breka)
   const [selectedChapter, setSelectedChapter] = useState<number>(0);
   const [lockedStartChapter, setLockedStartChapter] = useState(startChapter);
 
+  // modal state for url generator and link generator
   const [isUrlGeneratorOpen, setIsUrlGeneratorOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
 
+  // number of images to trim from front and back
   const [removeFront, setRemoveFront] = useState(0);
   const [removeBack, setRemoveBack] = useState(0);
+
+  // to show supabase upload button is working
+  const [saving, setSaving] = useState(false);
 
   // prevent save to supabase button from prematurely being able to click
   const allChaptersScraped =
@@ -41,9 +55,7 @@ export default function ScrapeMultiplePage() {
     !loading;
   const canSave = selectedSeriesId !== "" && allChaptersScraped;
 
-  // to show supabase upload is working
-  const [saving, setSaving] = useState(false);
-
+  // fetch available series on mount
   useEffect(() => {
     const fetchSeries = async () => {
       try {
@@ -62,6 +74,7 @@ export default function ScrapeMultiplePage() {
     fetchSeries();
   }, []);
 
+  // handle scraping multiple chapters from urls
   const handleScrapeMultiple = (currentLazy = lazyLoad) => {
     const urls = chapterUrls
       .split("\n")
@@ -84,6 +97,7 @@ export default function ScrapeMultiplePage() {
     setSelectedChapter(0);
     setLockedStartChapter(startChapter);
 
+    // pass urls and lazy  flag to backend scrape api
     const urlParam = encodeURIComponent(urls.join(","));
     const eventSource = new EventSource(
       `/api/scrapeMultiple/manuallyPutChapters?urls=${urlParam}&lazy=${currentLazy}`
@@ -95,9 +109,11 @@ export default function ScrapeMultiplePage() {
     setDeletedIndicesByChapter(urls.map(() => new Set<number>()));
     const totalChapters = urls.length;
 
+    // handle server-sent events with scraping progress
     eventSource.onmessage = (event) => {
-      const rawMessage = event.data; // preserve the original message
-      let message = rawMessage; // message we can transform
+      // preserve original message, then set another variable that can transform message
+      const rawMessage = event.data;
+      let message = rawMessage;
 
       const chapterMatch = rawMessage.match(/\[Chapter (\d+)\]/);
       if (!chapterMatch) return;
@@ -112,6 +128,7 @@ export default function ScrapeMultiplePage() {
         }]`
       );
 
+      // extract image url from message
       const urlRegex = /Grabbed \d+ picture[s]?: (.+)$/;
       const urlMatch = urlRegex.exec(message);
       if (urlMatch) {
@@ -120,6 +137,7 @@ export default function ScrapeMultiplePage() {
 
       setLogs((prev) => [...prev, message]);
 
+      // update state/logs message when finishing one chapter
       if (rawMessage.includes("Finished scraping")) {
         setChapterImages((prev) => {
           const copy = [...prev];
@@ -140,6 +158,7 @@ export default function ScrapeMultiplePage() {
       }
     };
 
+    // telling logs that the whole process is finished
     eventSource.addEventListener("end", () => {
       eventSource.close();
       setLoading(false);
@@ -149,6 +168,7 @@ export default function ScrapeMultiplePage() {
       ]);
     });
 
+    // log error message
     eventSource.onerror = () => {
       setLogs((prev) => [...prev, "Error scraping chapters."]);
       eventSource.close();
@@ -156,6 +176,7 @@ export default function ScrapeMultiplePage() {
     };
   };
 
+  // toggle a single image's delete flag
   const toggleDelete = (chapterIdx: number, imgIdx: number) => {
     setDeletedIndicesByChapter((prev) => {
       const copy = [...prev];
@@ -170,6 +191,7 @@ export default function ScrapeMultiplePage() {
     });
   };
 
+  // reset deleted images for one chapters
   const resetDeleted = (chapterIdx: number) => {
     setDeletedIndicesByChapter((prev) => {
       const copy = [...prev];
@@ -178,9 +200,11 @@ export default function ScrapeMultiplePage() {
     });
   };
 
+  // reset deleted images for all chapters
   const resetAllDeleted = () => {
     if (
       window.confirm(
+        // warning
         "This will reset ALL deleted images across ALL chapters. Continue?"
       )
     ) {
@@ -188,6 +212,7 @@ export default function ScrapeMultiplePage() {
     }
   };
 
+  // supabase upload all the chapters
   const handleUploadMultiple = async () => {
     if (!selectedSeriesId) {
       toast.error("Please select a series.");
@@ -196,12 +221,14 @@ export default function ScrapeMultiplePage() {
 
     setSaving(true);
 
+    // grabbing images
     const chaptersToUpload = chapterImages.map((images, idx) => ({
       chapter_number: lockedStartChapter + idx,
       images: imagesDeletedIndicesRemoved(idx),
     }));
 
     try {
+      // upload using api
       const res = await fetch("/api/addData/addMultipleChapters", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -230,6 +257,7 @@ export default function ScrapeMultiplePage() {
         "Failed to save: " + (err instanceof Error ? err.message : String(err))
       );
     } finally {
+      // reset state after upload.failure
       setSaving(false);
       setChapterImages([]);
       setDeletedIndicesByChapter([]);
@@ -265,6 +293,7 @@ export default function ScrapeMultiplePage() {
     setAutoScroll(isAtBottom);
   };
 
+  // apply trimming of images across all chapters
   const applyTrimAll = () => {
     setDeletedIndicesByChapter((prev) => {
       const updated = prev.map((_, chapterIdx) => {
@@ -283,6 +312,7 @@ export default function ScrapeMultiplePage() {
     });
   };
 
+  // reset trim inputs and deleted sets
   const resetTrimAll = () => {
     setDeletedIndicesByChapter((prev) => prev.map(() => new Set<number>()));
     setRemoveFront(0);
@@ -293,6 +323,7 @@ export default function ScrapeMultiplePage() {
     <div className="p-6 max-w-5xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Scrape Multiple Chapters</h1>
 
+      {/* dropdown to select series */}
       <div className="mb-4">
         <SeriesDropdown
           seriesList={existingSeriesList}
@@ -302,14 +333,18 @@ export default function ScrapeMultiplePage() {
         />
       </div>
 
+      {/* url input and modal triggers */}
       <div className="mb-4">
         <div className="flex flex-col sm:flex-row gap-2 mb-4">
+          {/* clear all urls */}
           <button
             className="w-full sm:w-auto px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white"
             onClick={() => setChapterUrls("")}
           >
             Clear All URLs
           </button>
+
+          {/* generate urls from urls */}
           <button
             className="w-full sm:w-auto px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white"
             onClick={() => setIsUrlGeneratorOpen(true)}
@@ -317,6 +352,7 @@ export default function ScrapeMultiplePage() {
             Generate Links From URL
           </button>
 
+          {/* generate urls from main series page */}
           <button
             onClick={() => setIsLinkModalOpen(true)}
             className="w-full sm:w-auto px-4 py-2 rounded bg-purple-600 hover:bg-purple-700 text-white"
@@ -324,9 +360,11 @@ export default function ScrapeMultiplePage() {
             Generate from Series Page
           </button>
         </div>
+
         <label className="block mb-1 font-medium">
           Chapter URLs (one per line and consecutive)
         </label>
+
         <textarea
           rows={6}
           className="border rounded w-full p-2"
@@ -357,6 +395,7 @@ https://example.com/ch4`}
         }}
       />
 
+      {/* input for start chapter */}
       <div className="mb-4">
         <label className="block mb-1 font-medium">Start Chapter Number</label>
         <input
@@ -368,7 +407,7 @@ https://example.com/ch4`}
         />
       </div>
 
-      {/* Lazy Load Toggle */}
+      {/* lazy Load Toggle */}
       <div className="flex items-center gap-2 mb-4">
         <input
           type="checkbox"
@@ -382,6 +421,7 @@ https://example.com/ch4`}
         </label>
       </div>
 
+      {/* scrape button */}
       <div className="mb-4">
         <button
           className={`px-4 py-2 rounded text-white ${
@@ -396,6 +436,7 @@ https://example.com/ch4`}
         </button>
       </div>
 
+      {/* logs */}
       <div
         ref={logsContainerRef}
         onScroll={handleScroll}
@@ -407,6 +448,7 @@ https://example.com/ch4`}
         ))}
       </div>
 
+      {/* chapter select dropdown */}
       {chapterImages.length > 0 && (
         <div className="mb-4">
           <label className="block mb-1 font-medium">Select Chapter</label>
@@ -424,15 +466,15 @@ https://example.com/ch4`}
         </div>
       )}
 
+      {/* chapter viewer */}
       {chapterImages[selectedChapter] && (
         <div>
           <h2 className="text-lg font-semibold mb-2">
             Chapter {lockedStartChapter + selectedChapter}
           </h2>
-          {/* Row 1: Prev / Next + Reset */}
-          {/* Row 1: Prev / Next + Reset */}
+          {/* prev / Next + Reset  row*/}
           <div className="flex flex-col sm:flex-row mb-5 gap-2">
-            {/* Prev / Next buttons: mobile full-width, desktop untouched */}
+            {/* Prev / Next buttons */}
             <div className="flex gap-2 w-full sm:w-auto">
               <button
                 onClick={() =>
@@ -465,7 +507,7 @@ https://example.com/ch4`}
               </button>
             </div>
 
-            {/* Reset buttons: stacked vertically on mobile, desktop unchanged */}
+            {/* Reset buttons*/}
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <button
                 onClick={() => resetDeleted(selectedChapter)}
@@ -483,7 +525,7 @@ https://example.com/ch4`}
             </div>
           </div>
 
-          {/* Row 2: Global Trim Controls */}
+          {/* Global Trim Controls */}
           <div className="flex flex-col sm:flex-row items-end gap-2 mb-5">
             <div className="flex gap-2 w-full sm:w-auto">
               <div className="flex flex-col flex-1 sm:flex-none">
@@ -509,7 +551,7 @@ https://example.com/ch4`}
               </div>
             </div>
 
-            {/* Trim + Reset buttons: below input row on mobile */}
+            {/* Trim + Reset buttons*/}
             <div className="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0">
               <button
                 className={`flex-1 sm:flex-none px-3 py-2 rounded text-white ${
@@ -537,7 +579,7 @@ https://example.com/ch4`}
             </div>
           </div>
 
-          {/* Row 3: Save All */}
+          {/* save All */}
           <div className="mb-4 flex justify-center sm:justify-start">
             <button
               onClick={handleUploadMultiple}
@@ -553,6 +595,7 @@ https://example.com/ch4`}
             </button>
           </div>
 
+          {/* show images with toggle delete available */}
           <div className="max-h-[90vh] overflow-y-scroll pr-2 pb-20">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {chapterImages[selectedChapter].map((src, imgIdx) => {

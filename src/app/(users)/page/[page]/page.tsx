@@ -3,6 +3,8 @@ import SeriesCard from "@/components/seriesCard";
 import { fetchRecentSeries, SeriesWithChapters } from "@/lib/getRecentSeries";
 import Link from "next/link";
 
+// this is the recent stuff for the main page, not the all comics page
+
 interface PageProps {
   params: Promise<{ page: string }>;
 }
@@ -11,6 +13,7 @@ export default async function PaginatedPage({ params }: PageProps) {
   const { page } = await params;
   const pageNumber = parseInt(page) || 1;
 
+  // to grab all the recent stuff
   const { data: seriesList, error } = await fetchRecentSeries({
     page: pageNumber,
     limit: 10, // 5 rows of 2 series per page
@@ -28,6 +31,7 @@ export default async function PaginatedPage({ params }: PageProps) {
           Recent Updates - Page {pageNumber}
         </h1>
 
+        {/* display rows of the series cards */}
         {seriesList.length === 0 ? (
           <p className="text-gray-500">No chapters available yet.</p>
         ) : (

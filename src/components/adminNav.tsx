@@ -64,11 +64,14 @@ export default function AdminNav() {
           mobileMenuOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
+        {/* the x button to leave */}
         <div className="flex justify-end p-4">
           <button onClick={() => setMobileMenuOpen(false)} className="p-2">
             <X className="w-6 h-6 text-white" />
           </button>
         </div>
+
+        {/* map/show all links */}
         <ul className="flex flex-col gap-2 px-4">
           {navLinks.map((link) => {
             const isActive = pathname === link.href;

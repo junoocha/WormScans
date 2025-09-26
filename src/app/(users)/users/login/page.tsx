@@ -7,7 +7,9 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
 export default function LoginPage() {
+  // redirect after successful login
   const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -17,6 +19,7 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
+      // access api/supabase and check for correct credentials
       const res = await fetch("/api/auth/login", {
         method: "POST",
         body: JSON.stringify({ email, password }),
@@ -24,7 +27,7 @@ export default function LoginPage() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Login failed");
+      if (!res.ok) throw new Error(data.error || "Login failed"); //throw error if login failed
 
       toast.success("Welcome back!");
       router.push("/admin");

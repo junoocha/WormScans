@@ -15,6 +15,7 @@ export default function ChapterDropdown({
 }: ChapterDropdownProps) {
   const router = useRouter();
 
+  // handle switching chapter number
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selected = e.target.value;
     if (selected) {
