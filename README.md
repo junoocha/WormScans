@@ -44,6 +44,7 @@ Access it here:
 ## Tech Stack
 
 - **Framework**: [Next.js 13+ (App Router)](https://nextjs.org/)
+- **UI Library**: [React 18](https://react.dev/)
 - **Database & Auth**: [Supabase](https://supabase.com/)
 - **UI & Styling**: Tailwind CSS + custom variables (`--background`, `--card-bg`, `--accent`, etc.)
 - **Icons**: [Lucide](https://lucide.dev/)
