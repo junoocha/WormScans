@@ -16,6 +16,7 @@ Access it here:
 - Read chapters with **chapter navigation** (prev/next buttons + dropdown).
 - **Keyboard navigation** (←/→ keys) for quick chapter flipping.
 - **Back to top** button for easy scrolling.
+- Mobile friendly.
 
 ### Authentication
 
