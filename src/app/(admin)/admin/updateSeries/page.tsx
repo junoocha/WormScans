@@ -23,17 +23,21 @@ type SeriesDetails = {
 };
 
 export default function UpdateSeriesPage() {
+  // state for series dropdown, selected series, and series details
   const [seriesList, setSeriesList] = useState<SeriesOption[]>([]);
   const [selectedSeriesId, setSelectedSeriesId] = useState<string>("");
   const [details, setDetails] = useState<SeriesDetails | null>(null);
 
+  // input state for title, description, new cover file and the cover preview
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
 
+  // loading state for saving
   const [saveLoading, setSaveLoading] = useState(false);
 
+  // state for series status and country origin
   const [formStatus, setFormStatus] = useState("ongoing");
   const [countryOrigin, setCountryOrigin] = useState("japan");
 
@@ -90,6 +94,7 @@ export default function UpdateSeriesPage() {
       return;
     }
 
+    // if duplicate found, don't save
     const duplicate = seriesList.find(
       (s) =>
         s.series_name.toLowerCase().trim() === title.toLowerCase().trim() &&
@@ -102,10 +107,12 @@ export default function UpdateSeriesPage() {
 
     setSaveLoading(true);
 
+    // set the cover so we can see the change
     let coverUrl = details.cover_url;
 
     try {
       if (coverFile) {
+        // upload cover to supabase if new cover
         const formData = new FormData();
         formData.append("file", coverFile);
         formData.append("slug", details.slug);
@@ -119,6 +126,7 @@ export default function UpdateSeriesPage() {
         coverUrl = uploadData.coverUrl;
       }
 
+      // update series
       const res = await fetch(`/api/admin/updateSeries/${details.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
