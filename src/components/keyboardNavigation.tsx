@@ -24,6 +24,7 @@ export default function KeyboardNavigation({
     rafId = requestAnimationFrame(() => scrollStep(direction));
   };
 
+  // based on arrow key, either move to appropriate chapter or scroll up and down
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft" && prev !== null) {

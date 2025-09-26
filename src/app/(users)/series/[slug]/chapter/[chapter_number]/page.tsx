@@ -11,24 +11,33 @@ interface ChapterPageProps {
 }
 
 export default async function ChapterPage({ params }: ChapterPageProps) {
+  // grab slug and chapter number from params / route name
   const { slug, chapter_number } = await params;
-  const current = parseFloat(chapter_number);
+  const current = parseFloat(chapter_number); // float number for decimals
 
+  // fetch chapter images
   const { data: imagesData, error } = await fetchChapterImages(
     slug,
     chapter_number
   );
+
+  // fetch series info using slug
   const { data: seriesData, error: seriesError } = await fetchSeries({ slug });
 
   if (!seriesData || seriesError) {
     return <p className="p-6 text-red-500">Error loading series info.</p>;
   }
 
+  // series title for the button
   const seriesTitle = seriesData.series_name;
 
+  // fetch next and previous chapters
   const { prev, next } = await fetchAdjacentChapters(slug, current);
+
+  // fetch all chapter numbers for dropdown
   const chapters = await fetchChaptersForSeries(slug);
 
+  // handle chapter when no image error
   if (error || !imagesData) {
     return <p className="p-6 text-red-500">Error loading chapter images.</p>;
   }
@@ -43,6 +52,7 @@ export default async function ChapterPage({ params }: ChapterPageProps) {
     );
   }
 
+  // array of image urls
   const chapterImages = imagesData[0].image_urls;
 
   return (
@@ -101,24 +111,6 @@ export default async function ChapterPage({ params }: ChapterPageProps) {
             />
           </div>
         ))}
-        {/* {imagesData.map((chapter) =>
-          chapter.image_urls.map((url, idx) => (
-            <div
-              key={`${chapter.id}-${idx}`}
-              className="w-full flex justify-center bg-[var(--background)]"
-            >
-              <Image
-                src={url}
-                alt={`Chapter ${chapter_number} image ${idx + 1}`}
-                width={800} // default width, tweak later
-                height={1200} // default height, tweak later
-                sizes="100vw"
-                priority={idx === 0} // first image loads eagerly
-                className="w-full max-w-4xl object-contain"
-              />
-            </div>
-          ))
-        )} */}
 
         {/* bottom nav */}
         <div className="w-full max-w-4xl px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
@@ -146,6 +138,7 @@ export default async function ChapterPage({ params }: ChapterPageProps) {
   );
 }
 
+// for the next and prev buttons
 function NavButton({
   slug,
   chapter,
@@ -160,12 +153,15 @@ function NavButton({
   return (
     <a
       href={
+        // build link url dynamically
+        // if defined --> based off the route
+        // if undefined, disable link with # href
         chapter ? `/series/${slug}/chapter/${chapter?.toString() ?? ""}` : "#"
       }
       className={`px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold transition text-sm sm:text-base ${
         chapter
-          ? "bg-[var(--accent)] text-white hover:opacity-90"
-          : "bg-gray-700 text-gray-400 cursor-not-allowed"
+          ? "bg-[var(--accent)] text-white hover:opacity-90" // active
+          : "bg-gray-700 text-gray-400 cursor-not-allowed" // disabled
       } ${className}`}
     >
       {label}

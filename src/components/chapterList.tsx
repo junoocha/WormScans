@@ -15,6 +15,7 @@ export default function ChaptersList({
 }: ChaptersClientProps) {
   return (
     <div className="space-y-4  rounded p-3 max-h-[600px] overflow-y-auto overflow-x-hidden">
+      {/* map a bunch of chapter cards which are also all links. */}
       {chapters.map((ch) => (
         <Link
           key={ch.id}

@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 
 export default function BackToTopButton() {
+  // state for showing if button is visible
   const [visible, setVisible] = useState(false);
 
+  // appears when we scroll up a bit up
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 300) {
@@ -18,6 +20,7 @@ export default function BackToTopButton() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // function to scroll to top
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
