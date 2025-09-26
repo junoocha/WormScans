@@ -57,6 +57,8 @@ export default function SeriesCard({
                 className="flex justify-between items-center text-base text-gray-500 hover:text-white transition truncate"
               >
                 <span className="truncate">Chapter {ch.chapter_number}</span>
+
+                {/* grab the date of release and like translate that to more understandable stuff instead of military numbers */}
                 <span className="flex-shrink-0 text-sm text-gray-400">
                   {formatChapterDate(ch.created_at)}
                 </span>
