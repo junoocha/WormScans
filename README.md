@@ -29,14 +29,14 @@ Access it here:
 - Only users with the admin key can create admin accounts.
 - Supabase is configured to not reveal if an email exists during password reset for extra privacy.
 - All database actions are performed via Supabase client with RLS (Row Level Security).
-- Protected admin authorization (requires login to access admin)
+- Protected admin authorization (requires login to access admin).
 
 ### Admin Dashboard
 
 - Manage series (title, description, cover image, status, origin).
 - Upload new cover images via Supabase storage.
-- Prevent duplicate series titles.
 - Update existing series details.
+- Update and delete existing chapter details
 - Access to scrape chapters from websites and upload them to WormScans.
 
 ---
