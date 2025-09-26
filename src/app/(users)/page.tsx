@@ -3,6 +3,7 @@ import SeriesCard from "@/components/seriesCard";
 import { fetchRecentSeries, SeriesWithChapters } from "@/lib/getRecentSeries";
 
 export default async function HomePage() {
+  // grab recent series
   const { data: seriesList, error } = await fetchRecentSeries({
     page: 1,
     limit: 10,
@@ -17,6 +18,7 @@ export default async function HomePage() {
     <main className="p-6 sm:p-6 max-w-6xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">Recent Updates</h1>
 
+      {/* show series cards for recent */}
       {seriesList.length === 0 ? (
         <p className="text-gray-500">No chapters available yet.</p>
       ) : (

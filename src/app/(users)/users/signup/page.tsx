@@ -8,6 +8,7 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import toast from "react-hot-toast";
 
 export default function AdminSignup() {
+  //Initialize Supabase client for client-side auth operations
   const supabase = createClientComponentClient();
   const router = useRouter();
 
@@ -19,6 +20,7 @@ export default function AdminSignup() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validate admin key before proceeding
     if (adminKey !== process.env.NEXT_PUBLIC_ADMIN_KEY) {
       toast.error("Invalid admin key.");
       return;

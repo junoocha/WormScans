@@ -6,18 +6,20 @@ import { supabase } from "@/lib/supabaseClient";
 import toast from "react-hot-toast";
 
 export default function ForgotPasswordPage() {
+  // loading states for emails and the loading status
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
+    // prevent page refresh on form submissions
     e.preventDefault();
     if (!email) return;
 
     setLoading(true);
     try {
-      // Supabase will not reveal if email exists
+      // do not reveal if email exists
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/users/reset-password`,
+        redirectTo: `${window.location.origin}/users/reset-password`, // redirect
       });
 
       if (error) throw error;
