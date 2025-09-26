@@ -14,8 +14,8 @@ def simulate_human_behavior(page):
     # bounding box is for returning the position and size btw
 
     if safe_elements:
-        # pick 1-5 random elements
-        hover_count = random.randint(1, min(5, len(safe_elements)))
+        # pick 1-3 random elements
+        hover_count = random.randint(1, min(3, len(safe_elements)))
         for _ in range(hover_count):
             el = random.choice(safe_elements)
             box = el.bounding_box()
@@ -27,7 +27,7 @@ def simulate_human_behavior(page):
                 time.sleep(random.uniform(0.3, 1.0)) # quick pause
 
     # smarter scrolling
-    scroll_times = random.randint(2, 5) # randomly scroll 2-5 times
+    scroll_times = random.randint(1, 3) # randomly scroll 1-3 times
     for _ in range(scroll_times):
         scroll_px = random.randint(10, 20) # scroll by variable amount
         page.evaluate(f"window.scrollBy(0, {scroll_px})") # actual scroll action
