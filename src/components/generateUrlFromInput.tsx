@@ -13,17 +13,25 @@ export default function ChapterUrlGeneratorModal({
   onClose,
   onConfirm,
 }: ChapterUrlGeneratorModalProps) {
+  // sample url inputted by user
   const [sampleUrl, setSampleUrl] = useState("");
+
+  // list of detected numbers in url + index of each selected number
   const [detectedNumbers, setDetectedNumbers] = useState<
     { value: string; index: number }[]
   >([]);
   const [selectedNumberIdx, setSelectedNumberIdx] = useState<number | null>(
     null
   );
+
+  // start + end chapter input
   const [startChapter, setStartChapter] = useState<string>("1");
   const [endChapter, setEndChapter] = useState<string>("1");
+
+  // list of generated urls
   const [generatedUrls, setGeneratedUrls] = useState<string[]>([]);
 
+  // detect numbers in sample url
   useEffect(() => {
     const regex = /\d+/g;
     const matches = [...sampleUrl.matchAll(regex)].map((m) => ({
@@ -34,11 +42,13 @@ export default function ChapterUrlGeneratorModal({
     setSelectedNumberIdx(matches.length > 0 ? 0 : null);
   }, [sampleUrl]);
 
+  // regenerate urls when inputs/selections change for start/end chapters
   useEffect(() => {
     const start = parseInt(startChapter, 10);
     const end = parseInt(endChapter, 10);
 
     if (
+      // when unreasonable inputs are given, display nothing
       selectedNumberIdx === null ||
       detectedNumbers.length === 0 ||
       isNaN(start) ||
@@ -52,6 +62,7 @@ export default function ChapterUrlGeneratorModal({
     const urls: string[] = [];
     const targetNumber = detectedNumbers[selectedNumberIdx].value;
     for (let i = start; i <= end; i++) {
+      // find numbers in url
       let count = 0;
       const newUrl = sampleUrl.replace(/\d+/g, (match) => {
         if (match === targetNumber && count === 0) {
@@ -65,8 +76,10 @@ export default function ChapterUrlGeneratorModal({
     setGeneratedUrls(urls);
   }, [sampleUrl, selectedNumberIdx, startChapter, endChapter, detectedNumbers]);
 
+  // hide modal if closed
   if (!isOpen) return null;
 
+  // check list before sending input from modals to main page
   const canConfirm =
     generatedUrls.length > 0 &&
     startChapter.trim() !== "" &&
@@ -75,6 +88,7 @@ export default function ChapterUrlGeneratorModal({
     !isNaN(parseInt(endChapter, 10)) &&
     parseInt(endChapter, 10) >= parseInt(startChapter, 10);
 
+  // no letters!
   const handleNumberInput = (
     value: string,
     setter: React.Dispatch<React.SetStateAction<string>>
@@ -86,7 +100,9 @@ export default function ChapterUrlGeneratorModal({
   };
 
   return (
+    // the dark overlay
     <div className="fixed inset-0 bg-black/80 flex justify-center items-start sm:items-center sm:pt-0 pt-6 z-50 p-4">
+      {/* modal container */}
       <div className="bg-[var(--card-bg)] text-white rounded-2xl shadow-lg p-6 w-full max-w-2xl max-h-[90vh] flex flex-col">
         <h2 className="text-xl font-bold mb-4">Generate Chapter URLs</h2>
 

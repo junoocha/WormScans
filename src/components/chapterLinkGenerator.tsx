@@ -14,14 +14,26 @@ export default function ChapterLinkGeneratorModal({
   onClose,
   onConfirm,
 }: ChapterLinkGeneratorModalProps) {
+  // user input for series url
   const [seriesUrl, setSeriesUrl] = useState("");
+
+  // logs from scraping
   const [logs, setLogs] = useState<string[]>([]);
+
+  // all scraped links + set of selected links
   const [chapterLinks, setChapterLinks] = useState<string[]>([]);
   const [selectedLinks, setSelectedLinks] = useState<Set<string>>(new Set());
+
+  // toggle for prepending base url (in case we only scrape the path)
   const [prependBase, setPrependBase] = useState(true);
+
+  // ascending/descending sort
   const [sortAsc, setSortAsc] = useState(true);
+
+  // loading state during scraping
   const [loading, setLoading] = useState(false);
 
+  // scrape all links from series url
   const handleScrape = () => {
     if (!seriesUrl) return alert("Enter a series URL.");
 
@@ -30,12 +42,14 @@ export default function ChapterLinkGeneratorModal({
     setChapterLinks([]);
     setSelectedLinks(new Set());
 
+    // backend api to spawn python scraper
     const eventSource = new EventSource(
       `/api/admin/getChapterLinks?url=${encodeURIComponent(
         seriesUrl
       )}&prependBase=${prependBase}`
     );
 
+    // handle logs
     eventSource.onmessage = (e) => {
       const raw = e.data;
       setLogs((prev) => [...prev, raw]);
@@ -49,12 +63,14 @@ export default function ChapterLinkGeneratorModal({
       }
     };
 
+    // log end
     eventSource.addEventListener("end", () => {
       eventSource.close();
       setLoading(false);
       setLogs((prev) => [...prev, "All links scraped."]);
     });
 
+    // log error
     eventSource.onerror = () => {
       setLogs((prev) => [...prev, "Error scraping links."]);
       eventSource.close();
@@ -62,6 +78,7 @@ export default function ChapterLinkGeneratorModal({
     };
   };
 
+  // toggle select/deselct for link
   const toggleSelect = (url: string) => {
     setSelectedLinks((prev) => {
       const copy = new Set(prev);
@@ -71,6 +88,7 @@ export default function ChapterLinkGeneratorModal({
     });
   };
 
+  // confirm selected links and pass to parent
   const confirmSelection = () => {
     const sortedSelected = sortedLinks
       .filter(({ link }) => selectedLinks.has(link))
@@ -79,9 +97,13 @@ export default function ChapterLinkGeneratorModal({
     onClose();
   };
 
+  // don't render modal if closed
   if (!isOpen) return null;
 
+  // remve duplicate links
   const uniqueLinks = Array.from(new Set(chapterLinks));
+
+  // sort links by chapter number
   const sortedLinks = uniqueLinks
     .map((link, idx) => {
       const match = link.match(/chapter[-_/]?(\d+)/i);
@@ -93,8 +115,11 @@ export default function ChapterLinkGeneratorModal({
     );
 
   return (
+    // full screen overlay
     <div className="fixed inset-0 bg-black/80 flex justify-center items-start sm:items-center sm:pt-0 pt-6 z-50 p-4">
+      {/* modal container */}
       <div className="bg-[var(--card-bg)] p-6 rounded-lg w-full max-w-3xl max-h-[90vh] flex flex-col ">
+        {/* modal header */}
         <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
           Generate Chapters from Series Page
           <Info className="w-4 h-4 text-gray-400 cursor-pointer">
@@ -105,7 +130,9 @@ export default function ChapterLinkGeneratorModal({
           </Info>
         </h2>
 
+        {/* scrollable content */}
         <div className="overflow-y-auto flex-1 pr-1">
+          {/* url input */}
           <div className="mb-4">
             <label className="block mb-1 font-medium">Series URL</label>
             <input
@@ -116,6 +143,7 @@ export default function ChapterLinkGeneratorModal({
             />
           </div>
 
+          {/* prepend base toggle */}
           <div className="mb-4 flex items-center gap-2">
             <input
               type="checkbox"
@@ -128,6 +156,7 @@ export default function ChapterLinkGeneratorModal({
             </label>
           </div>
 
+          {/* sort toggle button */}
           {chapterLinks.length > 0 && (
             <button
               className="px-2 py-1 text-xs rounded bg-gray-600 hover:bg-gray-700 text-white mb-2"
@@ -137,6 +166,7 @@ export default function ChapterLinkGeneratorModal({
             </button>
           )}
 
+          {/* logs */}
           <div className="mb-4 bg-black/80 text-green-400 p-4 rounded text-sm max-h-40 overflow-y-scroll font-mono whitespace-pre-wrap">
             {logs.length === 0 && (
               <p className="opacity-50">Waiting for logs...</p>
@@ -146,6 +176,7 @@ export default function ChapterLinkGeneratorModal({
             ))}
           </div>
 
+          {/* list of chapter links */}
           {sortedLinks.length > 0 && (
             <div className="mb-4">
               <h3 className="font-medium mb-2">Select Chapters</h3>
@@ -168,7 +199,9 @@ export default function ChapterLinkGeneratorModal({
           )}
         </div>
 
+        {/* action buttons */}
         <div className="flex flex-col sm:flex-row justify-end gap-2 mt-4">
+          {/* scrape button */}
           <button
             className={`px-4 py-2 rounded text-white ${
               loading
@@ -180,6 +213,8 @@ export default function ChapterLinkGeneratorModal({
           >
             {loading ? "Scraping..." : "Start Scraping"}
           </button>
+
+          {/* confirm button */}
           <button
             className={`px-4 py-2 rounded text-white ${
               selectedLinks.size === 0
@@ -191,6 +226,8 @@ export default function ChapterLinkGeneratorModal({
           >
             Confirm Selection
           </button>
+
+          {/* close button */}
           <button
             className="px-4 py-2 rounded bg-gray-600 hover:bg-gray-700"
             onClick={onClose}
