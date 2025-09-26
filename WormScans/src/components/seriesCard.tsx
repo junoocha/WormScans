@@ -54,7 +54,7 @@ export default function SeriesCard({
               <Link
                 key={ch.id}
                 href={`/series/${slug}/chapter/${ch.chapter_number}`}
-                className="flex justify-between items-center text-base text-gray-500 hover:text-white transition truncate"
+                className="flex mb-1 justify-between items-center text-base text-gray-500 hover:text-white transition truncate"
               >
                 <span className="truncate">Chapter {ch.chapter_number}</span>
 
