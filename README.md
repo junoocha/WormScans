@@ -49,6 +49,7 @@ Access it here:
 - **UI & Styling**: Tailwind CSS + custom variables (`--background`, `--card-bg`, `--accent`, etc.)
 - **Icons**: [Lucide](https://lucide.dev/)
 - **Notifications**: [react-hot-toast](https://react-hot-toast.com/)
+- **Scraping & Automation**: [Python 3](https://www.python.org/), [Playwright](https://playwright.dev/python/)
 
 ---
 
