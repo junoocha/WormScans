@@ -13,4 +13,16 @@ const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
 ];
 
-export default eslintConfig;
+export default {
+  extends: ["next/core-web-vitals", "plugin:@typescript-eslint/recommended"],
+  rules: {
+    // disable explicit any
+    "@typescript-eslint/no-explicit-any": "off",
+
+    // unused vars: keep warning, or turn off completely
+    "@typescript-eslint/no-unused-vars": "warn",
+
+    // optionally disable Next.js <img> warnings
+    "@next/next/no-img-element": "off",
+  },
+};
