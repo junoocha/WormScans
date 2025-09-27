@@ -1,3 +1,5 @@
+//app/(users)/series/[slug]/chapter/[chapter_number]/page.tsx
+
 import { fetchChapterImages } from "@/lib/getChapterImages";
 import { fetchAdjacentChapters } from "@/lib/getNextPrevChapters";
 import KeyboardNavigation from "@/components/keyboardNavigation";
