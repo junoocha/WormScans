@@ -95,7 +95,7 @@ async function triggerGitHubScraper(req: NextRequest) {
   if (!targetUrl) return new Response("Missing URL", { status: 400 });
 
   const res = await fetch(
-    `https://api.github.com/repos/YOUR_USERNAME/YOUR_REPO/actions/workflows/scrape.yml/dispatches`,
+    `https://api.github.com/repos/junoocha/WormScans/actions/workflows/scrape.yml/dispatches`,
     {
       method: "POST",
       headers: {
