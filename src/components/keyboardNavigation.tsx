@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 export default function KeyboardNavigation({
@@ -13,53 +13,46 @@ export default function KeyboardNavigation({
   next: number | null;
 }) {
   const router = useRouter();
-  let scrolling = false;
-  let rafId: number | null = null;
-  let delayPassed = false;
+  const scrolling = useRef(false);
+  const delayPassed = useRef(false);
+  const rafId = useRef<number | null>(null);
 
-  // Continuous scroll function
-  const scrollStep = (direction: "up" | "down") => {
-    const distance = 10; // px per frame
-    window.scrollBy(0, direction === "up" ? -distance : distance);
-    rafId = requestAnimationFrame(() => scrollStep(direction));
-  };
-
-  // based on arrow key, either move to appropriate chapter or scroll up and down
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft" && prev !== null) {
         router.push(`/series/${slug}/chapter/${prev}`);
       } else if (e.key === "ArrowRight" && next !== null) {
         router.push(`/series/${slug}/chapter/${next}`);
-      } else if ((e.key === "ArrowUp" || e.key === "ArrowDown") && !scrolling) {
-        scrolling = true;
-
-        // Add a delay before scroll to ignore early repeat events
-        delayPassed = false;
+      } else if (
+        (e.key === "ArrowUp" || e.key === "ArrowDown") &&
+        !scrolling.current
+      ) {
+        scrolling.current = true;
+        delayPassed.current = false;
         setTimeout(() => {
-          delayPassed = true;
-        }, 2500); // 2.5 seconds delay
+          delayPassed.current = true;
+        }, 2500);
 
         const direction = e.key === "ArrowUp" ? "up" : "down";
 
         const step = () => {
-          if (scrolling && delayPassed) {
+          if (scrolling.current && delayPassed.current) {
             window.scrollBy(0, direction === "up" ? -10 : 10);
           }
-          if (scrolling) {
-            rafId = requestAnimationFrame(step);
+          if (scrolling.current) {
+            rafId.current = requestAnimationFrame(step);
           }
         };
 
-        rafId = requestAnimationFrame(step);
+        rafId.current = requestAnimationFrame(step);
       }
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
       if (e.key === "ArrowUp" || e.key === "ArrowDown") {
-        scrolling = false;
-        delayPassed = false;
-        if (rafId) cancelAnimationFrame(rafId);
+        scrolling.current = false;
+        delayPassed.current = false;
+        if (rafId.current) cancelAnimationFrame(rafId.current);
       }
     };
 
@@ -69,7 +62,7 @@ export default function KeyboardNavigation({
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
-      if (rafId) cancelAnimationFrame(rafId);
+      if (rafId.current) cancelAnimationFrame(rafId.current);
     };
   }, [prev, next, router, slug]);
 

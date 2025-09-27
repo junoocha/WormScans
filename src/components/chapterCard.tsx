@@ -10,7 +10,6 @@ interface ChapterCardProps {
 }
 
 export default function ChapterCard({
-  seriesSlug,
   chapterNumber,
   title,
   date,
