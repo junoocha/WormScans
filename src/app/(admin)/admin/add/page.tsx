@@ -132,7 +132,7 @@ export default function ScrapePage() {
     });
 
     // sse issues
-    eventSource.onerror = (err) => {
+    eventSource.onerror = (_) => {
       setLogs((prev) => [
         ...prev,
         "Error: Connection lost/failed or you didn't put in a proper website",

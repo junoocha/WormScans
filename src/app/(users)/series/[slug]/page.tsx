@@ -3,7 +3,7 @@ import { fetchSeries } from "@/lib/getSeriesById";
 import ChaptersList from "@/components/chapterList";
 
 interface SeriesPageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 function formatType(origin: string | null) {

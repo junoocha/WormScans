@@ -13,7 +13,6 @@ interface SeriesDropdownProps {
 
 export default function SeriesDropdown({
   seriesList,
-  selectedSeriesId,
   setSelectedSeriesId,
   placeholder = "Select a series...",
 }: SeriesDropdownProps) {

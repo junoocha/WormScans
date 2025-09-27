@@ -1,6 +1,7 @@
 // app/(users)/page.tsx
 import SeriesCard from "@/components/seriesCard";
 import { fetchRecentSeries, SeriesWithChapters } from "@/lib/getRecentSeries";
+import Link from "next/link";
 
 export default async function HomePage() {
   // grab recent series
@@ -38,12 +39,12 @@ export default async function HomePage() {
           {/* Next button */}
           {seriesList.length === 10 && (
             <div className="flex justify-center gap-4 mt-8">
-              <a
+              <Link
                 href="/page/2"
                 className="px-4 py-2 w-full sm:w-auto text-center rounded font-semibold transition bg-[var(--accent)] text-white hover:opacity-70"
               >
                 Next →
-              </a>
+              </Link>
             </div>
           )}
         </>

@@ -15,7 +15,7 @@ export default function ResetPasswordPage() {
   useEffect(() => {
     // Supabase will parse the hash fragment automatically
     const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      async (event) => {
         if (event === "PASSWORD_RECOVERY") {
           toast.success("Enter your new password below.");
         }

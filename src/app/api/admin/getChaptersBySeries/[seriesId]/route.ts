@@ -9,7 +9,7 @@ const supabase = createClient(
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { seriesId: string } }
+  { params }: { params: Promise<{ seriesId: string }> }
 ) {
   const { seriesId } = await params;
 
