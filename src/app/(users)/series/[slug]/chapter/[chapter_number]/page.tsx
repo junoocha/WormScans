@@ -8,12 +8,11 @@ import { fetchChaptersForSeries } from "@/lib/getChaptersForSeries";
 import { fetchSeries } from "@/lib/getSeriesById";
 import BackToTopButton from "@/components/backToTop";
 
-interface ChapterPageProps {
+export default async function ChapterPage({
+  params,
+}: {
   params: { slug: string; chapter_number: string };
-}
-
-export default async function ChapterPage({ params }: ChapterPageProps) {
-  // grab slug and chapter number from params / route name
+}) {
   const { slug, chapter_number } = params;
   const current = parseFloat(chapter_number); // float number for decimals
 
