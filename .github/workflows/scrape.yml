@@ -1,0 +1,39 @@
+name: Run Scraper
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "URL to scrape"
+        required: true
+      lazy:
+        description: "Use lazy loading (true/false)"
+        required: false
+        default: "true"
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run scraper
+        run: python scraper/playwright_scraper.py
+        env:
+          TARGET_URL: ${{ github.event.inputs.url }}
+          USE_LAZY: ${{ github.event.inputs.lazy }}
+
+      - name: Upload results
+        uses: actions/upload-artifact@v3
+        with:
+          name: scraped-output
+          path: output/
