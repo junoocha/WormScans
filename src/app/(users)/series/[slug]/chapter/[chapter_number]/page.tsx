@@ -14,7 +14,7 @@ interface ChapterPageProps {
 
 export default async function ChapterPage({ params }: ChapterPageProps) {
   // grab slug and chapter number from params / route name
-  const { slug, chapter_number } = await params;
+  const { slug, chapter_number } = params;
   const current = parseFloat(chapter_number); // float number for decimals
 
   // fetch chapter images
