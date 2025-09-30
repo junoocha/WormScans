@@ -26,11 +26,17 @@ jobs:
       - name: Install Python dependencies
         run: pip install -r scraper/requirements.txt
 
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright
+
       - name: Install Playwright browsers
         run: playwright install --with-deps
 
       - name: Run scraper
-        run: python scraper/playwright_scraper.py
+        run: PYTHONPATH=. python scraper/playwright_scraper.py
         env:
           TARGET_URL: ${{ github.event.inputs.url }}
           USE_LAZY: ${{ github.event.inputs.lazy }}
