@@ -35,17 +35,17 @@ jobs:
       - name: Install Playwright browsers
         run: playwright install --with-deps
 
-      - name: Run scraper
-        run: PYTHONPATH=. python scraper/playwright_scraper.py
+      - name: Run scraper and save output
+        run: |
+          mkdir -p output
+          # Run scraper with PYTHONPATH so modules are found
+          PYTHONPATH=. python scraper/playwright_scraper.py > output/scraper.log
+          # Extract all grabbed images into a text file
+          grep "Grabbed .* picture[s]*: " output/scraper.log | sed -E 's/.*: (.+)$/\1/' > output/images.txt
         env:
           TARGET_URL: ${{ github.event.inputs.url }}
           USE_LAZY: ${{ github.event.inputs.lazy }}
 
-      - name: Save scraped output
-        run: |
-          mkdir -p output
-          python scraper/playwright_scraper.py > output/scraper.log
-          grep "Grabbed .* picture[s]*: " output/scraper.log | sed -E 's/.*: (.+)$/\1/' > output/images.txt
       - name: Upload scraped artifact
         uses: actions/upload-artifact@v4
         with:
