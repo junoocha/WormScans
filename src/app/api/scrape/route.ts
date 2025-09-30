@@ -94,7 +94,8 @@ async function triggerGitHubScraper(req: NextRequest) {
 
   if (!targetUrl) return new Response("Missing URL", { status: 400 });
 
-  const res = await fetch(
+  // Trigger the workflow
+  const dispatchRes = await fetch(
     `https://api.github.com/repos/junoocha/WormScans/actions/workflows/scrape.yml/dispatches`,
     {
       method: "POST",
@@ -109,10 +110,40 @@ async function triggerGitHubScraper(req: NextRequest) {
     }
   );
 
-  if (!res.ok) {
-    const text = await res.text();
+  if (!dispatchRes.ok) {
+    const text = await dispatchRes.text();
     return new Response(`Failed to trigger workflow: ${text}`, { status: 500 });
   }
 
-  return new Response("Workflow triggered. Check GitHub Actions for status.");
+  // Wait a second or two and fetch the most recent run
+  await new Promise((r) => setTimeout(r, 2000));
+
+  const runsRes = await fetch(
+    `https://api.github.com/repos/junoocha/WormScans/actions/workflows/scrape.yml/runs?per_page=1`,
+    {
+      headers: {
+        Accept: "application/vnd.github+json",
+        Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+      },
+    }
+  );
+
+  if (!runsRes.ok) {
+    const text = await runsRes.text();
+    return new Response(`Failed to fetch workflow run: ${text}`, {
+      status: 500,
+    });
+  }
+
+  const runsData = await runsRes.json();
+  const runId = runsData.workflow_runs?.[0]?.id;
+
+  if (!runId) {
+    return new Response("Could not find workflow run ID", { status: 500 });
+  }
+
+  // Return the run ID to the frontend so it can poll logs
+  return new Response(JSON.stringify({ runId }), {
+    headers: { "Content-Type": "application/json" },
+  });
 }

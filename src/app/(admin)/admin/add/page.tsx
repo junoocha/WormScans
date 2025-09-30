@@ -58,6 +58,9 @@ export default function ScrapePage() {
   // to show supabase upload is working
   const [saving, setSaving] = useState(false);
 
+  // determine if on localhost or vercel deployment
+  const isLocal = !process.env.NEXT_PUBLIC_VERCEL;
+
   // Fetch existing series when the page loads
   React.useEffect(() => {
     const fetchSeries = async () => {
@@ -82,7 +85,7 @@ export default function ScrapePage() {
   }, []);
 
   // stuff after pressing scrape
-  const handleScrape = () => {
+  const handleScrape = async () => {
     if (!url.trim()) {
       setLogs(["Error: Please enter a URL"]);
       return;
@@ -95,51 +98,74 @@ export default function ScrapePage() {
     setDeletedIndices(new Set());
 
     // sse to stream scraper logs and image urls
-    const eventSource = new EventSource(
-      `/api/scrape?url=${encodeURIComponent(url)}&lazy=${lazyLoad}`
-    );
+    if (isLocal) {
+      const eventSource = new EventSource(
+        `/api/scrape?url=${encodeURIComponent(url)}&lazy=${lazyLoad}`
+      );
 
-    // show messages
-    eventSource.onmessage = (event) => {
-      const message = event.data;
+      // show messages
+      eventSource.onmessage = (event) => {
+        const message = event.data;
 
-      // if scraper sends error, display and stop
-      if (message.startsWith("Error:")) {
+        // if scraper sends error, display and stop
+        if (message.startsWith("Error:")) {
+          setLogs((prev) => [...prev, message]);
+          eventSource.close();
+          setLoading(false);
+          return;
+        }
+
+        // add log messages to the state
         setLogs((prev) => [...prev, message]);
+
+        // if image grabbed image url, we add it to images array
+        const urlMatch = message.match(/Grabbed \d+ picture[s]?: (.+)$/);
+        if (urlMatch) {
+          setImages((prev) => [...prev, urlMatch[1]]);
+        }
+      };
+
+      // signal for end + trim stuff
+      eventSource.addEventListener("end", () => {
         eventSource.close();
         setLoading(false);
-        return;
-      }
 
-      // add log messages to the state
-      setLogs((prev) => [...prev, message]);
+        if (removeFront > 0 || removeBack > 0) {
+          applyTrimOnce();
+        }
+      });
 
-      // if image grabbed image url, we add it to images array
-      const urlMatch = message.match(/Grabbed \d+ picture[s]?: (.+)$/);
-      if (urlMatch) {
-        setImages((prev) => [...prev, urlMatch[1]]);
-      }
-    };
+      // sse issues
+      eventSource.onerror = (_) => {
+        setLogs((prev) => [
+          ...prev,
+          "Error: Connection lost/failed or you didn't put in a proper website",
+        ]);
+        eventSource.close();
+        setLoading(false);
+      };
+    } else {
+      const res = await fetch(
+        `/api/scrape?url=${encodeURIComponent(url)}&lazy=${lazyLoad}`
+      );
+      const { runId } = await res.json();
 
-    // signal for end + trim stuff
-    eventSource.addEventListener("end", () => {
-      eventSource.close();
-      setLoading(false);
+      const pollLogs = async () => {
+        const logRes = await fetch(`/api/github-logs?runId=${runId}`);
+        const data = await logRes.json();
 
-      if (removeFront > 0 || removeBack > 0) {
-        applyTrimOnce();
-      }
-    });
+        setLogs((prev) => [...prev, ...data.logs]);
+        setImages((prev) => [...prev, ...data.images]);
 
-    // sse issues
-    eventSource.onerror = (_) => {
-      setLogs((prev) => [
-        ...prev,
-        "Error: Connection lost/failed or you didn't put in a proper website",
-      ]);
-      eventSource.close();
-      setLoading(false);
-    };
+        if (!data.finished) {
+          setTimeout(pollLogs, 3000); // poll every 3 sec
+        } else {
+          setLoading(false);
+        }
+      };
+
+      pollLogs();
+    }
   };
 
   // trim thing
