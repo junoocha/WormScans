@@ -48,6 +48,9 @@ export default function ScrapeMultiplePage() {
   // to show supabase upload button is working
   const [saving, setSaving] = useState(false);
 
+  // if run on localhost or vercel
+  const isLocal = !process.env.NEXT_PUBLIC_VERCEL;
+
   // prevent save to supabase button from prematurely being able to click
   const allChaptersScraped =
     chapterImages.length > 0 &&
@@ -76,6 +79,12 @@ export default function ScrapeMultiplePage() {
 
   // handle scraping multiple chapters from urls
   const handleScrapeMultiple = (currentLazy = lazyLoad) => {
+    if (!isLocal) {
+      toast.error(
+        "Multi-Scraping is disabled on the live site due to limiting features. Please run locally."
+      );
+      return;
+    }
     const urls = chapterUrls
       .split("\n")
       .map((u) => u.trim())
