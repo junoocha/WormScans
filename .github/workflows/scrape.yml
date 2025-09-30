@@ -23,8 +23,11 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: pip install -r scraper/requirements.txt
+
+      - name: Install Playwright browsers
+        run: playwright install --with-deps
 
       - name: Run scraper
         run: python scraper/playwright_scraper.py
