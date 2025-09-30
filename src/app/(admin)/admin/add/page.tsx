@@ -147,12 +147,14 @@ export default function ScrapePage() {
     } else {
       // VERCEL: GitHub Actions polling
       try {
-        // trigger scraper workflow
         const res = await fetch(
           `/api/scrape?url=${encodeURIComponent(url)}&lazy=${lazyLoad}`
         );
         if (!res.ok) throw new Error("Failed to trigger scraper workflow");
         const { runId } = await res.json();
+
+        let dotCount = 0;
+        const maxDots = 3;
 
         // polling function
         const pollLogs = async () => {
@@ -164,14 +166,19 @@ export default function ScrapePage() {
           }
 
           const data = await logRes.json();
-          setLogs((prev) => [...prev, ...data.logs]);
-          setImages((prev) => [...prev, ...data.images]);
 
-          if (!data.finished) {
-            setTimeout(pollLogs, 3000); // poll every 3 seconds
-          } else {
+          if (data.finished) {
+            // workflow finished: show real logs & images
+            setLogs(data.logs);
+            setImages(data.images);
             setLoading(false);
             if (removeFront > 0 || removeBack > 0) applyTrimOnce();
+          } else {
+            // still running: update waiting indicator
+            dotCount = (dotCount % maxDots) + 1;
+            const waitingMsg = `Scraping in progress${".".repeat(dotCount)}`;
+            setLogs([waitingMsg]);
+            setTimeout(pollLogs, 2000); // poll every 2s
           }
         };
 
