@@ -145,26 +145,41 @@ export default function ScrapePage() {
         setLoading(false);
       };
     } else {
-      const res = await fetch(
-        `/api/scrape?url=${encodeURIComponent(url)}&lazy=${lazyLoad}`
-      );
-      const { runId } = await res.json();
+      // VERCEL: GitHub Actions polling
+      try {
+        // trigger scraper workflow
+        const res = await fetch(
+          `/api/scrape?url=${encodeURIComponent(url)}&lazy=${lazyLoad}`
+        );
+        if (!res.ok) throw new Error("Failed to trigger scraper workflow");
+        const { runId } = await res.json();
 
-      const pollLogs = async () => {
-        const logRes = await fetch(`/api/github-logs?runId=${runId}`);
-        const data = await logRes.json();
+        // polling function
+        const pollLogs = async () => {
+          const logRes = await fetch(`/api/github-logs?runId=${runId}`);
+          if (!logRes.ok) {
+            setLogs((prev) => [...prev, "Error: Failed to fetch logs."]);
+            setLoading(false);
+            return;
+          }
 
-        setLogs((prev) => [...prev, ...data.logs]);
-        setImages((prev) => [...prev, ...data.images]);
+          const data = await logRes.json();
+          setLogs((prev) => [...prev, ...data.logs]);
+          setImages((prev) => [...prev, ...data.images]);
 
-        if (!data.finished) {
-          setTimeout(pollLogs, 3000); // poll every 3 sec
-        } else {
-          setLoading(false);
-        }
-      };
+          if (!data.finished) {
+            setTimeout(pollLogs, 3000); // poll every 3 seconds
+          } else {
+            setLoading(false);
+            if (removeFront > 0 || removeBack > 0) applyTrimOnce();
+          }
+        };
 
-      pollLogs();
+        pollLogs();
+      } catch (err: any) {
+        setLogs((prev) => [...prev, "Error: " + err.message]);
+        setLoading(false);
+      }
     }
   };
 
