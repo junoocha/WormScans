@@ -3,6 +3,8 @@ import { NextRequest } from "next/server";
 import { spawn } from "child_process";
 import path from "path";
 
+const isLocal = !process.env.VERCEL;
+
 function isValidUrl(str: string) {
   try {
     new URL(str);
@@ -13,6 +15,14 @@ function isValidUrl(str: string) {
 }
 
 export async function GET(req: NextRequest) {
+  if (isLocal) {
+    return runLocalScraper(req);
+  } else {
+    return triggerGitHubScraper(req);
+  }
+}
+
+async function runLocalScraper(req: NextRequest) {
   const { searchParams } = new URL(req.url);
 
   // grab url + lazy flag from query string
@@ -75,4 +85,34 @@ export async function GET(req: NextRequest) {
       Connection: "keep-alive",
     },
   });
+}
+
+async function triggerGitHubScraper(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const targetUrl = searchParams.get("url");
+  const lazyFlag = searchParams.get("lazy") ?? "true";
+
+  if (!targetUrl) return new Response("Missing URL", { status: 400 });
+
+  const res = await fetch(
+    `https://api.github.com/repos/junoocha/WormScans/actions/workflows/scrape.yml/dispatches`,
+    {
+      method: "POST",
+      headers: {
+        Accept: "application/vnd.github+json",
+        Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+      },
+      body: JSON.stringify({
+        ref: "main",
+        inputs: { url: targetUrl, lazy: lazyFlag },
+      }),
+    }
+  );
+
+  if (!res.ok) {
+    const text = await res.text();
+    return new Response(`Failed to trigger workflow: ${text}`, { status: 500 });
+  }
+
+  return new Response("Workflow triggered. Check GitHub Actions for status.");
 }
