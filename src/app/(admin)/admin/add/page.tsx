@@ -59,7 +59,7 @@ export default function ScrapePage() {
   const [saving, setSaving] = useState(false);
 
   // determine if on localhost or vercel deployment
-  const isLocal = process.env.NEXT_PUBLIC_VERCEL !== "1";
+  const isLocal = !process.env.NEXT_PUBLIC_VERCEL;
 
   // Fetch existing series when the page loads
   React.useEffect(() => {
