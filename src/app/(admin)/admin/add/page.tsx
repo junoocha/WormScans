@@ -147,6 +147,9 @@ export default function ScrapePage() {
     } else {
       // VERCEL: GitHub Actions polling
       try {
+        setLogs([
+          "Currently waiting for GitHub Actions workflow, expect 1-2 minutes of delay...",
+        ]);
         const res = await fetch(
           `/api/scrape?url=${encodeURIComponent(url)}&lazy=${lazyLoad}`
         );

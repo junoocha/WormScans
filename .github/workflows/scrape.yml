@@ -31,9 +31,16 @@ jobs:
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright
+          restore-keys: |
+            ${{ runner.os }}-playwright
 
-      - name: Install Playwright browsers
-        run: playwright install --with-deps
+      - name: Install Playwright browsers (skip if cached)
+        run: |
+          if [ ! -d ~/.cache/ms-playwright ]; then
+            playwright install --with-deps
+          else
+            echo "Playwright cache found, skipping download."
+          fi
 
       - name: Run scraper and save output
         run: |

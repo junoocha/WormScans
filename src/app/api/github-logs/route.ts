@@ -14,7 +14,6 @@ export async function GET(req: NextRequest) {
   const runData = await runRes.json();
   const finished = runData.status === "completed";
 
-  // fetch artifacts only if finished
   let logs: string[] = [];
   let images: string[] = [];
 
@@ -25,23 +24,28 @@ export async function GET(req: NextRequest) {
       { headers: { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` } }
     );
     const artifactsData = await artifactsRes.json();
+
     const artifact = artifactsData.artifacts.find(
       (a: any) => a.name === "scraped-output"
     );
+
     if (artifact) {
       // download artifact zip
       const zipRes = await fetch(artifact.archive_download_url, {
         headers: { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` },
       });
+
       const buffer = Buffer.from(await zipRes.arrayBuffer());
       const zip = new AdmZip(buffer);
+      const entries = zip.getEntries();
 
-      // read log file
-      const logEntry = zip.getEntry("output/scraper.log");
+      // find the log and images files robustly
+      const logEntry = entries.find((e) => e.entryName.endsWith("scraper.log"));
+      const imagesEntry = entries.find((e) =>
+        e.entryName.endsWith("images.txt")
+      );
+
       if (logEntry) logs = logEntry.getData().toString().split("\n");
-
-      // read images file
-      const imagesEntry = zip.getEntry("output/images.txt");
       if (imagesEntry)
         images = imagesEntry.getData().toString().split("\n").filter(Boolean);
     }
