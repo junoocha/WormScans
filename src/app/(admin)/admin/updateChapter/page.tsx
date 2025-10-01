@@ -137,7 +137,7 @@ export default function UpdateChapterPage() {
   // save chapter changes
   const handleSave = async () => {
     if (!details) return;
-    if (!/^\d+$/.test(chapterNumber)) {
+    if (!/^\d+(\.\d+)?$/.test(chapterNumber)) {
       toast.error("Chapter number must be numeric");
       return;
     }
