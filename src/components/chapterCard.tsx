@@ -4,7 +4,7 @@ interface ChapterCardProps {
   title?: string | null;
   date?: string;
   images: string[];
-  chapterCoverUrl?: string;
+  chapterCoverUrl?: string | null;
   isSelected?: boolean;
   onClick?: () => void;
 }
@@ -17,7 +17,7 @@ export default function ChapterCard({
   isSelected = false,
   onClick,
 }: ChapterCardProps) {
-  const cover = chapterCoverUrl;
+  const hasCover = !!chapterCoverUrl;
 
   return (
     <div
@@ -27,22 +27,23 @@ export default function ChapterCard({
       onClick={onClick}
     >
       {/* Cover (hidden on mobile) */}
-      <div className="hidden md:block w-32 h-24 rounded overflow-hidden bg-[var(--card-hover)] flex-shrink-0">
-        {cover ? (
+      {hasCover && (
+        <div className="hidden md:block w-32 h-24 rounded overflow-hidden bg-[var(--card-hover)] flex-shrink-0">
           <img
-            src={cover}
+            src={chapterCoverUrl!}
             alt={`Chapter ${chapterNumber} cover`}
             className="w-full h-full object-cover"
+            loading="lazy"
           />
-        ) : (
-          <span className="flex items-center justify-center text-white/50 h-full">
-            [No Cover]
-          </span>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Info */}
-      <div className="flex-1 flex flex-col ml-0 md:ml-4 min-w-0 justify-center">
+      <div
+        className={`flex-1 flex flex-col ml-0 md:ml-4 min-w-0 justify-center ${
+          !hasCover ? "text-center md:text-left" : ""
+        }`}
+      >
         <span className="font-bold text-white truncate">
           Chapter {chapterNumber}
           {title ? `: ${title}` : ""}
