@@ -10,9 +10,9 @@ function prettifySlug(slug: string) {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string; chapter_number: string };
+  params: Promise<{ slug: string; chapter_number: string }>;
 }): Promise<Metadata> {
-  const { slug, chapter_number } = params;
+  const { slug, chapter_number } = await params;
   return {
     title: `${prettifySlug(slug)} Chapter ${chapter_number} - WormScans`,
   };
