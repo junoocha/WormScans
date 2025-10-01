@@ -24,6 +24,7 @@ export default function NavBarClient({ isAdmin }: NavBarClientProps) {
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "Comics", href: "/series" },
+    { name: "About", href: "/about" },
   ];
 
   const [searchQuery, setSearchQuery] = useState("");
