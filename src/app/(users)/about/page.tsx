@@ -19,9 +19,9 @@ export default function AboutPage() {
           Instead of painfully downloading chapters one at a time like it&apos;s
           2008, WormScans swoops in, grabs the images, sorts them neatly, and
           ships them off to a database, like a polite little worm librarian that
-          doesn&apos;t judge your reading habits. Then you're free to read
-          ad-free, since I'm too lazy to implement advertisement and I hate them
-          to begin with.
+          doesn&apos;t judge your reading habits. You&apos;re free to read
+          ad-free, since I&apos;m too lazy to implement advertisement and I hate
+          them to begin with.
         </p>
 
         <h2 className="text-xl font-semibold mt-6 mb-2">✨ What It Does</h2>
