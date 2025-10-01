@@ -10,23 +10,23 @@ export default function AboutPage() {
         </h1>
 
         <p className="leading-relaxed mb-4">
-          WormScans started as one of those “I’ll just automate this real quick”
-          projects… and then spiraled into a full-blown manga/manhwa chapter
-          scraping and organizing machine.
+          WormScans started as one of those &ldquo;I&apos;ll just automate this
+          real quick&rdquo; projects&hellip; and then spiraled into a full-blown
+          manga/manhwa chapter scraping and organizing machine.
         </p>
 
         <p className="leading-relaxed mb-4">
-          Instead of painfully downloading chapters one at a time like it’s
+          Instead of painfully downloading chapters one at a time like it&apos;s
           2008, WormScans swoops in, grabs the images, sorts them neatly, and
           ships them off to a database, like a polite little worm librarian that
-          doesn’t judge your reading habits.
+          doesn&apos;t judge your reading habits.
         </p>
 
         <h2 className="text-xl font-semibold mt-6 mb-2">✨ What It Does</h2>
         <ul className="list-disc list-inside space-y-2 mb-4">
           <li>
             Sneaks through supported reading sites using a headless browser to
-            grab chapter images. 🕵️‍♂️
+            grab chapter images.
           </li>
           <li>
             Auto-organizes everything by series and chapter, because chaos is
@@ -45,14 +45,14 @@ export default function AboutPage() {
         <h2 className="text-xl font-semibold mt-6 mb-2">📬 Legal & Contact</h2>
         <p className="leading-relaxed mb-4">
           This project is meant for personal use, testing, and archiving...
-          basically, for people who like tidy libraries and good UX. If you're a
-          copyright holder or have any legal concerns, please don’t hesitate to
-          reach out.
+          basically, for people who like tidy libraries and good UX. If
+          you&apos;re a copyright holder or have any legal concerns, please
+          don&apos;t hesitate to reach out.
         </p>
 
         <p className="leading-relaxed mb-4">
-          To avoid becoming an all-you-can-eat buffet for spambots, you can
-          reach me through{" "}
+          Since I want to avoid becoming an all-you-can-eat buffet for spambots,
+          you can reach me through{" "}
           <a
             href="https://github.com/junoocha"
             target="_blank"
