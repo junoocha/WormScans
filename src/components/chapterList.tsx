@@ -14,12 +14,12 @@ export default function ChaptersList({
   seriesSlug,
   chapters,
 }: ChaptersClientProps) {
-  const [showCovers, setShowCovers] = useState(true);
+  const [showCovers, setShowCovers] = useState(false);
 
   return (
     <div>
       {/* Toggle button for cover*/}
-      <div className="flex justify-start ml-4 mb-2">
+      <div className="hidden md:flex justify-start ml-4 mb-2">
         <button
           onClick={() => setShowCovers((prev) => !prev)}
           className="text-sm px-3 py-1 rounded bg-[var(--accent)] hover:opacity-90 text-white"
