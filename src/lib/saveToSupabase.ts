@@ -76,7 +76,7 @@ export async function handleSaveToSupabase({
     if (!chapterNumber.trim()) {
       throw new Error("Chapter number cannot be empty.");
     }
-    if (!/^\d+$/.test(chapterNumber.trim())) {
+    if (!/^\d+(\.\d+)?$/.test(chapterNumber.trim())) {
       throw new Error("Chapter number must be numeric.");
     }
     const keptImages = images.filter((_, i) => !deletedIndices.has(i));
