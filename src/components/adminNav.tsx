@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Menu, X, Home, BookOpen } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { Menu, X, Home, BookOpen, User } from "lucide-react";
 import Logo from "./logo";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 export default function AdminNav() {
   const pathname = usePathname();
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navLinks = [
@@ -22,6 +24,12 @@ export default function AdminNav() {
     { name: "Update Series", href: "/admin/updateSeries", Icon: BookOpen },
   ];
 
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/users/login");
+    toast.success("Successfully Logged Out!");
+  };
+
   return (
     <header className="bg-[var(--accent)] text-white relative z-50">
       <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-20">
@@ -29,7 +37,6 @@ export default function AdminNav() {
         <div className="flex items-center gap-6">
           <Logo />
 
-          {/* Desktop links  */}
           <ul className="hidden md:flex flex-row gap-3">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
@@ -49,13 +56,25 @@ export default function AdminNav() {
           </ul>
         </div>
 
-        {/* Right: Mobile hamburger */}
-        <button
-          className="md:hidden p-2 rounded hover:bg-black/20 transition"
-          onClick={() => setMobileMenuOpen(true)}
-        >
-          <Menu className="w-6 h-6" />
-        </button>
+        {/* Right: Logout & mobile hamburger */}
+        <div className="flex items-center gap-3">
+          {/* Desktop logout button */}
+          <button
+            onClick={handleLogout}
+            className="hidden md:flex items-center gap-2 px-4 py-2 rounded-md bg-[#4dbb3a] hover:bg-[#3fae2f] text-white text-base font-semibold transition"
+          >
+            <User className="w-5 h-5" />
+            Logout
+          </button>
+
+          {/* Mobile hamburger */}
+          <button
+            className="md:hidden p-2 rounded hover:bg-black/20 transition"
+            onClick={() => setMobileMenuOpen(true)}
+          >
+            <Menu className="w-6 h-6" />
+          </button>
+        </div>
       </div>
 
       {/* Mobile sidebar */}
@@ -64,14 +83,12 @@ export default function AdminNav() {
           mobileMenuOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        {/* the x button to leave */}
         <div className="flex justify-end p-4">
           <button onClick={() => setMobileMenuOpen(false)} className="p-2">
             <X className="w-6 h-6 text-white" />
           </button>
         </div>
 
-        {/* map/show all links */}
         <ul className="flex flex-col gap-2 px-4">
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
@@ -90,6 +107,20 @@ export default function AdminNav() {
               </li>
             );
           })}
+
+          {/* Mobile logout */}
+          <li>
+            <button
+              onClick={() => {
+                handleLogout();
+                setMobileMenuOpen(false);
+              }}
+              className="flex items-center gap-2 px-4 py-3 rounded-md bg-[#4dbb3a] hover:bg-[#3fae2f] text-white text-base font-semibold cursor-pointer"
+            >
+              <User className="w-5 h-5" />
+              Logout
+            </button>
+          </li>
         </ul>
       </div>
 
