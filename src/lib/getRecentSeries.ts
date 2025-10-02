@@ -42,38 +42,27 @@ export async function fetchRecentSeries({
 
   if (error || !recentSeries) return { data: [], error };
 
-  const seriesIds = recentSeries.map((s) => s.series_id);
+  // map the arrays from the view into structured chapters
+  const result: SeriesWithChapters[] = recentSeries.map((s: any) => {
+    const ids: number[] = s.latest_chapter_ids || [];
+    const numbers: (number | null)[] = s.latest_chapter_numbers || [];
+    const dates: string[] = s.latest_chapter_dates || [];
 
-  // fetch top 3 chapters per series
-  const { data: chapters, error: chError } = await supabase
-    .from("chapters")
-    .select("id, chapter_number, created_at, series_id")
-    .in("series_id", seriesIds)
-    .order("chapter_number", { ascending: false });
+    const chapters = ids.map((id, i) => ({
+      id: id.toString(),
+      chapter_number: (numbers[i] ?? "").toString(),
+      created_at: dates[i] ?? "",
+    }));
 
-  if (chError || !chapters) return { data: [], error: chError };
-
-  // group chapters by series_id
-  const chaptersBySeries: Record<string, ChapterRow[]> = {};
-  for (const ch of chapters) {
-    const sid = ch.series_id.toString();
-    if (!chaptersBySeries[sid]) chaptersBySeries[sid] = [];
-    chaptersBySeries[sid].push(ch);
-  }
-
-  // assemble final payload
-  const result: SeriesWithChapters[] = recentSeries.map((s) => ({
-    series_id: s.series_id.toString(),
-    series_name: s.series_name,
-    slug: s.slug,
-    cover_url: s.cover_url || undefined,
-    latest_upload_date: s.latest_upload_date,
-    chapters: (chaptersBySeries[s.series_id] || []).slice(0, 3).map((c) => ({
-      id: c.id.toString(),
-      chapter_number: c.chapter_number?.toString() || "",
-      created_at: c.created_at,
-    })),
-  }));
+    return {
+      series_id: s.series_id.toString(),
+      series_name: s.series_name,
+      slug: s.slug,
+      cover_url: s.cover_url || undefined,
+      latest_upload_date: s.latest_upload_date,
+      chapters,
+    };
+  });
 
   return { data: result, error: null };
 }
