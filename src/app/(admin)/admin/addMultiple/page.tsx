@@ -52,10 +52,7 @@ export default function ScrapeMultiplePage() {
   const isLocal = !process.env.NEXT_PUBLIC_VERCEL;
 
   // prevent save to supabase button from prematurely being able to click
-  const allChaptersScraped =
-    chapterImages.length > 0 &&
-    chapterImages.every((imgs) => imgs.length > 0) &&
-    !loading;
+  const allChaptersScraped = chapterImages.length > 0 && !loading;
   const canSave = selectedSeriesId !== "" && allChaptersScraped;
 
   // fetch available series on mount
@@ -230,11 +227,23 @@ export default function ScrapeMultiplePage() {
 
     setSaving(true);
 
-    // grabbing images
-    const chaptersToUpload = chapterImages.map((images, idx) => ({
-      chapter_number: lockedStartChapter + idx,
-      images: imagesDeletedIndicesRemoved(idx),
-    }));
+    // Build chapter payload, but filter out ones with no images
+    const chaptersToUpload: { chapter_number: number; images: string[] }[] = [];
+    const skippedEmptyChapters: number[] = [];
+
+    chapterImages.forEach((images, idx) => {
+      const cleaned = imagesDeletedIndicesRemoved(idx);
+      const chapterNumber = lockedStartChapter + idx;
+
+      if (cleaned.length === 0) {
+        skippedEmptyChapters.push(chapterNumber);
+      } else {
+        chaptersToUpload.push({
+          chapter_number: chapterNumber,
+          images: cleaned,
+        });
+      }
+    });
 
     try {
       // upload using api
@@ -250,14 +259,25 @@ export default function ScrapeMultiplePage() {
       const result = await res.json();
       if (!res.ok) throw new Error(result.error || "Upload failed");
 
+      // Build success message
       let msg = "All chapters uploaded successfully!";
-      if (result.skipped.length) {
-        msg += `\n\nNotice: these chapters were skipped due to already existing: ${result.skipped.join(
+
+      // Include skipped empty chapters
+      if (skippedEmptyChapters.length > 0) {
+        msg += `\n\nNotice: these chapters were skipped because they contained no images: ${skippedEmptyChapters.join(
           ", "
         )}`;
       }
+
+      // Include skipped existing chapters from server
+      if (result.skipped?.length) {
+        msg += `\n\nNotice: these chapters were skipped because they already exist: ${result.skipped.join(
+          ", "
+        )}`;
+      }
+
       toast.success(msg, {
-        duration: 5500,
+        duration: 8000,
         style: { whiteSpace: "pre-line" },
       });
     } catch (err) {
@@ -266,7 +286,7 @@ export default function ScrapeMultiplePage() {
         "Failed to save: " + (err instanceof Error ? err.message : String(err))
       );
     } finally {
-      // reset state after upload.failure
+      // reset state after upload or failure
       setSaving(false);
       setChapterImages([]);
       setDeletedIndicesByChapter([]);
