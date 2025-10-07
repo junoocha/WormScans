@@ -14,10 +14,10 @@ type SeriesResult = {
 };
 
 type NavBarClientProps = {
-  isAdmin: boolean;
+  ssrIsAdmin: boolean;
 };
 
-export default function NavBarClient({ isAdmin }: NavBarClientProps) {
+export default function NavBarClient({ ssrIsAdmin }: NavBarClientProps) {
   const pathname = usePathname() || "/";
   const router = useRouter();
 
@@ -148,11 +148,11 @@ export default function NavBarClient({ isAdmin }: NavBarClientProps) {
 
           {/* Login/Admin button — shows on all screen sizes */}
           <Link
-            href={isAdmin ? "/admin" : "/users/login"}
+            href={ssrIsAdmin ? "/admin" : "/users/login"}
             className="flex items-center gap-2 px-4 py-2 rounded-md text-base font-semibold bg-[#4dbb3a] text-white transition hover:bg-[#3fae2f]"
           >
             <User className="w-5 h-5" />
-            <span>{isAdmin ? "Admin" : "Login"}</span>
+            <span>{ssrIsAdmin ? "Admin" : "Login"}</span>
           </Link>
 
           {/* Mobile hamburger */}

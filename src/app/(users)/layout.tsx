@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -34,7 +34,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[var(--background)] text-white`}
       >
         {/* Global NavBar */}
-        <NavBarServer />
+        {await NavBarServer()}
 
         {/* Page Content */}
         {children}
