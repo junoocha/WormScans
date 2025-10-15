@@ -3,7 +3,7 @@
 A full-stack web app built with **Next.js 13 (App Router)** and **Supabase** that lets users browse, read, and upload manga/manhwa/manhua series.  
 Includes an **admin dashboard** for managing series, chapters, and covers.
 
-Access it here: [worm-scans.vercel.app](worm-scans.vercel.app)
+Access it here: [wormscans.ca](https://www.wormscans.ca/)
 
 ---
 
