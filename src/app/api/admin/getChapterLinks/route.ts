@@ -8,6 +8,12 @@ export async function GET(req: NextRequest) {
   if (!targetUrl) return new Response("Missing 'url' query", { status: 400 });
 
   const prependBase = searchParams.get("prependBase") ?? "true";
+  const useBato = searchParams.get("useBato") === "true";
+
+  // Choose scraper based on useBato flag
+  const scriptName = useBato
+    ? "scraper/scrape_bato_links.py"
+    : "scraper/scrape_chapter_links.py";
 
   const encoder = new TextEncoder();
 
@@ -18,19 +24,15 @@ export async function GET(req: NextRequest) {
       );
 
       await new Promise<void>((resolve) => {
-        const python = spawn(
-          "python",
-          ["-u", "scraper/scrape_chapter_links.py"],
-          {
-            env: {
-              ...process.env,
-              TARGET_URL: targetUrl,
-              PREPEND_BASE_URL: prependBase,
-              USE_LAZY: "true",
-              PYTHONPATH: path.join(process.cwd()),
-            },
-          }
-        );
+        const python = spawn("python", ["-u", scriptName], {
+          env: {
+            ...process.env,
+            TARGET_URL: targetUrl,
+            PREPEND_BASE_URL: prependBase,
+            USE_LAZY: "true",
+            PYTHONPATH: path.join(process.cwd()),
+          },
+        });
 
         python.stdout.on("data", (data) => {
           const lines = data.toString().split("\n");

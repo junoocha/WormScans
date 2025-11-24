@@ -33,6 +33,8 @@ export default function ChapterLinkGeneratorModal({
   // loading state during scraping
   const [loading, setLoading] = useState(false);
 
+  const [useBato, setUseBato] = useState(false);
+
   // scrape all links from series url
   const handleScrape = () => {
     if (!seriesUrl) return alert("Enter a series URL.");
@@ -46,7 +48,7 @@ export default function ChapterLinkGeneratorModal({
     const eventSource = new EventSource(
       `/api/admin/getChapterLinks?url=${encodeURIComponent(
         seriesUrl
-      )}&prependBase=${prependBase}`
+      )}&prependBase=${prependBase}&useBato=${useBato}`
     );
 
     // handle logs
@@ -153,6 +155,19 @@ export default function ChapterLinkGeneratorModal({
             />
             <label htmlFor="prependBase" className="text-sm">
               Prepend base URL for relative links
+            </label>
+          </div>
+
+          {/* use bato scraper toggle */}
+          <div className="mb-4 flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="useBato"
+              checked={useBato}
+              onChange={() => setUseBato(!useBato)}
+            />
+            <label htmlFor="useBato" className="text-sm">
+              Use Bato Scraper (bato.to / bato.si / manabato)
             </label>
           </div>
 
