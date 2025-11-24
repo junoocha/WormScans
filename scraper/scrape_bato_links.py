@@ -79,12 +79,7 @@ def scrape_bato_chapters():
                 return int(match.group(1)) if match else 0
             
             chapter_links.sort(key=get_chapter_num)
-            
-            # Apply URL suffix if provided
-            url_suffix = os.environ.get("URL_SUFFIX", "")
-            if url_suffix:
-                log(f"Appending suffix to URLs: {url_suffix}")
-                chapter_links = [link + url_suffix for link in chapter_links]
+        
             
             log(f"Successfully scraped {len(chapter_links)} chapters")
             browser.close()

@@ -9,8 +9,6 @@ export async function GET(req: NextRequest) {
 
   const prependBase = searchParams.get("prependBase") ?? "true";
   const useBato = searchParams.get("useBato") === "true";
-
-  // Choose scraper based on useBato flag
   const scriptName = useBato
     ? "scraper/scrape_bato_links.py"
     : "scraper/scrape_chapter_links.py";

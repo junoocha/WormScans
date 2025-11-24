@@ -35,6 +35,9 @@ export default function ChapterLinkGeneratorModal({
 
   const [useBato, setUseBato] = useState(false);
 
+  // URL suffix to append at the end of each link
+  const [urlSuffix, setUrlSuffix] = useState("");
+
   // scrape all links from series url
   const handleScrape = () => {
     if (!seriesUrl) return alert("Enter a series URL.");
@@ -80,7 +83,7 @@ export default function ChapterLinkGeneratorModal({
     };
   };
 
-  // toggle select/deselct for link
+  // toggle select/deselect for link
   const toggleSelect = (url: string) => {
     setSelectedLinks((prev) => {
       const copy = new Set(prev);
@@ -91,10 +94,11 @@ export default function ChapterLinkGeneratorModal({
   };
 
   // confirm selected links and pass to parent
+  // ✅ append URL suffix here instead of in scraper
   const confirmSelection = () => {
     const sortedSelected = sortedLinks
       .filter(({ link }) => selectedLinks.has(link))
-      .map(({ link }) => link);
+      .map(({ link }) => link + urlSuffix); // append suffix here
     onConfirm(sortedSelected, 1);
     onClose();
   };
@@ -102,7 +106,7 @@ export default function ChapterLinkGeneratorModal({
   // don't render modal if closed
   if (!isOpen) return null;
 
-  // remve duplicate links
+  // remove duplicate links
   const uniqueLinks = Array.from(new Set(chapterLinks));
 
   // sort links by chapter number
@@ -171,15 +175,37 @@ export default function ChapterLinkGeneratorModal({
             </label>
           </div>
 
-          {/* sort toggle button */}
-          {chapterLinks.length > 0 && (
+          {/* URL suffix input */}
+          <div className="mb-4">
+            <label className="block mb-1 font-medium text-sm">
+              URL Suffix (optional)
+            </label>
+            <input
+              type="text"
+              className="border rounded w-full p-2 text-sm"
+              value={urlSuffix}
+              onChange={(e) => setUrlSuffix(e.target.value)}
+              placeholder="e.g., /all_pages or ?view=all"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              This will be appended to the end of each chapter URL
+            </p>
+          </div>
+
+          {/* scrape button above logs */}
+          <div className="mb-4">
             <button
-              className="px-2 py-1 text-xs rounded bg-gray-600 hover:bg-gray-700 text-white mb-2"
-              onClick={() => setSortAsc((prev) => !prev)}
+              className={`w-full px-4 py-2 rounded text-white ${
+                loading
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700"
+              }`}
+              onClick={handleScrape}
+              disabled={loading}
             >
-              Sort: {sortAsc ? "Ascending" : "Descending"}
+              {loading ? "Scraping..." : "Start Scraping"}
             </button>
-          )}
+          </div>
 
           {/* logs */}
           <div className="mb-4 bg-black/80 text-green-400 p-4 rounded text-sm max-h-40 overflow-y-scroll font-mono whitespace-pre-wrap">
@@ -190,6 +216,16 @@ export default function ChapterLinkGeneratorModal({
               <div key={i}>{log}</div>
             ))}
           </div>
+
+          {/* sort toggle button */}
+          {chapterLinks.length > 0 && (
+            <button
+              className="px-2 py-1 text-xs rounded bg-gray-600 hover:bg-gray-700 text-white mb-2"
+              onClick={() => setSortAsc((prev) => !prev)}
+            >
+              Sort: {sortAsc ? "Ascending" : "Descending"}
+            </button>
+          )}
 
           {/* list of chapter links */}
           {sortedLinks.length > 0 && (
@@ -206,7 +242,8 @@ export default function ChapterLinkGeneratorModal({
                         : "bg-[var(--card-bg)]"
                     }`}
                   >
-                    {link}
+                    {/* show final URL with suffix */}
+                    {link + urlSuffix}
                   </button>
                 ))}
               </div>
@@ -214,21 +251,8 @@ export default function ChapterLinkGeneratorModal({
           )}
         </div>
 
-        {/* action buttons */}
+        {/* action buttons - only confirm and close */}
         <div className="flex flex-col sm:flex-row justify-end gap-2 mt-4">
-          {/* scrape button */}
-          <button
-            className={`px-4 py-2 rounded text-white ${
-              loading
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-blue-600 hover:bg-blue-700"
-            }`}
-            onClick={handleScrape}
-            disabled={loading}
-          >
-            {loading ? "Scraping..." : "Start Scraping"}
-          </button>
-
           {/* confirm button */}
           <button
             className={`px-4 py-2 rounded text-white ${
