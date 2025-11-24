@@ -106,7 +106,7 @@ export default async function ChapterPage(props: {
               src={url}
               alt={`Chapter ${chapter_number} image ${idx + 1}`}
               loading="lazy"
-              className="w-full max-w-4xl object-contain py-1"
+              className="w-full max-w-4xl object-contain "
             />
           </div>
         ))}
