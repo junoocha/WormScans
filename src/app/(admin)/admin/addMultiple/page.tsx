@@ -648,6 +648,39 @@ https://example.com/ch4`}
               })}
             </div>
           </div>
+
+          {/* Bottom Prev/Next buttons */}
+          <div className="flex gap-2 w-full sm:w-auto justify-center mt-6 pb-8">
+            <button
+              onClick={() =>
+                setSelectedChapter((prev) => Math.max(prev - 1, 0))
+              }
+              disabled={selectedChapter === 0}
+              className={`flex-1 sm:flex-none px-3 py-2 text-sm rounded text-white ${
+                selectedChapter === 0
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700"
+              }`}
+            >
+              ◀ Prev
+            </button>
+
+            <button
+              onClick={() =>
+                setSelectedChapter((prev) =>
+                  Math.min(prev + 1, chapterImages.length - 1)
+                )
+              }
+              disabled={selectedChapter === chapterImages.length - 1}
+              className={`flex-1 sm:flex-none px-3 py-2 text-sm rounded text-white ${
+                selectedChapter === chapterImages.length - 1
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700"
+              }`}
+            >
+              Next ▶
+            </button>
+          </div>
         </div>
       )}
     </div>
