@@ -56,7 +56,8 @@ def scrape_bato_chapters():
                     href = link.get_attribute('href')
                     
                     # Filter for chapter links specific to this series
-                    if href and title_id and f'/title/{title_id}-' in href and '-ch_' in href:
+                    # Match both formats: /title/134839/ and /title/134839-series-name/
+                    if href and title_id and f'/title/{title_id}' in href and '-ch_' in href:
                         text = link.inner_text().strip()
                         
                         # Skip "Start Reading" button or empty text
